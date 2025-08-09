@@ -45,8 +45,8 @@ description = "Old password incorrect"
 other = "Old password incorrect"
 
 [PasswordTooWeak]
-description = "Password must be at least 6 characters and include uppercase, lowercase, numbers, and special characters"
-other = "Password must be at least 6 characters and include uppercase, lowercase, numbers, and special characters"
+description = "Insufficient password strength"
+other = "Insufficient password strength"
 
 [InvalidRequestPayload]
 description = "Invalid request payload"
