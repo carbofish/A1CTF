@@ -25,6 +25,15 @@ export default function ForgetPassword() {
             toast.error("两次输入密码不一致")
             return
         }
+        if (newPassword.length < 6 ||
+            !newPassword.match(/[0-9]/) ||
+            !newPassword.match(/[a-z]/) ||
+            !newPassword.match(/[A-Z]/) ||
+            !newPassword.match(/[^a-zA-Z0-9]/)) {
+            toast.error("密码强度不足")
+            return
+        }
+
         api.user.resetPassword({
             code: code ?? "",
             new_password: confirmPassword

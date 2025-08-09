@@ -206,6 +206,10 @@ other = "此邮箱不能使用"
 description = "邮箱已经验证过了"
 other = "邮箱已经验证过了"
 
+[PasswordNotStrongEnough]
+description = "密码强度不足"
+other = "密码强度不足"
+
 # User Game Controller 错误信息
 
 [FailedToLoadGames]

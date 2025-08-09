@@ -206,6 +206,10 @@ other = "This email can not be used"
 description = "Email has already been verified"
 other = "Email has already been verified"
 
+[PasswordNotStrongEnough]
+description = "Password not strong enough"
+other = "Password not strong enough"
+
 # User Game Controller Error Messages
 
 [FailedToLoadGames]
