@@ -44,6 +44,10 @@ other = "Failed to update challenge"
 description = "Old password incorrect"
 other = "Old password incorrect"
 
+[PasswordTooWeak]
+description = "Insufficient password strength"
+other = "Insufficient password strength"
+
 [InvalidRequestPayload]
 description = "Invalid request payload"
 other = "Invalid request payload"

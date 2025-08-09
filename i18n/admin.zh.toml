@@ -484,6 +484,10 @@ other = "重置密码失败"
 description = "旧密码错误"
 other = "旧密码错误"
 
+[PasswordTooWeak]
+description = "密码强度不足"
+other = "密码强度不足"
+
 [PasswordReset]
 description = "密码已重置"
 other = "密码已重置"

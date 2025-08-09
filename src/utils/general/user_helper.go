@@ -3,6 +3,7 @@ package general
 import (
 	"a1ctf/src/db/models"
 	"a1ctf/src/utils/ristretto_tool"
+	"regexp"
 )
 
 func GetUserByUserID(userId string) *models.User {
@@ -22,4 +23,24 @@ func FindUserNameByUserID(userId string) *string {
 		return nil
 	}
 	return &user.Username
+}
+
+func ValidatePassword(password string) bool {
+	if len(password) < 6 {
+		return false
+	}
+
+	checks := []string{
+		`[A-Z]`,
+		`[a-z]`,
+		`[0-9]`,
+		`[!@#$%^&*(),.?":{}|<>]`,
+	}
+
+	for _, check := range checks {
+		if !regexp.MustCompile(check).MatchString(password) {
+			return false
+		}
+	}
+	return true
 }
