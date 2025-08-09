@@ -88,6 +88,14 @@ func Register(c *gin.Context) {
 		}
 	}
 
+	if !general.ValidatePassword(payload.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "PasswordTooWeak"}),
+		})
+		return
+	}
+
 	var existingUsers []models.User
 	if err := dbtool.DB().Where("username = ? OR email = ?", payload.Username, payload.Email).Find(&existingUsers).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -412,6 +420,14 @@ func UserChangePassword(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
 			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidRequestPayload"}),
+		})
+		return
+	}
+
+	if !general.ValidatePassword(payload.NewPassword) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "PasswordTooWeak"}),
 		})
 		return
 	}
