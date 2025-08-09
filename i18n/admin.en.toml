@@ -91,8 +91,8 @@ description = "Container deleted"
 other = "Container deleted"
 
 [FailedToUpdateContainerExpireTime]
-description = "Failed to update container expire time"
-other = "Failed to update container expire time"
+description = "Failed to update container's expiration time"
+other = "Failed to update container's expiration time"
 
 [ContainerLifetimeExtended]
 description = "Container lifetime extended"
@@ -494,4 +494,4 @@ other = "Failed to delete user"
 
 [UserDeleted]
 description = "User deleted"
-other = "User deleted"
+other = "User deleted"

@@ -441,5 +441,5 @@ description = "Request too fast, try again after {{.Time}} seconds"
 other = "Request too fast, try again after {{.Time}} seconds"
 
 [ContainerExpireTimeTooShort]
-description = "Container expire time too short, cannot extend"
-other = "Container expire time too short, cannot extend"
+description = "Container's expiration time too short, cannot extend"
+other = "Container's expiration time too short, cannot extend"
