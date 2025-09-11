@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 import { cn } from 'lib/utils';
 import { useSpring, animated } from '@react-spring/web';
 import { useTranslation } from 'react-i18next';
+
+const MAX_CACHE = 512
+const srcSet = new Set()
 
 const ImageLoader = ({
     src, // 高清图URL
@@ -27,8 +30,7 @@ const ImageLoader = ({
 }) => {
 
     const { t } = useTranslation()
-    const [loaded, setLoaded] = useState(false);
-    const imgRef = useRef(null);
+    const [loaded, setLoaded] = useState(srcSet.has(src));
 
     // Spring 动画配置
     const fadeSpring = useSpring({
@@ -41,14 +43,19 @@ const ImageLoader = ({
     });
 
     useEffect(() => {
+        if (srcSet.has(src)) return
+
         const img = new Image();
         img.src = src;
 
         img.onload = () => {
-            setTimeout(() => {
-                setLoaded(true);
-            }, 200)
-        };
+            setLoaded(true)
+            if (srcSet.size > MAX_CACHE) {
+                const first = srcSet.values().next().value;
+                srcSet.delete(first);
+            }
+            srcSet.add(src)
+        }
 
         // 清理函数
         return () => {
@@ -81,7 +88,6 @@ const ImageLoader = ({
 
             {/* 高清图 */}
             <img
-                ref={imgRef}
                 src={src}
                 width={width}
                 onLoad={onLoad}

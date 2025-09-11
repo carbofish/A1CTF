@@ -3,7 +3,8 @@ import { Button } from "../ui/button";
 import { CirclePlus, Copy, GalleryVerticalEnd, Pencil, Search, Trash2 } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import { api } from "utils/ApiHelper";
 import { AdminChallengeSimpleInfo } from "utils/A1API";
 import { Input } from "../ui/input";
@@ -27,14 +28,11 @@ export function ChallengesManageView() {
     const cateIcon: { [key: string]: any } = challengeCategoryIcons
 
     const [curChoicedCategory, setCurChoicedCategory] = useState("all")
-    const [challenges, setChallenges] = useState<AdminChallengeSimpleInfo[]>([])
 
-    useEffect(() => {
-        // TODO 后端新增题目分类数量和总数量的接口，前端不依赖listChallenge接口获取题目数量，前端适配分页
-        api.admin.listChallenge({ size: 1024, offset: 0 }).then((res) => {
-            setChallenges(res.data.data)
-        })
-    }, [])
+    const { data: challenges = [], mutate } = useSWR<AdminChallengeSimpleInfo[]>(
+        '/admin/challenges',
+        () => api.admin.listChallenge({ size: 1024, offset: 0 }).then(res => res.data.data)
+    )
 
     const [searchContent, setSearchContent] = useState("")
     const [dialogOption, setDialogOption] = useState<DialogOption>({
@@ -87,7 +85,6 @@ export function ChallengesManageView() {
                     </Button>
                 </div>
             </div>
-
             <div className="flex-1 flex overflow-hidden">
                 {/* Categories Sidebar */}
                 <div className="flex-none overflow-hidden">
@@ -201,7 +198,7 @@ export function ChallengesManageView() {
                                                             onConfirm: () => {
                                                                 api.admin.deleteChallenge(chal.challenge_id).then(() => {
                                                                     toast.success(t("dashboard.delete.success", { name: chal.name }))
-                                                                    setChallenges(challenges.filter((res) => res.challenge_id !== chal.challenge_id))
+                                                                    mutate() // 使用 mutate 重新获取数据
                                                                 })
                                                             },
                                                         }))

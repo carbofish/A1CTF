@@ -44,6 +44,7 @@ import { Badge } from "../ui/badge";
 import { AdminListUserItem, UserRole } from "utils/A1API";
 
 import { api } from "utils/ApiHelper";
+import useSWR from "swr";
 import { toast } from 'react-toastify/unstyled';
 import {
     AlertDialog,
@@ -114,7 +115,6 @@ export function UserManageView() {
 
     const { t } = useTranslation("user_manage")
 
-    const [data, setData] = React.useState<UserModel[]>([])
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
@@ -129,7 +129,45 @@ export function UserManageView() {
     const [searchKeyword, setSearchKeyword] = React.useState("");
     const [debouncedSearchKeyword, setDebouncedSearchKeyword] = React.useState("");
 
-    const [curPageData, setCurPageData] = React.useState<AdminListUserItem[]>([])
+    const { data: curPageData = [], mutate } = useSWR<AdminListUserItem[]>(
+        `/api/admin/user/list?size=${pageSize}&offset=${pageSize * curPage}&search=${debouncedSearchKeyword}`,
+        async () => {
+            const payload: any = {
+                size: pageSize,
+                offset: pageSize * curPage,
+            }
+            if (debouncedSearchKeyword) {
+                payload.search = debouncedSearchKeyword
+            }
+            const res = await api.admin.listUsers(payload)
+            setTotalCount(res.data.total || 0)
+            return res.data.data
+        }
+    );
+
+    React.useEffect(() => {
+        table.setPageSize(pageSize)
+    }, [pageSize])
+
+    const data = React.useMemo<UserModel[]>(() => {
+        if (!curPageData) return [];
+        return curPageData.map(user => ({
+            id: user.user_id,
+            Username: user.user_name || "",
+            Email: user.email || "",
+            Role: user.role,
+            RealName: user.real_name || "",
+            StudentID: user.student_id || "",
+            LastLoginIP: user.last_login_ip || "",
+            RegisterIP: user.register_ip || "",
+            Phone: user.phone || "",
+            Slogan: user.slogan || "",
+            Avatar: user.avatar || null,
+            RegisterTime: user.register_time,
+            LastLoginTime: user.last_login_time
+        }))
+    }, [curPageData])
+
 
     // 对话框状态
     const [confirmDialog, setConfirmDialog] = React.useState({
@@ -164,7 +202,7 @@ export function UserManageView() {
                         pending: t("delete.pending"),
                         success: {
                             render() {
-                                fetchUsers() // 刷新数据
+                                mutate() // 刷新数据
                                 setConfirmDialog(prev => ({ ...prev, isOpen: false }))
                                 return t("delete.success")
                             }
@@ -338,7 +376,7 @@ export function UserManageView() {
 
                 return (
                     <div className="flex gap-2">
-                        <UserEditDialog user={userItem} updateUsers={fetchUsers}>
+                        <UserEditDialog user={userItem} updateUsers={mutate}>
                             <Button variant="ghost" className="h-8 w-8 p-0" title={t("edit.title")}>
                                 <span className="sr-only">{t("actions.edit")}</span>
                                 <Pencil className="h-4 w-4" />
@@ -381,40 +419,6 @@ export function UserManageView() {
         },
     ]
 
-    // 获取用户列表数据
-    const fetchUsers = () => {
-        const payload: any = {
-            size: pageSize,
-            offset: pageSize * curPage
-        };
-
-        // 如果有搜索关键词，添加到请求中
-        if (debouncedSearchKeyword.trim()) {
-            payload.search = debouncedSearchKeyword.trim();
-        }
-
-        api.admin.listUsers(payload).then((res) => {
-            setTotalCount(res.data.total ?? 0);
-            setCurPageData(res.data.data);
-            const formattedData = res.data.data.map(user => ({
-                id: user.user_id,
-                Username: user.user_name || "",
-                Email: user.email || "",
-                Role: user.role,
-                RealName: user.real_name || "",
-                StudentID: user.student_id || "",
-                LastLoginIP: user.last_login_ip || "",
-                RegisterIP: user.register_ip || "",
-                Phone: user.phone || "",
-                Slogan: user.slogan || "",
-                Avatar: user.avatar || null,
-                RegisterTime: user.register_time,
-                LastLoginTime: user.last_login_time
-            }));
-            setData(formattedData);
-        })
-    };
-
     // 处理搜索
     const handleSearch = (value: string) => {
         setSearchKeyword(value);
@@ -438,11 +442,6 @@ export function UserManageView() {
             rowSelection,
         },
     })
-
-    React.useEffect(() => {
-        table.setPageSize(pageSize);
-        fetchUsers();
-    }, [curPage, pageSize, debouncedSearchKeyword]);
 
     const { theme } = useTheme()
 
@@ -515,7 +514,7 @@ export function UserManageView() {
                                     })}
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <Button variant="outline" size={"icon"} onClick={() => fetchUsers()}>
+                        <Button variant="outline" size={"icon"} onClick={() => mutate()}>
                             <RefreshCw />
                         </Button>
                     </div>

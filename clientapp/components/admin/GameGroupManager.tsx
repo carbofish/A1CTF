@@ -38,14 +38,13 @@ import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { GameGroup } from 'utils/A1API';
 import copy from 'copy-to-clipboard';
+import useSWR from 'swr';
 
 interface GameGroupManagerProps {
     gameId: number;
 }
 
 export function GameGroupManager({ gameId }: GameGroupManagerProps) {
-    const [groups, setGroups] = useState<GameGroup[]>([]);
-    const [loading, setLoading] = useState(false);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editingGroup, setEditingGroup] = useState<GameGroup | null>(null);
@@ -77,15 +76,15 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
     });
 
     // 加载分组列表
-    const loadGroups = async () => {
-        setLoading(true);
+    const {
+        data: groups = [],
+        isLoading: loading,
+        mutate: loadGroups
+    } = useSWR<GameGroup[]>(
+        `/api/admin/game/${gameId}/groups`,
+        () => api.admin.adminGetGameGroups(gameId).then((res) => res.data.data)
+    )
 
-        api.admin.adminGetGameGroups(gameId).then((response) => {
-            setGroups(response.data.data || []);
-        }).finally(() => {
-            setLoading(false);
-        })
-    };
 
     // 创建分组
     const handleCreateGroup = async (data: GroupFormData) => {
@@ -132,10 +131,6 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
         editForm.setValue('description', group.group_description || '');
         setIsEditDialogOpen(true);
     };
-
-    useEffect(() => {
-        loadGroups();
-    }, [gameId]);
 
     return (
         <div className="space-y-4">

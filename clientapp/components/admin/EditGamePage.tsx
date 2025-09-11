@@ -1,23 +1,17 @@
-import { useEffect, useState } from "react";
 import { AdminFullGameInfo } from "utils/A1API";
 import { api } from "utils/ApiHelper";
 import { EditGameView } from "./EditGameView";
+import useSWR from "swr";
 
-export function EditGamePage ({ game_id }: { game_id: number })
-{
-    const [ gameInfo, setGameInfo ] = useState<AdminFullGameInfo>();
+export function EditGamePage({ game_id }: { game_id: number }) {
 
-    useEffect(() => {
-        // Fetch challenge info
-        api.admin.getGameInfo(game_id).then((res) => {
-            setGameInfo(res.data.data);
-        })
-    }, [game_id])
+    const { data: gameInfo = null } = useSWR<AdminFullGameInfo>(
+        `/api/admin/game/${game_id}`,
+        () => api.admin.getGameInfo(game_id).then(res => res.data.data))
 
     return (
         <>
-            { gameInfo && <EditGameView game_info={gameInfo} /> }
-            
+            {gameInfo && <EditGameView game_info={gameInfo} />}
         </>
     );
 }
