@@ -23,15 +23,14 @@ import {
     SheetContent,
     SheetTrigger,
 } from "components/ui/sheet"
-  
 
-// import { DialogTitle } from "components/ui/sheet";
 import { useGameSwitchContext } from "contexts/GameSwitchContext";
-
 import { useGlobalVariableContext } from "contexts/GlobalVariableContext";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import ImageLoader from "./modules/ImageLoader";
+import useSWR from "swr";
+
 export function ChangeGames() {
 
     const [curIndex, setCurIndex] = useState(0)
@@ -40,8 +39,6 @@ export function ChangeGames() {
     const [onTransition, setOnTransition] = useState(false)
 
     const [width, setWidth] = useState<number>(0)
-
-    const [curGames, setCurGames] = useState<UserGameSimpleInfo[]>()
 
     const { clientConfig } = useGlobalVariableContext()
 
@@ -83,14 +80,12 @@ export function ChangeGames() {
         setWidth(window.innerWidth)
     }
 
+    const { data: curGames = [] } = useSWR<UserGameSimpleInfo[]>(
+        "/api/game/list",
+        () => api.user.userListGames().then(res => res.data.data.toSorted((a, b) => dayjs(b.start_time).unix() - dayjs(a.start_time).unix()))
+    )
+
     useEffect(() => {
-
-        
-
-        api.user.userListGames().then((res) => {
-            setCurGames(res.data.data.toSorted((a, b) => dayjs(b.start_time).unix() - dayjs(a.start_time).unix()))
-        })
-
         setWidth(window.innerWidth)
         observerRef.current = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
@@ -111,10 +106,10 @@ export function ChangeGames() {
             }
             );
         },
-        {
-            // 前后两个都可见，方便动画
-            rootMargin: "200px 0px",
-        });
+            {
+                // 前后两个都可见，方便动画
+                rootMargin: "200px 0px",
+            });
 
         window.addEventListener('resize', handleWindowSizeChange);
 
@@ -167,28 +162,24 @@ export function ChangeGames() {
 
         // 预下载海报，防闪
         fetch(curGame.poster || clientConfig.DefaultBGImage).then(res => res.blob())
-        .then(blob => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-        }).then(dataURL => {
-            setPosterData(dataURL as string)
-            setCurSwitchingGame(curGame)
-            setIsChangingGame(true)
+            .then(blob => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            }).then(dataURL => {
+                setPosterData(dataURL as string)
+                setCurSwitchingGame(curGame)
+                setIsChangingGame(true)
 
-            // 动画时间
-            setTimeout(() => {
-                navigate(`/games/${curGame.game_id}/info`);
-            }, 1800)
-        })
+                // 动画时间
+                setTimeout(() => {
+                    navigate(`/games/${curGame.game_id}/info`);
+                }, 1800)
+            })
     }
-
-    // useEffect(() => {
-    //     
-    // }, [width])
 
     if (!curGames) {
         return (
@@ -196,7 +187,7 @@ export function ChangeGames() {
         )
     } else if (curGames.length == 0) return (
         <div className="flex w-full h-full items-center justify-center">
-            <span className="text-2xl font-bold">{ t("game_nogame") }</span>
+            <span className="text-2xl font-bold">{t("game_nogame")}</span>
         </div>
     )
 
@@ -210,7 +201,7 @@ export function ChangeGames() {
                         <div className="pl-[10px] pt-[10px] pb-[10px] pr-[10px] h-full justify-center min-w-[250px] max-w-[350px] select-none hidden 2xl:flex flex-col ">
                             <div className="flex gap-1 items-center mb-[10px] pl-[20px] pr-[20px]">
                                 <Swords size={32} className="transition-colors duration-300" />
-                                <span className="text-2xl transition-colors duration-300">{ t("game_list") }</span>
+                                <span className="text-2xl transition-colors duration-300">{t("game_list")}</span>
                             </div>
                             <MacScrollbar
                                 className="p-4"
@@ -251,7 +242,7 @@ export function ChangeGames() {
                                         {/* <SheetTitle className="hidden" /> */}
                                         <div className="flex gap-1 items-center mb-[10px] pl-[20px] pr-[20px] select-none">
                                             <Swords size={32} className="transition-colors duration-300" />
-                                            <span className="text-2xl transition-colors duration-300">{ t("game_list") }</span>
+                                            <span className="text-2xl transition-colors duration-300">{t("game_list")}</span>
                                         </div>
                                         <MacScrollbar
                                             className="select-none"
@@ -314,11 +305,11 @@ export function ChangeGames() {
                                                                     style={{
                                                                         fontSize: "clamp(6px, 1.8vw, 18px)"
                                                                     }}
-                                                                > { game.summary } </span>
+                                                                > {game.summary} </span>
                                                             </div>
                                                         </div>
                                                         <div className="absolute top-[10px] select-none right-[10px] backdrop-blur-sm p-1 pl-4 pr-4 z-10 bg-white/30 rounded-2xl flex items-center gap-2">
-                                                            <div className={`w-[8px] h-[8px] rounded-full ${getGameFlag(game)}`} /><span className="text-white">{ getGameStatus(game) }</span>
+                                                            <div className={`w-[8px] h-[8px] rounded-full ${getGameFlag(game)}`} /><span className="text-white">{getGameStatus(game)}</span>
                                                         </div>
                                                         <div className="absolute z-10 bottom-5 right-5 rounded-xl flex items-center justify-center shadow-[var(--tw-shadow-colored)_0_0_5px] shadow-foreground border-foreground/80 bg-background/20 backdrop-blur-sm hover:scale-105 transition-transform duration-300"
                                                             onClick={() => {
@@ -327,12 +318,12 @@ export function ChangeGames() {
                                                         >
                                                             <div className="flex w-full h-full items-center select-none text-foreground/80 hover:text-cyan-500 justify-center gap-2 pt-3 pb-3 pl-8 pr-8">
                                                                 <PlugZap size={35} className="transition-colors duration-300" />
-                                                                <span className="text-2xl font-bold transition-colors duration-300">{ t("game_join") }</span>
+                                                                <span className="text-2xl font-bold transition-colors duration-300">{t("game_join")}</span>
                                                             </div>
                                                         </div>
                                                         <div className="absolute z-10 bottom-5 left-5 rounded-xl flex flex-col items-center justify-center border-foreground/80 bg-background/20 backdrop-blur-sm    transition-transform duration-300 p-2 pl-4 pr-4">
-                                                            <span className="font-bold text-green-400" >{ dayjs(game.start_time).format("YYYY/MM/DD HH:mm:ss") }</span>
-                                                            <span className="font-bold text-red-400" >{ dayjs(game.end_time).format("YYYY/MM/DD HH:mm:ss") }</span>
+                                                            <span className="font-bold text-green-400" >{dayjs(game.start_time).format("YYYY/MM/DD HH:mm:ss")}</span>
+                                                            <span className="font-bold text-red-400" >{dayjs(game.end_time).format("YYYY/MM/DD HH:mm:ss")}</span>
                                                         </div>
                                                         <ImageLoader
                                                             className="select-none object-cover aspect-[9/5]"
@@ -362,23 +353,23 @@ export function ChangeGames() {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="backdrop-blur-lg border-foreground/5 rounded-lg mt-[10px] bg-background/30">
                                         <MacScrollbar className="w-full max-h-[50vh] overflow-y-auto p-2 pl-1 pr-3 "
-                                            trackStyle={(horizontal) => ({ [horizontal ? "height" : "width"]: 0, borderWidth: 0})}
+                                            trackStyle={(horizontal) => ({ [horizontal ? "height" : "width"]: 0, borderWidth: 0 })}
                                             skin={theme == "light" ? "light" : "dark"}
-                                            // thumbStyle={(horizontal) => ({ [horizontal ? "height" : "width"]: 6})}
+                                        // thumbStyle={(horizontal) => ({ [horizontal ? "height" : "width"]: 6})}
                                         >
                                             <div className="flex flex-col gap-2 w-full">
-                                                { curGames.map((ele, index) => (
-                                                    <div 
-                                                        className={`flex w-full select-none overflow-hidden h-[48px] gap-2 items-center hover:bg-background/30 p-3 pl-4 pr-4 rounded-lg transition-[background] duration-300 ${ curIndex != index ? "text-foreground/40" : "" }`}
+                                                {curGames.map((ele, index) => (
+                                                    <div
+                                                        className={`flex w-full select-none overflow-hidden h-[48px] gap-2 items-center hover:bg-background/30 p-3 pl-4 pr-4 rounded-lg transition-[background] duration-300 ${curIndex != index ? "text-foreground/40" : ""}`}
                                                         key={`game-${index}`}
                                                         onClick={() => {
                                                             setCurIndex(index)
-                                                        }} 
+                                                        }}
                                                     >
-                                                        <Flag className={`flex-none transition-all duration-300 ${ curIndex == index ? "fill-foreground" : "" }`} size={20}/>
-                                                        <span className={`overflow-hidden text-ellipsis text-nowrap transition-colors duration-300 font-bold`}>{ ele.name }</span>
+                                                        <Flag className={`flex-none transition-all duration-300 ${curIndex == index ? "fill-foreground" : ""}`} size={20} />
+                                                        <span className={`overflow-hidden text-ellipsis text-nowrap transition-colors duration-300 font-bold`}>{ele.name}</span>
                                                     </div>
-                                                )) }
+                                                ))}
                                             </div>
                                         </MacScrollbar>
                                     </DropdownMenuContent>
@@ -388,7 +379,7 @@ export function ChangeGames() {
                             <div className="w-full border-2 rounded-xl relative overflow-hidden shadow-lg transition-[border-color] duration-300">
                                 <div className="absolute top-2 right-2 backdrop-blur-sm z-20 bg-white/30 rounded-2xl select-none p-1 pl-3 pr-3 flex items-center justify-center gap-2">
                                     <div className={`w-[9px] h-[9px] rounded-full ${getGameFlag(curGames[curIndex])}`}></div>
-                                    <span className="text-white">{ getGameStatus(curGames[curIndex]) }</span>
+                                    <span className="text-white">{getGameStatus(curGames[curIndex])}</span>
                                 </div>
                                 <div className="absolute z-10 bottom-5 right-5 rounded-xl flex items-center justify-center shadow-[var(--tw-shadow-colored)_0_0_5px] shadow-foreground border-foreground/80 bg-background/20 backdrop-blur-sm hover:scale-105 transition-transform duration-300"
                                     onClick={() => {
@@ -397,7 +388,7 @@ export function ChangeGames() {
                                 >
                                     <div className="flex w-full h-full items-center select-none text-foreground/80 hover:text-cyan-500 justify-center gap-2 pt-3 pb-3 pl-8 pr-8">
                                         <PlugZap size={35} className="transition-colors duration-300" />
-                                        <span className="text-2xl font-bold transition-colors duration-300">{ t("game_join") }</span>
+                                        <span className="text-2xl font-bold transition-colors duration-300">{t("game_join")}</span>
                                     </div>
                                 </div>
                                 <ImageLoader
@@ -407,7 +398,7 @@ export function ChangeGames() {
                                     // layout="responsive"
                                     width={1920}
                                     height={1080}
-                                    // objectFit="contain"
+                                // objectFit="contain"
                                 />
                             </div>
                             <div className="w-full border-2 rounded-xl relative overflow-hidden shadow-lg transition-[border-color] duration-300 p-4 pl-7 pr-7">

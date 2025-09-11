@@ -13,6 +13,7 @@ import {
 
 import { ArrowLeft, ArrowRight, ArrowUpDown, ChevronDown, MoreHorizontal, Filter, Search, RefreshCw, AlertTriangle, CheckCircle, XCircle, ScanEye } from "lucide-react"
 
+import useSWR from "swr"
 import * as React from "react"
 
 import { Button } from "components/ui/button"
@@ -73,7 +74,6 @@ export function AdminSystemLogs() {
 
     const { t } = useTranslation("logs")
 
-    const [data, setData] = React.useState<LogTableRow[]>([])
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -81,7 +81,6 @@ export function AdminSystemLogs() {
 
     const [pageSize, _setPageSize] = React.useState(20);
     const [curPage, setCurPage] = React.useState(0);
-    const [totalCount, setTotalCount] = React.useState(0);
     const [searchKeyword, setSearchKeyword] = React.useState("");
     const [debouncedSearchKeyword, setDebouncedSearchKeyword] = React.useState("");
 
@@ -89,8 +88,55 @@ export function AdminSystemLogs() {
     const [categoryFilter, setCategoryFilter] = React.useState<LogCategory | "">("");
     const [statusFilter, setStatusFilter] = React.useState<string>("");
 
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [stats, setStats] = React.useState<SystemLogStats | null>(null);
+    // 使用SWR获取日志数据
+    const { data: logsData, isLoading, mutate: fetchLogs } = useSWR(
+        `/api/admin/system/logs?offset=${curPage * pageSize}&size=${pageSize}&keyword=${debouncedSearchKeyword}&category=${categoryFilter}&status=${statusFilter}`,
+        async () => {
+            const params: any = {
+                offset: curPage * pageSize,
+                size: pageSize,
+            }
+            if (debouncedSearchKeyword !== "") {
+                params.keyword = debouncedSearchKeyword
+            }
+            if (categoryFilter !== "") {
+                params.category = categoryFilter
+            }
+            if (statusFilter !== "") {
+                params.status = statusFilter
+            }
+            const res = await api.admin.adminGetSystemLogs(params)
+            return res.data.data
+        }
+    );
+
+    // 转换后的表格数据
+    const data = React.useMemo(() => {
+        if (!logsData) return [];
+        return logsData.logs.map((log: SystemLogItem) => ({
+            id: log.log_id.toString(),
+            category: log.log_category,
+            username: log.username ?? null,
+            action: log.action,
+            resource_type: log.resource_type,
+            resource_id: log.resource_id ?? null,
+            status: log.status,
+            full_data: log,
+            ip_address: log.ip_address ?? null,
+            create_time: log.create_time,
+            details: log.details,
+            error_message: log.error_message ?? null,
+        }));
+    }, [logsData]);
+
+    // 总数
+    const totalCount = logsData?.total || 0;
+
+    // 使用SWR获取统计信息
+    const { data: stats, mutate: fetchStats } = useSWR<SystemLogStats>(
+        '/api/admin/system/logs/stats',
+        () => api.admin.adminGetSystemLogStats().then(res => res.data.data)
+    );
 
     // 防抖处理搜索关键词
     React.useEffect(() => {
@@ -101,65 +147,6 @@ export function AdminSystemLogs() {
 
         return () => clearTimeout(timer);
     }, [searchKeyword]);
-
-    // 获取日志统计
-    const fetchStats = React.useCallback(async () => {
-        api.admin.adminGetSystemLogStats().then((res) => {
-            setStats(res.data.data);
-        })
-    }, []);
-
-    // 获取日志数据
-    const fetchLogs = React.useCallback(async () => {
-        setIsLoading(true);
-
-        const params: any = {
-            offset: curPage * pageSize,
-            size: pageSize,
-        };
-
-        if (debouncedSearchKeyword != "") {
-            params.keyword = debouncedSearchKeyword;
-        }
-        if (categoryFilter != "") {
-            params.category = categoryFilter;
-        }
-        if (statusFilter != "") {
-            params.status = statusFilter;
-        }
-
-        api.admin.adminGetSystemLogs(params).then((response) => {
-            if (response.data.code === 200) {
-                const logs = response.data.data.logs;
-                setTotalCount(response.data.data.total);
-
-                // 转换数据格式
-                const tableData: LogTableRow[] = logs.map((log: SystemLogItem) => ({
-                    id: log.log_id.toString(),
-                    category: log.log_category,
-                    username: log.username ?? null,
-                    action: log.action,
-                    resource_type: log.resource_type,
-                    resource_id: log.resource_id ?? null,
-                    status: log.status,
-                    full_data: log,
-                    ip_address: log.ip_address ?? null,
-                    create_time: log.create_time,
-                    details: log.details,
-                    error_message: log.error_message ?? null,
-                }));
-                setData(tableData);
-            }
-        }).finally(() => {
-            setIsLoading(false);
-        })
-    }, [curPage, pageSize, debouncedSearchKeyword, categoryFilter, statusFilter]);
-
-    // 页面加载时获取数据
-    React.useEffect(() => {
-        fetchLogs();
-        fetchStats();
-    }, [fetchLogs, fetchStats]);
 
     // 获取状态对应的颜色和图标
     const getStatusBadge = (status: string) => {

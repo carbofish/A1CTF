@@ -15,6 +15,7 @@ import dayjs from 'dayjs';
 import LazyThemedEditor from "components/modules/LazyThemedEditor";
 import { useTranslation, Trans } from 'react-i18next';
 import LazyMdxCompoents from 'components/modules/LazyMdxCompoents';
+import useSWR from 'swr';
 
 interface GameNoticeManagerProps {
     gameId: number;
@@ -24,8 +25,6 @@ export function GameNoticeManager({ gameId }: GameNoticeManagerProps) {
     const { t } = useTranslation("game_edit")
     const { t: commonT } = useTranslation()
     const { theme } = useTheme();
-    const [notices, setNotices] = useState<AdminNoticeItem[]>([]);
-    const [loading, setLoading] = useState(false);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedNotice, setSelectedNotice] = useState<AdminNoticeItem | null>(null);
@@ -41,19 +40,13 @@ export function GameNoticeManager({ gameId }: GameNoticeManagerProps) {
     };
 
     // 加载公告列表
-    const loadNotices = async () => {
-        setLoading(true);
-
-        api.admin.adminListGameNotices(gameId, {
+    const { data: notices = [], isLoading: loading, mutate: loadNotices } = useSWR<AdminNoticeItem[]>(
+        `/api/admin/game/${gameId}/notices/list`,
+        () => api.admin.adminListGameNotices(gameId, {
             game_id: gameId,
-            size: 50,
+            size: 100,  // 不太可能超过100个公告...吧？
             offset: 0
-        }).then((response) => {
-            setNotices(response.data.data);
-        }).finally(() => {
-            setLoading(false);
-        })
-    };
+        }).then(res => res.data.data))
 
     // 创建公告
     const handleCreateNotice = async () => {
@@ -88,10 +81,6 @@ export function GameNoticeManager({ gameId }: GameNoticeManagerProps) {
         setSelectedNotice(notice);
         setIsViewDialogOpen(true);
     };
-
-    useEffect(() => {
-        loadNotices();
-    }, [gameId]);
 
     return (
         <div className="space-y-6">

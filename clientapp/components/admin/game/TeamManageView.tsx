@@ -56,6 +56,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar"
 import { copyWithResult } from "utils/ToastUtil"
 import { useTranslation } from "react-i18next"
+import useSWR from "swr"
 
 export type TeamModel = {
     team_id: number,
@@ -111,7 +112,6 @@ export function TeamManageView(
     }
 ) {
     const { t } = useTranslation("game_edit")
-    const [data, setData] = React.useState<TeamModel[]>([])
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
@@ -447,21 +447,19 @@ export function TeamManageView(
     ]
 
     // 获取队伍列表数据
-    const fetchTeams = () => {
-        const payload: any = {
-            game_id: gameId,
-            size: pageSize,
-            offset: pageSize * curPage
-        };
-
-        // 如果有搜索关键词，添加到请求中
-        if (debouncedSearchKeyword.trim()) {
-            payload.search = debouncedSearchKeyword.trim();
-        }
-
-        api.admin.adminListTeams(payload).then((res) => {
-            setTotalCount(res.data.total ?? 0);
-            const formattedData: TeamModel[] = res.data.data.map(item => ({
+    const { data = [], mutate: fetchTeams } = useSWR<TeamModel[]>(`/api/admin/team/list?game_id=${gameId}&size=${pageSize}&page=${curPage}&search=${debouncedSearchKeyword.trim()}`,
+        async () => {
+            const payload: any = {
+                game_id: gameId,
+                size: pageSize,
+                offset: pageSize * curPage
+            }
+            if (debouncedSearchKeyword.trim()) {
+                payload.search = debouncedSearchKeyword.trim()
+            }
+            const res = await api.admin.adminListTeams(payload)
+            setTotalCount(res.data.total ?? 0)
+            return res.data.data.map(item => ({
                 team_id: item.team_id,
                 team_name: item.team_name,
                 team_avatar: item.team_avatar || null,
@@ -473,10 +471,9 @@ export function TeamManageView(
                 })),
                 status: item.status,
                 score: item.score
-            }));
-            setData(formattedData);
-        })
-    };
+            })) as TeamModel[]
+        }
+    )
 
     // 处理搜索
     const handleSearch = (value: string) => {
@@ -504,8 +501,7 @@ export function TeamManageView(
 
     React.useEffect(() => {
         table.setPageSize(pageSize);
-        fetchTeams();
-    }, [curPage, pageSize, gameId, debouncedSearchKeyword]);
+    }, [pageSize]);
 
     return (
         <>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { api, createSkipGlobalErrorConfig } from "utils/ApiHelper";
-import { SystemSettingsPartialUpdate } from "utils/A1API"
+import { SystemSettings, SystemSettingsPartialUpdate } from "utils/A1API"
 import { Button } from "components/ui/button";
 import { Atom, Bird, Cat, Image, Loader2, Mail, NotepadTextDashed, Save, Siren, UserLock } from "lucide-react";
 import { toast } from 'react-toastify/unstyled';
@@ -21,6 +21,8 @@ import UserPolicySettings from "./UserPolicy";
 import { useTheme } from "next-themes";
 import TemplateSettings from "./TemplateSettings";
 import { useTranslation } from "react-i18next";
+import useSWR from "swr";
+import { useGlobalVariableContext } from "contexts/GlobalVariableContext";
 
 const systemSettingsSchema = z.object({
     systemName: z.string().optional(),
@@ -100,6 +102,7 @@ export const AdminSettingsPage = () => {
     const [activeModule, setActiveModule] = useState(action)
     const { theme } = useTheme()
     const { t } = useTranslation("system_settings")
+    const { refreshClientConfig } = useGlobalVariableContext()
 
     useEffect(() => {
         if (!modules.filter(m => m.id == action).length) {
@@ -173,30 +176,25 @@ export const AdminSettingsPage = () => {
     });
 
     // 获取系统设置
-    useEffect(() => {
-        fetchSystemSettings();
-    }, []);
-
-    const fetchSystemSettings = () => {
-        setIsLoading(true);
-        api.system.getSystemSettings(createSkipGlobalErrorConfig()).then((res) => {
-            const data = res?.data?.data
-            if (data) {
-                form.reset(res.data.data)
-            }
+    useSWR(
+        "/api/admin/system/settings",
+        () => api.system.getSystemSettings(createSkipGlobalErrorConfig()).then(res => {
+            res.data.data && form.reset(res.data.data)
+            return res.data.data
         }).catch((_) => {
             toast.error(t("fetch_error"))
         }).finally(() => {
-            setIsLoading(false)
             setDataLoaded(true)
         })
-    };
+    )
 
     // 保存系统设置
     const onSubmit = async (values: SystemSettingsValues) => {
+
         setIsLoading(true)
         try {
             await api.system.updateSystemSettings(values as SystemSettingsPartialUpdate, createSkipGlobalErrorConfig())
+            await refreshClientConfig() // 获取最新的 client config
             toast.success(t("update_success"))
         } catch (err) {
             console.error(t("update_error"), err)
