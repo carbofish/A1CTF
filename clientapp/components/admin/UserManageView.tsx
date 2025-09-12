@@ -129,7 +129,7 @@ export function UserManageView() {
     const [searchKeyword, setSearchKeyword] = React.useState("");
     const [debouncedSearchKeyword, setDebouncedSearchKeyword] = React.useState("");
 
-    const { data: curPageData = [], mutate } = useSWR<AdminListUserItem[]>(
+    const { data: curPageData, mutate } = useSWR<AdminListUserItem[]>(
         `/api/admin/user/list?size=${pageSize}&offset=${pageSize * curPage}&search=${debouncedSearchKeyword}`,
         async () => {
             const payload: any = {
@@ -140,7 +140,7 @@ export function UserManageView() {
                 payload.search = debouncedSearchKeyword
             }
             const res = await api.admin.listUsers(payload)
-            setTotalCount(res.data.total || 0)
+            setTotalCount(res.data?.total || 0)
             return res.data.data
         }
     );
@@ -370,7 +370,7 @@ export function UserManageView() {
             enableHiding: false,
             cell: ({ row }) => {
                 const user = row.original;
-                const userItem = curPageData.find(u => u.user_id === user.id);
+                const userItem = curPageData?.find(u => u.user_id === user.id);
 
                 if (!userItem) return null;
 
@@ -460,7 +460,7 @@ export function UserManageView() {
                             <Button
                                 variant="outline"
                                 size="icon"
-                                onClick={() => setCurPage(curPage - 1)}
+                                onClick={() => setCurPage(Math.max(0, curPage - 1))}
                                 disabled={curPage == 0}
                             >
                                 <ArrowLeft />
