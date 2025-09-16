@@ -112,13 +112,17 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	// 判断是否为首个注册用户，若是则赋予管理员角色
+	// 判断是否为首个注册用户，若是则赋予管理员角色及已验证邮箱状态
 	var userCount int64
 	_ = dbtool.DB().Model(&models.User{}).Count(&userCount).Error
 	role := models.UserRoleUser
+	emailVerified := false
 	if userCount == 0 {
 		role = models.UserRoleAdmin
+		emailVerified = true
 	}
+
+	
 
 	newSalt := general.GenerateSalt()
 	saltedPassword := general.SaltPassword(payload.Password, newSalt)
@@ -142,7 +146,7 @@ func Register(c *gin.Context) {
 		Avatar:        nil,
 		SsoData:       nil,
 		Email:         &loweredEmail,
-		EmailVerified: false,
+		EmailVerified: emailVerified,
 		JWTVersion:    general.RandomString(16),
 		RegisterTime:  time.Now().UTC(),
 		RegisterIP:    &clientIP,
