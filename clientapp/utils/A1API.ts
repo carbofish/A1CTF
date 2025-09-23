@@ -2357,6 +2357,39 @@ export class Api<
      * No description
      *
      * @tags user
+     * @name UserGetGroupInviteCodeDetail
+     * @summary get the invite code detail of a group
+     * @request POST:/api/game/{game_id}/group/invite-code
+     */
+    userGetGroupInviteCodeDetail: (
+      gameId: number,
+      data: {
+        invite_code: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          code: number;
+          data: {
+            group_name: string;
+            group_id: number;
+          };
+        },
+        any
+      >({
+        path: `/api/game/${gameId}/group/invite-code`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags user
      * @name UserGetGameGroups
      * @summary 获取比赛分组列表（用户）
      * @request GET:/api/game/{game_id}/groups

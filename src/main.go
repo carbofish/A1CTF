@@ -437,6 +437,12 @@ func main() {
 				CheckGameStarted:  false,
 			}), controllers.UserGetGameGroups)
 
+			// 组邀请码路由
+			userGameGroup.POST("/:game_id/group/invite-code", controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{
+				VisibleAfterEnded: true,
+				CheckGameStarted:  false,
+			}), controllers.PayloadValidator(webmodels.UserGetGroupInviteCodeGroupPayload{}), controllers.UserGetGroupInviteCodeGroup)
+
 			// 创建比赛队伍
 			userGameGroup.POST("/:game_id/createTeam", controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{
 				VisibleAfterEnded: false,

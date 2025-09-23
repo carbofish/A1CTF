@@ -8,6 +8,7 @@ import { JoinTeamDialog } from "components/dialogs/JoinTeamDialog";
 import { useGlobalVariableContext } from "contexts/GlobalVariableContext";
 import { useGame } from "hooks/UseGame";
 import { useTranslation } from "react-i18next";
+import { GroupCreateTeamDialog } from "components/dialogs/GroupCreateTeamDialog";
 
 export default function GameTeamStatusCard(
     { gameID }: { gameID: number }
@@ -39,11 +40,19 @@ export default function GameTeamStatusCard(
                     <span className="text-md font-bold">{t("team_unregistered")}</span>
                 </div>
                 <div className="flex gap-4 pointer-events-auto">
-                    <CreateTeamDialog callback={() => {
-                        mutateGameInfo()
-                    }} gameID={gameInfo?.game_id ?? 0}>
-                        <Button variant="outline" className="border-blue-300 hover:hover:bg-blue-300/10" type="button"><Pickaxe />{t("create_team")}</Button>
-                    </CreateTeamDialog>
+                    { gameInfo?.group_invite_code_enabled ? (
+                        <GroupCreateTeamDialog callback={() => {
+                            mutateGameInfo()
+                        }} gameID={gameInfo?.game_id ?? 0}>
+                            <Button variant="outline" className="border-blue-300 hover:hover:bg-blue-300/10" type="button"><Pickaxe />{t("create_team")}</Button>
+                        </GroupCreateTeamDialog>
+                    ) : (
+                        <CreateTeamDialog callback={() => {
+                            mutateGameInfo()
+                        }} gameID={gameInfo?.game_id ?? 0}>
+                            <Button variant="outline" className="border-blue-300 hover:hover:bg-blue-300/10" type="button"><Pickaxe />{t("create_team")}</Button>
+                        </CreateTeamDialog>
+                    ) }
                     <JoinTeamDialog
                         game_id={gameInfo?.game_id ?? 0}
                         callback={() => {

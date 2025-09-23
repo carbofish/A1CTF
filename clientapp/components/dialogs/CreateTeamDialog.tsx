@@ -129,7 +129,7 @@ export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, 
                                 <FormItem>
                                     <FormLabel>{t("team_name")}</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="a1team" {...field} />
+                                        <Input placeholder="a1team" {...field} autoComplete="off" />
                                     </FormControl>
                                     <FormDescription>
                                         {t("team_name_desc")}
@@ -179,7 +179,7 @@ export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, 
                                     <FormItem>
                                         <FormLabel>{t("group_invite_code")}</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="9f96ec31....." {...field} />
+                                            <Input placeholder="9f96ec31....." {...field} autoComplete="off" />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

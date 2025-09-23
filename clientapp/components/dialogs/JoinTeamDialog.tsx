@@ -88,7 +88,7 @@ export const JoinTeamDialog: React.FC<{ callback: () => void, game_id: number, c
                                 <FormItem>
                                     <FormLabel>{ t("invite_code") }</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="xxxx:xx:xxxxxxxx" {...field} />
+                                        <Input placeholder="xxxx:xx:xxxxxxxx" {...field} autoComplete="off" />
                                     </FormControl>
                                     <FormDescription>
                                         { t("invite_code_desc") }

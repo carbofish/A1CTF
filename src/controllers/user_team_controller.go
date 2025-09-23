@@ -663,3 +663,40 @@ func UserGetGameGroups(c *gin.Context) {
 		"data": groups,
 	})
 }
+
+func UserGetGroupInviteCodeGroup(c *gin.Context) {
+	game := c.MustGet("game").(models.Game)
+	payload := *c.MustGet("payload").(*webmodels.UserGetGroupInviteCodeGroupPayload)
+
+	if !game.GroupInviteCodeEnabled {
+		c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
+			Code:    400,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "GroupInviteCodeNotEnabled"}),
+		})
+		return
+	}
+
+	var gameGroup models.GameGroup
+	if err := dbtool.DB().Where("game_id = ? AND invite_code = ?", game.GameID, payload.InviteCode).First(&gameGroup).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, webmodels.ErrorMessage{
+				Code:    404,
+				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidGroupInviteCode"}),
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
+				Code:    500,
+				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "SystemError"}),
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": gin.H{
+			"group_name": gameGroup.GroupName,
+			"group_id":   gameGroup.GroupID,
+		},
+	})
+}

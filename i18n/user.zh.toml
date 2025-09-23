@@ -511,3 +511,7 @@ other = "请输入分组邀请码"
 [InvalidGroupInviteCode]
 description = "无效的分组邀请码"
 other = "无效的分组邀请码"
+
+[GroupInviteCodeNotEnabled]
+description = "当前比赛未启用分组邀请码"
+other = "当前比赛未启用分组邀请码"

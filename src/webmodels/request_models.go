@@ -220,3 +220,7 @@ type ForgetPasswordWithVerifyCodePayload struct {
 type ForgetPasswordSendMailPayload struct {
 	Email string `json:"email" binding:"email"`
 }
+
+type UserGetGroupInviteCodeGroupPayload struct {
+	InviteCode string `json:"invite_code" binding:"required,uuid4"`
+}

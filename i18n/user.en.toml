@@ -507,7 +507,11 @@ other = "Email SMTP conig error, please contact admin"
 [GroupInviteCodeRequired]
 description = "Group invite code is required"
 other = "Group invite code is required"
-
+    
 [InvalidGroupInviteCode]
 description = "Invalid group invite code"
 other = "Invalid group invite code"
+
+[GroupInviteCodeNotEnabled]
+description = "Group invite code is not enabled for this game"
+other = "Group invite code is not enabled for this game"
