@@ -44,6 +44,7 @@ import (
 	"github.com/chenyahui/gin-cache/persist"
 
 	"github.com/gin-contrib/gzip"
+	"github.com/gin-contrib/pprof"
 )
 
 func StartLoopEvent() {
@@ -199,7 +200,10 @@ func main() {
 		zaphelper.Sugar.Warn("No trusted proxies set, using default. If you are using a reverse proxy, please set the trusted proxies in the config file.")
 	}
 
-	// pprof.Register(r)
+	// pprof system monitor
+	if viper.GetBool("system.pprof-enable") {
+		pprof.Register(r)
+	}
 
 	// 启动 Gin 框架性能监控
 	if viper.GetBool("monitoring.enabled") {

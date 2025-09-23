@@ -19,6 +19,8 @@ system:
   # don't use 0.0.0.0/0, it's dangerous
   trusted-proxies:
     - 0.0.0.0/0
+  # enable pprof for performance profiling, default is false
+  pprof-enable: false
 
 redis:
   address: localhost:6379

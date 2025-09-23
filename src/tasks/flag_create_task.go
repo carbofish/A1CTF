@@ -64,8 +64,16 @@ func HandleTeamCreateTask(ctx context.Context, t *asynq.Task) error {
 
 	flagFounded := false
 	flag := ""
+	maxTryTimes := 100
 
 	for !flagFounded {
+
+		if maxTryTimes <= 0 {
+			err := fmt.Errorf("[TeamID: %d, GameID: %d, ChallengeID: %d] leet space don't enough for template %s %w", p.TeamID, p.GameID, p.ChallengeID, p.FlagTemplate, asynq.SkipRetry)
+			zaphelper.Logger.Error("Failed to create flag for team", zap.Int64("team_id", p.TeamID), zap.Int64("game_id", p.GameID), zap.Int64("challenge_id", p.ChallengeID), zap.Error(err))
+			return err
+		}
+
 		flag = general.ProcessFlag(p.FlagTemplate, map[string]string{
 			"team_id":      fmt.Sprintf("%d", p.TeamID),
 			"game_id":      fmt.Sprintf("%d", p.GameID),
@@ -75,6 +83,7 @@ func HandleTeamCreateTask(ctx context.Context, t *asynq.Task) error {
 		}, p.FlagType == models.FlagTypeDynamic)
 
 		if slices.Contains(flags, flag) {
+			maxTryTimes--
 			continue
 		}
 
