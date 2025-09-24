@@ -251,13 +251,17 @@ func CreatePod(podInfo *PodInfo) error {
 
 		containers = append(containers, container)
 	}
+
+	fastVal := false
+
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   podInfo.Name,
 			Labels: podInfo.Labels,
 		},
 		Spec: corev1.PodSpec{
-			Containers: containers,
+			Containers:         containers,
+			EnableServiceLinks: &fastVal,
 		},
 	}
 
