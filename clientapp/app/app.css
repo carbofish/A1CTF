@@ -339,3 +339,17 @@ cap-widget {
     max-width: 80vw!important;
     min-width: 340px;
 }
+
+@keyframes marqueeX {
+  from { transform: translateX(var(--from)); }
+  to   { transform: translateX(var(--to)); }
+}
+
+.marquee-run {
+  animation-name: marqueeX;
+  animation-duration: var(--dur);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  will-change: transform;
+}

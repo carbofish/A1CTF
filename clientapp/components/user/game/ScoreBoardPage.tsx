@@ -9,6 +9,7 @@ import * as XLSX from 'xlsx-js-style';
 
 import { Tooltip } from 'react-tooltip';
 import { Button } from 'components/ui/button';
+import { Label } from "components/ui/label";
 
 import { randomInt } from "mathjs";
 import { MacScrollbar } from 'mac-scrollbar';
@@ -30,6 +31,7 @@ import {
 } from "components/ui/select"
 import TeamScoreDetailPage from './TeamScoreDetailPage';
 import { useTranslation } from 'react-i18next';
+import { Checkbox } from 'components/ui/checkbox';
 
 export default function ScoreBoardPage(
     { gmid }
@@ -42,6 +44,8 @@ export default function ScoreBoardPage(
     const [gameInfo, setGameInfo] = useState<UserFullGameInfo | undefined>(undefined)
     const [challenges, setChallenges] = useState<Record<string, UserSimpleGameChallenge[]>>({})
     const [scoreBoardModel, setScoreBoardModel] = useState<GameScoreboardData>()
+
+    const [showGroupTags, setShowGroupTags] = useState(false)
 
     // 分组和分页相关状态
     const [selectedGroupId, setSelectedGroupId] = useState<number | undefined>(undefined)
@@ -541,17 +545,33 @@ export default function ScoreBoardPage(
                             <div className='flex-1' />
                             {/* 下载积分榜按钮 */}
                             {gameInfo && (
-                                <Button
-                                    onClick={downloadScoreboardXLSX}
-                                    disabled={isDownloading}
-                                    className={`mr-4 transition-all duration-300 hover:scale-110 ${isDownloading ? 'opacity-50 cursor-not-allowed' : ''
-                                        }`}
-                                    variant="outline"
-                                    size="sm"
-                                >
-                                    <Download size={18} className={`mr-2 ${isDownloading ? 'animate-spin' : ''}`} />
-                                    {isDownloading ? t("scoreboard.downloading") : t("scoreboard.download")}
-                                </Button>
+                                <div className='flex items-center gap-2'>
+                                    <Label className="hover:bg-accent/50 cursor-pointer flex items-start gap-3 rounded-lg border p-[10px] has-[[aria-checked=true]]:border-green-600 has-[[aria-checked=true]]:bg-green-50 dark:has-[[aria-checked=true]]:border-green-900 dark:has-[[aria-checked=true]]:bg-green-950">
+                                        <Checkbox
+                                            id="toggle-2"
+                                            checked={showGroupTags}
+                                            onCheckedChange={(e) => {
+                                                setShowGroupTags(e.valueOf() as boolean);
+                                            }}
+                                            className="data-[state=checked]:border-green-600 data-[state=checked]:bg-green-600 data-[state=checked]:text-white dark:data-[state=checked]:border-green-700 dark:data-[state=checked]:bg-green-700"
+                                        />
+                                        <div className="grid gap-1.5 font-normal">
+                                            <p className="text-sm leading-none font-medium">
+                                                {t("scoreboard.show_group_tags")}
+                                            </p>
+                                        </div>
+                                    </Label>
+                                    <Button
+                                        onClick={downloadScoreboardXLSX}
+                                        disabled={isDownloading}
+                                        className={`mr-4 transition-all duration-300 ${isDownloading ? 'opacity-50 cursor-not-allowed' : ''
+                                            }`}
+                                        variant="outline"
+                                    >
+                                        <Download size={18} className={`mr-2 ${isDownloading ? 'animate-spin' : ''}`} />
+                                        {isDownloading ? t("scoreboard.downloading") : t("scoreboard.download")}
+                                    </Button>
+                                </div>
                             )}
                         </div>
                         {gameInfo ? (
@@ -692,6 +712,7 @@ export default function ScoreBoardPage(
                                                                 scoreBoardModel={scoreBoardModel}
                                                                 setShowUserDetail={setShowUserDetail}
                                                                 challenges={challenges}
+                                                                showGroupTags={showGroupTags}
                                                                 pageSize={pageSize}
                                                                 pagination={pagination}
                                                                 curPage={currentPage}

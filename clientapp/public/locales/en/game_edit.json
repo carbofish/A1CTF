@@ -196,6 +196,8 @@
         "option": "Optional",
         "time": "Created At",
         "invite_code": "InviteCode(Only valid if group invite code is enabled)",
+        "people_count": "Number of Teams",
+        "group_id": "Group ID",
         "copy": "Copy InviteCode",
         "copy_success": "InviteCode copied to clipboard",
         "empty": "No groups yet. Click \"Create Group\" to add one"
@@ -271,6 +273,7 @@
         "list": "Member List",
         "user_id": "User ID",
         "slogan": "Team Slogan",
+        "group_name": "Group Name",
         "menu": {
             "title": "Open Menu",
             "copy": "Copy Team ID"

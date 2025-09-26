@@ -347,6 +347,7 @@ func CalculateGameScoreBoard(gameID int64) (*webmodels.CachedGameScoreBoardData,
 			TeamSlogan:       team.TeamSlogan,
 			TeamDescription:  team.TeamDescription,
 			GroupID:          team.GroupID,
+			GroupName:        &team.Group.GroupName,
 			Score:            0,
 			Penalty:          0,
 			SolvedChallenges: make([]webmodels.TeamSolveItem, 0),
@@ -520,6 +521,7 @@ func CalculateGameScoreBoard(gameID int64) (*webmodels.CachedGameScoreBoardData,
 			SolvedChallenges: teamData.SolvedChallenges,
 			ScoreAdjustments: teamData.ScoreAdjustments,
 			GroupID:          teamData.GroupID,
+			GroupName:        teamData.GroupName,
 		}
 		finalScoreBoardMap[teamData.TeamID] = tmp
 		processedTeamRankings = append(processedTeamRankings, tmp)
@@ -544,6 +546,7 @@ func CalculateGameScoreBoard(gameID int64) (*webmodels.CachedGameScoreBoardData,
 			SolvedChallenges: teamData.SolvedChallenges,
 			ScoreAdjustments: teamData.ScoreAdjustments,
 			GroupID:          teamData.GroupID,
+			GroupName:        teamData.GroupName,
 		})
 		// 防止队伍数量少于 10报错
 		idx += 1

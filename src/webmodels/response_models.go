@@ -145,6 +145,8 @@ type AdminListTeamItem struct {
 	TeamName   string                      `json:"team_name"`
 	TeamAvatar *string                     `json:"team_avatar"`
 	TeamSlogan *string                     `json:"team_slogan"`
+	GroupName  *string                     `json:"group_name"`
+	GroupID    *int64                      `json:"group_id"`
 	Members    []AdminSimpleTeamMemberInfo `json:"members"`
 	Status     models.ParticipationStatus  `json:"status"`
 	Score      float64                     `json:"score"`
@@ -235,4 +237,15 @@ type AdminContainerItem struct {
 	PodID               string                 `json:"pod_id"`
 	TeamID              int64                  `json:"team_id"`
 	ChallengeID         int64                  `json:"challenge_id"`
+}
+
+type AdminGameGroupItem struct {
+	GroupID     int64     `json:"group_id"`
+	GameID      int64     `json:"game_id"`
+	GroupName   string    `json:"group_name"`
+	InviteCode  string    `json:"invite_code"`
+	Description *string   `json:"group_description"`
+	PeopleCount int64     `json:"people_count"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }

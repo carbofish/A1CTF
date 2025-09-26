@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from 'components/ui/button';
 import { Input } from 'components/ui/input';
 import { Textarea } from 'components/ui/textarea';
@@ -36,7 +36,7 @@ import { PlusCircle, Pencil, Trash2, Clipboard } from 'lucide-react';
 import AlertConformer from 'components/modules/AlertConformer';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { GameGroup } from 'utils/A1API';
+import { AdminGameGroupItem } from 'utils/A1API';
 import copy from 'copy-to-clipboard';
 import useSWR from 'swr';
 
@@ -47,7 +47,7 @@ interface GameGroupManagerProps {
 export function GameGroupManager({ gameId }: GameGroupManagerProps) {
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [editingGroup, setEditingGroup] = useState<GameGroup | null>(null);
+    const [editingGroup, setEditingGroup] = useState<AdminGameGroupItem | null>(null);
 
     const { t } = useTranslation("game_edit")
     const { t: commonT } = useTranslation()
@@ -80,7 +80,7 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
         data: groups = [],
         isLoading: loading,
         mutate: loadGroups
-    } = useSWR<GameGroup[]>(
+    } = useSWR<AdminGameGroupItem[]>(
         `/api/admin/game/${gameId}/groups`,
         () => api.admin.adminGetGameGroups(gameId).then((res) => res.data.data)
     )
@@ -125,7 +125,7 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
     };
 
     // 编辑分组
-    const handleEditGroup = (group: GameGroup) => {
+    const handleEditGroup = (group: AdminGameGroupItem) => {
         setEditingGroup(group);
         editForm.setValue('group_name', group.group_name);
         editForm.setValue('description', group.group_description || '');
@@ -202,10 +202,12 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead>{t("group.group_id")}</TableHead>
                             <TableHead>{t("group.add.name.label")}</TableHead>
                             <TableHead>{t("group.add.info.label")}</TableHead>
                             <TableHead>{t("group.time")}</TableHead>
                             <TableHead>{t("group.invite_code")}</TableHead>
+                            <TableHead>{t("group.people_count")}</TableHead>
                             <TableHead className="text-right">{t("action")}</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -225,6 +227,7 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
                         ) : (
                             groups.map((group) => (
                                 <TableRow key={group.group_id}>
+                                    <TableCell className="font-medium">{group.group_id}</TableCell>
                                     <TableCell className="font-medium">{group.group_name}</TableCell>
                                     <TableCell className="max-w-xs truncate">
                                         {group.group_description || '-'}
@@ -234,6 +237,9 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
                                     </TableCell>
                                     <TableCell>
                                         {group.invite_code || "NULL"}
+                                    </TableCell>
+                                    <TableCell>
+                                        {group.people_count || "NULL"}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">

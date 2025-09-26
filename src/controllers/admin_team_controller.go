@@ -59,7 +59,7 @@ func AdminListTeams(c *gin.Context) {
 	query = query.Order("team_id ASC")
 
 	var teams []models.Team
-	if err := query.Offset(payload.Offset).Limit(payload.Size).Find(&teams).Error; err != nil {
+	if err := query.Offset(payload.Offset).Limit(payload.Size).Preload("Group").Find(&teams).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
 			Code:    500,
 			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToFetchTeams"}),
@@ -112,15 +112,23 @@ func AdminListTeams(c *gin.Context) {
 			}
 		}
 
-		teamItems = append(teamItems, webmodels.AdminListTeamItem{
+		record := webmodels.AdminListTeamItem{
 			TeamID:     team.TeamID,
 			TeamName:   team.TeamName,
 			TeamAvatar: team.TeamAvatar,
 			TeamSlogan: team.TeamSlogan,
+			GroupName:  nil,
+			GroupID:    team.GroupID,
 			Members:    tmpMembers,
 			Status:     team.TeamStatus,
 			Score:      team.TeamScore,
-		})
+		}
+
+		if team.Group != nil {
+			record.GroupName = &team.Group.GroupName
+		}
+
+		teamItems = append(teamItems, record)
 	}
 
 	c.JSON(http.StatusOK, gin.H{

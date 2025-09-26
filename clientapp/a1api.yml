@@ -2966,7 +2966,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/GameGroup'
+                      $ref: '#/components/schemas/AdminGameGroupItem'
                 required:
                   - code
                   - data
@@ -4653,6 +4653,12 @@ components:
         team_slogan:
           type: string
           nullable: true
+        group_name:
+          type: string
+          nullable: true
+        group_id:
+          type: integer
+          nullable: true
         members:
           type: array
           items:
@@ -4967,6 +4973,40 @@ components:
         - created_at
         - updated_at
         - teams
+    AdminGameGroupItem:
+      type: object
+      properties:
+        group_id:
+          type: integer
+          description: 分组ID
+        group_name:
+          type: string
+          description: 分组名称
+        group_description:
+          type: string
+          nullable: true
+          description: 分组描述
+        display_order:
+          type: integer
+          description: 显示顺序
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+        invite_code:
+          type: string
+          description: 邀请码
+        updated_at:
+          type: string
+          format: date-time
+          description: 更新时间
+        people_count:
+          type: number
+      required:
+        - group_id
+        - group_name
+        - display_order
+        - people_count
     CreateGameGroupPayload:
       type: object
       properties:

@@ -683,6 +683,8 @@ export interface AdminListTeamItem {
   team_name: string;
   team_avatar?: string | null;
   team_slogan?: string | null;
+  group_name?: string | null;
+  group_id?: number | null;
   members: AdminSimpleTeamMemberInfo[];
   /**
    * Team participation status:
@@ -857,6 +859,30 @@ export interface GameGroup {
    */
   updated_at: string;
   teams: AdminListTeamItem[];
+}
+
+export interface AdminGameGroupItem {
+  /** 分组ID */
+  group_id: number;
+  /** 分组名称 */
+  group_name: string;
+  /** 分组描述 */
+  group_description?: string | null;
+  /** 显示顺序 */
+  display_order: number;
+  /**
+   * 创建时间
+   * @format date-time
+   */
+  created_at?: string;
+  /** 邀请码 */
+  invite_code?: string;
+  /**
+   * 更新时间
+   * @format date-time
+   */
+  updated_at?: string;
+  people_count: number;
 }
 
 export interface CreateGameGroupPayload {
@@ -3365,7 +3391,7 @@ export class Api<
       this.request<
         {
           code: number;
-          data: GameGroup[];
+          data: AdminGameGroupItem[];
         },
         any
       >({

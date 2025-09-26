@@ -196,6 +196,8 @@
         "option": "可选",
         "time": "创建时间",
         "invite_code": "邀请码(仅在启用组邀请码后有效)",
+        "people_count": "队伍数量",
+        "group_id": "分组ID",
         "copy": "复制邀请码",
         "copy_success": "邀请码已复制到剪贴板",
         "empty": "暂无分组，点击\"创建分组\"开始添加"
@@ -271,6 +273,7 @@
         "list": "成员列表",
         "user_id": "用户ID",
         "slogan": "队伍口号",
+        "group_name": "分组名称",
         "menu": {
             "title": "打开菜单",
             "copy": "复制队伍ID"

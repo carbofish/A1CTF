@@ -37,7 +37,6 @@ import { setGlobalNavigate } from "utils/ApiHelper";
 import ClientChecker from "components/modules/ClientChecker";
 
 import { SWRConfig } from 'swr'
-import { Loader2 } from "lucide-react";
 
 export const links: Route.LinksFunction = () => [
     // { rel: "preconnect", href: "https://fonts.googleapis.com" },
