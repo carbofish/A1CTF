@@ -239,7 +239,7 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
                                         {group.invite_code || "NULL"}
                                     </TableCell>
                                     <TableCell>
-                                        {group.people_count || "NULL"}
+                                        {group.people_count }
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
