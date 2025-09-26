@@ -53,7 +53,9 @@ export default function GameInfoView(
                             </div>
                         ) : (
                             gameDescription ? (
-                                <LazyMdxCompoents source={gameDescription || ""} />
+                                <div className="pb-8 pt-4">
+                                    <LazyMdxCompoents source={gameDescription || ""} />
+                                </div>
                             ) : (
                                 <div className="w-full h-[60vh] flex items-center justify-center select-none">
                                     <span className="font-bold text-lg">{t("no_game_info")}</span>
