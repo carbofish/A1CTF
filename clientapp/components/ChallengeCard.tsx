@@ -132,12 +132,12 @@ export const ChallengeCard: FC<ChallengeInfo & React.HTMLAttributes<HTMLDivEleme
                         {isAdmin() && !visible ? (
                             <>
                                 <EyeOff size={23} className="flex-none transition-colors duration-300" style={{ color: !choiced ? "" : colorClass }} />
-                                <span className={`font-bold text-ellipsis whitespace-nowrap overflow-hidden transition-colors duration-300`} style={{ color: !choiced ? "" : colorClass }} >{ getCurGameStage() != belongStage && belongStage ? `[${belongStage}]` : "" } {name}</span>
+                                <span className={`font-bold text-ellipsis whitespace-nowrap overflow-hidden transition-colors duration-300`} style={{ color: !choiced ? "" : colorClass }} >{name}</span>
                             </>
                         ) : (
                             <>
                                 <Dices size={23} className="flex-none transition-colors duration-300" style={{ color: !choiced ? "" : colorClass }} />
-                                <span className={`font-bold text-ellipsis whitespace-nowrap overflow-hidden transition-colors duration-300`} style={{ color: !choiced ? "" : colorClass }}>{ getCurGameStage() != belongStage && belongStage ? `[${belongStage}]` : "" } {name}</span>
+                                <span className={`font-bold text-ellipsis whitespace-nowrap overflow-hidden transition-colors duration-300`} style={{ color: !choiced ? "" : colorClass }}>{name}</span>
                             </>
                         )}
 

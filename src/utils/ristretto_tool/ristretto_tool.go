@@ -339,6 +339,12 @@ func CalculateGameScoreBoard(gameID int64) (*webmodels.CachedGameScoreBoardData,
 			}
 		}
 
+		var groupName *string = nil
+
+		if team.Group != nil {
+			groupName = &team.Group.GroupName
+		}
+
 		teamDataMap[team.TeamID] = webmodels.TeamScoreItem{
 			TeamID:           team.TeamID,
 			TeamName:         team.TeamName,
@@ -347,7 +353,7 @@ func CalculateGameScoreBoard(gameID int64) (*webmodels.CachedGameScoreBoardData,
 			TeamSlogan:       team.TeamSlogan,
 			TeamDescription:  team.TeamDescription,
 			GroupID:          team.GroupID,
-			GroupName:        &team.Group.GroupName,
+			GroupName:        groupName,
 			Score:            0,
 			Penalty:          0,
 			SolvedChallenges: make([]webmodels.TeamSolveItem, 0),
