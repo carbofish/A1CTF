@@ -34,6 +34,7 @@
         "participant": "参赛队伍",
         "data_error": "数据不完整",
         "png_error": "保存图表失败",
+        "show_group_tags": "显示分组标签",
         "filename": "积分榜",
         "png": "积分图表",
         "subject": "CTF竞赛",

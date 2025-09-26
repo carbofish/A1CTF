@@ -1,0 +1,138 @@
+{
+    "container": {
+        "label": "容器",
+        "list": "容器列表",
+        "name": "容器名称",
+        "delete": "删除容器",
+        "image": "镜像地址",
+        "env": {
+            "label": "环境变量",
+            "description": "键值对的形式, 用逗号隔开, 如: KEY=VALUE,KEY2=VALUE2, 支持<a>模板变量</a>"
+        },
+        "cmd": {
+            "label": "启动命令",
+            "add": "添加启动命令",
+            "description": "例如 bash -c \"time\" 你就需要创建三个 bash, -c, time"
+        },
+        "limit": {
+            "cpu": {
+                "label": "CPU 资源限制 (毫核)",
+                "description": "1000 毫核 为 1 核心"
+            },
+            "mem": {
+                "label": "内存限制 (M)",
+                "description": "单位为 MB"
+            },
+            "store": {
+                "label": "存储限制 (M)",
+                "description": "单位为 MB"
+            }
+        },
+        "port": {
+            "label": "端口暴露",
+            "add": "添加端口",
+            "description": "端口名称是你需要映射出来的端口的名称, 这会显示给选手, 端口号是容器内服务的端口, A1CTF会自动映射随机端口到宿主机上, 注意！一道题的不同容器不能同时暴露相同的端口! 比如: 容器1和容器2同时要求暴露80端口, 这会导致映射出问题! 请你在制作docker的时候选择不同的监听端口",
+            "name": "端口名称",
+            "num": "端口号",
+            "delete": "删除端口"
+        },
+        "error": {
+            "name": "请输入容器名称",
+            "image": "请输入镜像地址",
+            "port": {
+                "name": "请输入端口名称",
+                "num": "请输入数字",
+                "min": "端口号不能小于 1",
+                "max": "端口号不能大于 65535"
+            },
+            "cpu": "请输入 CPU 限制",
+            "mem": "请输入内存限制",
+            "store": "请输入存储限制"
+        },
+        "add": "添加容器",
+        "empty": "您还没有添加容器哦",
+        "wan": {
+            "label": "允许外网",
+            "description": "如果关闭, 则容器无法访问外部网络"
+        },
+        "dns": {
+            "label": "DNS出网",
+            "description": "只有不出网时该选项才生效"
+        }
+    },
+    "attachment": {
+        "label": "附件",
+        "list": "附件列表",
+        "delete": "删除附件",
+        "name": "附件名称",
+        "type": {
+            "label": "附件类型",
+            "select": "请选择附件类型",
+            "static": "静态附件",
+            "dynamic": "动态附件",
+            "remote": "远程附件",
+            "pool": "随机附件池"
+        },
+        "url": "附件下载地址",
+        "id": "附件ID",
+        "placeholder": "上传文件后自动填充",
+        "upload": {
+            "label": "上传附件",
+            "success": "文件 \"{{name}}\" 上传成功",
+            "failed": "自动保存失败，请手动保存"
+        },
+        "error": {
+            "name": "附件名称最短需要两个字符",
+            "type": "需要选择一个有效的附件类型"
+        },
+        "add": "添加附件",
+        "empty": "您还没有添加附件哦"
+    },
+    "form": {
+        "name": {
+            "label": "题目名称",
+            "description": "请填写题目名称",
+            "error": "题目名称最短需要两个字符"
+        },
+        "category": {
+            "label": "题目类型",
+            "description": "选择一个题目类别",
+            "error": "需要选择一个有效的题目类别"
+        },
+        "judge": {
+            "label": "评测模式",
+            "description": "请选择一个评测模式",
+            "error": "需要选择一个有效的评测模式",
+            "text": "文字匹配",
+            "script": {
+                "name": "脚本匹配",
+                "label": "评测脚本",
+                "placeholder": "在这里输入你的评测脚本",
+                "description": "如果你选择了动态评测, 你需要提供一份符合格式要求的评测脚本"
+            }
+        },
+        "description": {
+            "label": "题目简介",
+            "description": "简单介绍下题目吧"
+        },
+        "flag": {
+            "error": "Flag最短需要6个字符",
+            "label": "Flag类型",
+            "placeholder": "请选择一个Flag类型",
+            "dynamic": "动态Flag (强制启用Leet)",
+            "static": "静态Flag (无反作弊)",
+            "description": "请务必正确选择 Flag 类型, 在动态 Flag 模式下平台回使用Leet为每只队伍生成不同但是看起来相似的 Flag, 请你不要使用过短的 Flag",
+            "info": "<span>Flag支持模板变量</span><span>[team_hash] 部分会被替换成队伍唯一标识符</span><span>[team_name] 部分会被替换成队伍名称</span><span>[game_id] 部分会被替换成比赛ID</span><span>[uuid] 部分会被替换成随机UUID</span><span>[random_string_??] 部分会被替换成随机字符串, 其中??表示字符串长度</span><span>如果你在题目设置中选择了动态Flag, 将会启用Leet进行反作弊</span><span>模板变量部分不会被Leet替换</span>"
+        }
+    },
+    "success": {
+        "create": "题目创建成功",
+        "update": "题目更新成功"
+    },
+    "back": "返回题目列表",
+    "title": {
+        "create": "创建题目",
+        "update": "更新题目"
+    },
+    "info": "基本信息"
+}

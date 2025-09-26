@@ -11,6 +11,7 @@ type GameGroup struct {
 	GroupID      int64     `gorm:"column:group_id;primaryKey;autoIncrement" json:"group_id"`
 	GameID       int64     `gorm:"column:game_id;not null" json:"game_id"`
 	GroupName    string    `gorm:"column:group_name;not null" json:"group_name"`
+	InviteCode   string    `gorm:"column:invite_code;type:uuid;default:gen_random_uuid()" json:"invite_code"`
 	Description  *string   `gorm:"column:group_description" json:"group_description"`
 	DisplayOrder int32     `gorm:"column:display_order;default:0" json:"display_order"`
 	CreatedAt    time.Time `gorm:"column:created_at;default:CURRENT_TIMESTAMP" json:"created_at"`

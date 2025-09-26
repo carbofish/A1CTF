@@ -121,12 +121,23 @@ func AdminCreateChallenge(c *gin.Context) {
 		return
 	}
 
-	if err := k8stool.ValidContainerConfig(*payload.ContainerConfig); err != nil {
+	// 动态flag必须配置容器信息
+	if payload.FlagType == models.FlagTypeDynamic && payload.ContainerConfig == nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
-			"message": err.Error(),
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToCreateWithoutContainer"}),
 		})
 		return
+	}
+
+	if payload.ContainerConfig != nil {
+		if err := k8stool.ValidContainerConfig(*payload.ContainerConfig); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"code":    400,
+				"message": err.Error(),
+			})
+			return
+		}
 	}
 
 	payload.CreateTime = time.Now().UTC()

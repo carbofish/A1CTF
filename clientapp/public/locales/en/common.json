@@ -39,11 +39,11 @@
     },
     "toast": {
         "notice": {
-            "title": "A new announcement has been published, please check it out!",
-            "open": "Open Announcement"
+            "title": "New Announcement!",
+            "open": "Open & Check"
         },
         "hint": {
-            "title": "A new hint has been added to a challenge!",
+            "title": "New Hint!",
             "content": "💡 Challenge [{{name}}] has a new hint"
         },
         "copy": {

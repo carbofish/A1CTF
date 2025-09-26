@@ -32,14 +32,14 @@ export const ResourceSettings = (
     const resourceList: ResourceItem[] = [
         {
             type: SystemResourceType.FancyBackGroundIconBlack,
-            name: t("bg_icon1"),
-            formValue: "fancyBackGroundIconBlack"
+            name: t("bg_icon2"),
+            formValue: "fancyBackGroundIconBlack",
+            darkBackground: true,
         },
         {
             type: SystemResourceType.FancyBackGroundIconWhite,
-            name: t("bg_icon2"),
+            name: t("bg_icon1"),
             formValue: "fancyBackGroundIconWhite",
-            darkBackground: true,
         },
         {
             type: SystemResourceType.SvgIconDark,

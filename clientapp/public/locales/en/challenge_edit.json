@@ -1,0 +1,138 @@
+{
+    "container": {
+        "label": "Container",
+        "list": "Container List",
+        "name": "Container Name",
+        "delete": "Delete Container",
+        "image": "Image Address",
+        "env": {
+            "label": "Environment Variables",
+            "description": "In key-value pairs, separated by commas, e.g. KEY=VALUE,KEY2=VALUE2. Supports <a>template variables</a>"
+        },
+        "cmd": {
+            "label": "Startup Command",
+            "add": "Add Startup Command",
+            "description": "For example, bash -c \"time\" requires you to create three: bash, -c, time"
+        },
+        "limit": {
+            "cpu": {
+                "label": "CPU Limit (millicores)",
+                "description": "1000 millicores = 1 core"
+            },
+            "mem": {
+                "label": "Memory Limit (MB)",
+                "description": "Unit: MB"
+            },
+            "store": {
+                "label": "Storage Limit (MB)",
+                "description": "Unit: MB"
+            }
+        },
+        "port": {
+            "label": "Port Exposure",
+            "add": "Add Port",
+            "description": "Port name is the name of the port you want to expose, which will be shown to participants. The port number is the service port inside the container. A1CTF will automatically map it to a random host port. Note! Different containers in the same challenge cannot expose the same port simultaneously! For example: if Container1 and Container2 both expose port 80, it will cause mapping issues! Please choose different listening ports when building the docker image.",
+            "name": "Port Name",
+            "num": "Port Number",
+            "delete": "Delete Port"
+        },
+        "error": {
+            "name": "Please enter container name",
+            "image": "Please enter image address",
+            "port": {
+                "name": "Please enter port name",
+                "num": "Please enter a number",
+                "min": "Port number cannot be less than 1",
+                "max": "Port number cannot exceed 65535"
+            },
+            "cpu": "Please enter CPU limit",
+            "mem": "Please enter memory limit",
+            "store": "Please enter storage limit"
+        },
+        "add": "Add Container",
+        "empty": "You haven't added any containers yet",
+        "wan": {
+            "label": "Allow External Network",
+            "description": "If disabled, the container cannot access the external network"
+        },
+        "dns": {
+            "label": "DNS Outbound",
+            "description": "This option only takes effect when external network access is disabled"
+        }
+    },
+    "attachment": {
+        "label": "Attachment",
+        "list": "Attachment List",
+        "delete": "Delete Attachment",
+        "name": "Attachment Name",
+        "type": {
+            "label": "Attachment Type",
+            "select": "Please select an attachment type",
+            "static": "Static Attachment",
+            "dynamic": "Dynamic Attachment",
+            "remote": "Remote Attachment",
+            "pool": "Random Attachment Pool"
+        },
+        "url": "Attachment Download URL",
+        "id": "Attachment ID",
+        "placeholder": "Auto-filled after uploading a file",
+        "upload": {
+            "label": "Upload",
+            "success": "File \"{{name}}\" uploaded successfully",
+            "failed": "Auto save failed, please save manually"
+        },
+        "error": {
+            "name": "Attachment name must be at least 2 characters long",
+            "type": "A valid attachment type must be selected"
+        },
+        "add": "Add Attachment",
+        "empty": "You haven't added any attachments yet"
+    },
+    "form": {
+        "name": {
+            "label": "Challenge Name",
+            "description": "Please enter the challenge name",
+            "error": "Challenge name must be at least 2 characters long"
+        },
+        "category": {
+            "label": "Challenge Category",
+            "description": "Select a challenge category",
+            "error": "A valid challenge category must be selected"
+        },
+        "judge": {
+            "label": "Judging Mode",
+            "description": "Please select a judging mode",
+            "error": "A valid judging mode must be selected",
+            "text": "Text Match",
+            "script": {
+                "name": "Script Match",
+                "label": "Judging Script",
+                "placeholder": "Enter your judging script here",
+                "description": "If you choose dynamic judging, you must provide a judging script that meets the required format"
+            }
+        },
+        "description": {
+            "label": "Challenge Description",
+            "description": "Briefly introduce the challenge"
+        },
+        "flag": {
+            "error": "Flag must be at least 6 characters long",
+            "label": "Flag Type",
+            "placeholder": "Please select a flag type",
+            "dynamic": "Dynamic Flag (Leet enabled)",
+            "static": "Static Flag (No Anti-Cheat)",
+            "description": "Please make sure to choose the correct flag type. In dynamic flag mode, the platform will use Leet to generate different but similar flags for each team. Avoid using overly short flags.",
+            "info": "<span>Flags support template variables</span><span>[team_hash] will be replaced with the team's unique identifier</span><span>[team_name] will be replaced with the team name</span><span>[game_id] will be replaced with the competition ID</span><span>[uuid] will be replaced with a random UUID</span><span>[random_string_??] will be replaced with a random string, where ?? indicates the length</span><span>If you choose Dynamic Flag in the challenge settings, Leet anti-cheat will be enabled</span><span>Template variable parts will not be replaced by Leet</span>"
+        }
+    },
+    "success": {
+        "create": "Challenge created successfully",
+        "update": "Challenge updated successfully"
+    },
+    "back": "Back to Challenge List",
+    "title": {
+        "create": "Create Challenge",
+        "update": "Update Challenge"
+    },
+    "info": "Basic Challenge Info"
+}

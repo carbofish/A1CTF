@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime"
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -41,6 +44,7 @@ import (
 	"github.com/chenyahui/gin-cache/persist"
 
 	"github.com/gin-contrib/gzip"
+	"github.com/gin-contrib/pprof"
 )
 
 func StartLoopEvent() {
@@ -139,6 +143,7 @@ func main() {
 
 	// 初始化 k8s 节点名称和地址映射
 	k8stool.InitNodeAddressMap()
+	k8stool.InitNodePortRangeMap()
 
 	// 初始化数据库连接
 	dbtool.Init()
@@ -195,7 +200,10 @@ func main() {
 		zaphelper.Sugar.Warn("No trusted proxies set, using default. If you are using a reverse proxy, please set the trusted proxies in the config file.")
 	}
 
-	// pprof.Register(r)
+	// pprof system monitor
+	if viper.GetBool("system.pprof-enable") {
+		pprof.Register(r)
+	}
 
 	// 启动 Gin 框架性能监控
 	if viper.GetBool("monitoring.enabled") {
@@ -433,6 +441,12 @@ func main() {
 				CheckGameStarted:  false,
 			}), controllers.UserGetGameGroups)
 
+			// 组邀请码路由
+			userGameGroup.POST("/:game_id/group/invite-code", controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{
+				VisibleAfterEnded: true,
+				CheckGameStarted:  false,
+			}), controllers.PayloadValidator(webmodels.UserGetGroupInviteCodeGroupPayload{}), controllers.UserGetGroupInviteCodeGroup)
+
 			// 创建比赛队伍
 			userGameGroup.POST("/:game_id/createTeam", controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{
 				VisibleAfterEnded: false,
@@ -508,15 +522,17 @@ func main() {
 			systemGroup.GET("/logs/stats", controllers.GetSystemLogStats)
 		}
 	}
-
 	// 资源文件
-	r.Static("/assets", "./clientapp/build/client/assets")
+	// 为 /assets 启用预压缩（优先 .br 其后 .gz），否则回退到原文件
+	r.GET("/assets/*filepath", getPreCompressedFilePath("./clientapp/build/client/assets"))
 	r.StaticFile("/css/github-markdown-dark.css", "./clientapp/build/client/css/github-markdown-dark.css")
 	r.StaticFile("/css/github-markdown-light.css", "./clientapp/build/client/css/github-markdown-light.css")
 	r.StaticFile("/favicon.ico", viper.GetString("system.favicon"))
 	r.StaticFile("/js/cap_wasm.min.js", "./clientapp/build/client/js/cap_wasm.min.js")
-	r.Static("/images", "./clientapp/build/client/images")
-	r.Static("/locales", "./clientapp/build/client/locales")
+	// r.Static("/images", "./clientapp/build/client/images")
+	// r.Static("/locales", "./clientapp/build/client/locales")
+	r.GET("/images/*filepath", getPreCompressedFilePath("./clientapp/build/client/images"))
+	r.GET("/locales/*filepath", getPreCompressedFilePath("./clientapp/build/client/locales"))
 
 	r.NoRoute(func(c *gin.Context) {
 		if clientconfig.ClientConfig.GameActivityMode != "" {
@@ -567,4 +583,47 @@ func main() {
 	}
 
 	zaphelper.Logger.Info("Server exiting")
+}
+
+func getPreCompressedFilePath(root string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		requested := c.Param("filepath") // 以 / 开头
+		clean := filepath.Clean(requested)
+		if clean == "." || clean == "/" {
+			c.Status(http.StatusNotFound)
+			return
+		}
+		origPath := filepath.Join(root, clean)
+
+		acceptEnc := c.GetHeader("Accept-Encoding")
+		// 优先 brotli，再 gzip
+		var compressedPath string
+		var encoding string
+		if strings.Contains(acceptEnc, "br") {
+			if _, err := os.Stat(origPath + ".br"); err == nil {
+				compressedPath = origPath + ".br"
+				encoding = "br"
+			}
+		}
+		if compressedPath == "" && strings.Contains(acceptEnc, "gzip") {
+			if _, err := os.Stat(origPath + ".gz"); err == nil {
+				compressedPath = origPath + ".gz"
+				encoding = "gzip"
+			}
+		}
+
+		if compressedPath != "" {
+			// 根据原始扩展名设置正确的 Content-Type
+			if ct := mime.TypeByExtension(filepath.Ext(origPath)); ct != "" {
+				c.Header("Content-Type", ct)
+			}
+			c.Header("Content-Encoding", encoding)
+			c.Header("Vary", "Accept-Encoding")
+			c.File(compressedPath)
+			return
+		}
+
+		// 未找到预压缩文件则回退到原文件
+		c.File(origPath)
+	}
 }

@@ -20,10 +20,11 @@ func InsertNotice(gameID int64, category models.NoticeCategory, values []string)
 		Data:           pq.StringArray(values),
 	}
 
+	// 写入db是同步的，通知是异步的
 	if err := dbtool.DB().Create(&notice).Error; err != nil {
 		zaphelper.Logger.Error("Failed to insert notice", zap.Error(err))
 	} else {
-		AnnounceNotice(notice)
+		go func() { AnnounceNotice(notice) }()
 	}
 }
 

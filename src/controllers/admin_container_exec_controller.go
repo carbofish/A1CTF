@@ -150,7 +150,7 @@ type webSocketReader struct {
 	ctx       context.Context
 	inputChan chan []byte
 	cancel    context.CancelFunc
-	exitd     bool
+	exited    bool
 }
 
 func newWebSocketReader(ws *websocket.Conn, sizeQueue *TerminalSizeQueue, ctx context.Context) *webSocketReader {
@@ -161,19 +161,36 @@ func newWebSocketReader(ws *websocket.Conn, sizeQueue *TerminalSizeQueue, ctx co
 		ctx:       readerCtx,
 		inputChan: make(chan []byte, 1024),
 		cancel:    cancel,
-		exitd:     false,
+		exited:    false,
 	}
 	go reader.readLoop()
 	return reader
 }
 func (r *webSocketReader) forceExit() {
-	if !r.exitd {
-		select {
-		case r.inputChan <- []byte("exit\n"):
-		default:
-		}
+	if r.exited {
+		return
 	}
-	r.cancel()
+	r.exited = true
+
+	// 第一步：发 Ctrl+C (ASCII 3)
+	select {
+	case r.inputChan <- []byte{3}:
+	default:
+	}
+
+	// 给前台进程一点时间响应
+	time.Sleep(200 * time.Millisecond)
+
+	// 第二步：发 exit\n，退出 shell
+	select {
+	case r.inputChan <- []byte("exit\n"):
+	default:
+	}
+
+	// 第三步：兜底 cancel，强制关闭 exec
+	if r.cancel != nil {
+		r.cancel()
+	}
 }
 
 func (r *webSocketReader) readLoop() {
@@ -231,7 +248,6 @@ func (r *webSocketReader) readLoop() {
 					case "exit":
 						// 手动退出sh
 						r.forceExit()
-						r.exitd = true
 						return
 					}
 				}

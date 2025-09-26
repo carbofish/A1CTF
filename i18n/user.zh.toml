@@ -503,3 +503,15 @@ other = "邮件SMTP配置为空，请联系管理员配置"
 [SmtpConfigError]
 description = "邮件SMTP配置错误，请联系管理员配置"
 other = "邮件SMTP配置错误，请联系管理员配置"
+
+[GroupInviteCodeRequired]
+description = "请输入分组邀请码"
+other = "请输入分组邀请码"
+
+[InvalidGroupInviteCode]
+description = "无效的分组邀请码"
+other = "无效的分组邀请码"
+
+[GroupInviteCodeNotEnabled]
+description = "当前比赛未启用分组邀请码"
+other = "当前比赛未启用分组邀请码"

@@ -29,6 +29,7 @@ import {
 
 import { api } from 'utils/ApiHelper';
 import { ScoreAdjustmentInfo, CreateScoreAdjustmentPayload, AdminListTeamItem } from 'utils/A1API';
+import { useTranslation } from 'react-i18next';
 
 interface Team {
     team_id: number;
@@ -36,6 +37,9 @@ interface Team {
 }
 
 export function ScoreAdjustmentManagePage() {
+
+    const { t } = useTranslation("score_manage")
+    const { t: commonT } = useTranslation()
     const { game_id } = useParams<{ game_id: string }>();
     const navigate = useNavigate();
     const { theme } = useTheme();
@@ -82,7 +86,7 @@ export function ScoreAdjustmentManagePage() {
 
         api.admin.adminListTeams({
             game_id: gameId,
-            size: 50,
+            size: 1000,
             offset: 0,
             search: searchTerm
         }).then((res) => {
@@ -147,8 +151,8 @@ export function ScoreAdjustmentManagePage() {
             })) || [];
             setTeams(teamList);
         } catch (error) {
-            console.error('加载数据失败:', error);
-            toast.error('加载数据失败');
+            console.error(`${t("error")}:`, error);
+            toast.error(t("error"));
         } finally {
             setLoading(false);
         }
@@ -163,28 +167,28 @@ export function ScoreAdjustmentManagePage() {
         switch (type) {
             case 'cheat':
                 return {
-                    label: '作弊扣分',
+                    label: t("cheat"),
                     icon: <Ban className="w-3 h-3" />,
                     variant: 'destructive' as const,
                     color: 'text-red-500'
                 };
             case 'reward':
                 return {
-                    label: '奖励加分',
+                    label: t("reward"),
                     icon: <Gift className="w-3 h-3" />,
                     variant: 'default' as const,
                     color: 'text-green-500'
                 };
             case 'other':
                 return {
-                    label: '其他调整',
+                    label: t("other"),
                     icon: <AlertTriangle className="w-3 h-3" />,
                     variant: 'secondary' as const,
                     color: 'text-yellow-500'
                 };
             default:
                 return {
-                    label: '未知',
+                    label: t("unknow"),
                     icon: <AlertTriangle className="w-3 h-3" />,
                     variant: 'secondary' as const,
                     color: 'text-gray-500'
@@ -201,7 +205,7 @@ export function ScoreAdjustmentManagePage() {
     // 创建调整记录
     const handleCreate = async () => {
         api.admin.createScoreAdjustment(gameId, formData).then(() => {
-            toast.success('分数修正创建成功');
+            toast.success(t("create.success"));
             setDialogOpen(false);
             resetForm();
             loadData();
@@ -217,7 +221,7 @@ export function ScoreAdjustmentManagePage() {
             score_change: formData.score_change,
             reason: formData.reason
         }).then(() => {
-            toast.success('分数修正更新成功');
+            toast.success(t("update.success"));
             setDialogOpen(false);
             setEditingAdjustment(null);
             loadData();
@@ -227,7 +231,7 @@ export function ScoreAdjustmentManagePage() {
     // 删除调整记录
     const handleDelete = async (adjustmentId: number) => {
         api.admin.deleteScoreAdjustment(gameId, adjustmentId).then(() => {
-            toast.success('分数修正删除成功');
+            toast.success(t("delete.success"));
             loadData();
         })
     };
@@ -306,15 +310,15 @@ export function ScoreAdjustmentManagePage() {
                             className="bg-background/50 backdrop-blur-sm"
                         >
                             <CircleArrowLeft className="h-4 w-4" />
-                            返回比赛列表
+                            {t("back")}
                         </Button>
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
                                 <Calculator className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold">分数修正管理</h1>
-                                <p className="text-sm text-muted-foreground">管理比赛分数调整记录</p>
+                                <h1 className="text-2xl font-bold">{t("title")}</h1>
+                                <p className="text-sm text-muted-foreground">{t("detail")}</p>
                             </div>
                         </div>
                     </div>
@@ -323,7 +327,7 @@ export function ScoreAdjustmentManagePage() {
                         <div className="relative max-w-md">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="搜索队伍名称或原因..."
+                                placeholder={t("search")}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10"
@@ -334,24 +338,24 @@ export function ScoreAdjustmentManagePage() {
                             <DialogTrigger asChild>
                                 <Button onClick={openCreateDialog} className="flex items-center gap-2">
                                     <Plus className="w-4 h-4" />
-                                    添加修正
+                                    {t("create.title")}
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-md">
                                 <DialogHeader>
                                     <DialogTitle>
-                                        {editingAdjustment ? '编辑分数修正' : '添加分数修正'}
+                                        {editingAdjustment ? t("update.dialog") : t("create.dialog")}
                                     </DialogTitle>
                                 </DialogHeader>
                                 <div className="space-y-4">
                                     {!editingAdjustment && (
                                         <div className="space-y-2">
-                                            <Label htmlFor="team">队伍</Label>
+                                            <Label htmlFor="team">{t("team.label")}</Label>
                                             <div className="relative team-search-container">
                                                 <div className="relative">
                                                     <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                                     <Input
-                                                        placeholder="搜索队伍名称..."
+                                                        placeholder={t("team.search")}
                                                         value={teamSearchTerm}
                                                         onChange={(e) => {
                                                             setTeamSearchTerm(e.target.value);
@@ -367,7 +371,7 @@ export function ScoreAdjustmentManagePage() {
                                                     <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-lg max-h-48 overflow-y-auto">
                                                         {isSearchingTeams ? (
                                                             <div className="p-3 text-center text-sm text-muted-foreground">
-                                                                搜索中...
+                                                                {t("team.searching")}
                                                             </div>
                                                         ) : teamSearchResults.length > 0 ? (
                                                             teamSearchResults.map((team) => (
@@ -382,7 +386,7 @@ export function ScoreAdjustmentManagePage() {
                                                             ))
                                                         ) : (
                                                             <div className="p-3 text-center text-sm text-muted-foreground">
-                                                                未找到匹配的队伍
+                                                                {t("team.empty")}
                                                             </div>
                                                         )}
                                                     </div>
@@ -392,7 +396,7 @@ export function ScoreAdjustmentManagePage() {
                                             {/* 显示已选择的队伍 */}
                                             {formData.team_id > 0 && (
                                                 <div className="text-sm text-muted-foreground">
-                                                    已选择: {getSelectedTeamName()} (ID: {formData.team_id})
+                                                    {t("team.selected")}: {getSelectedTeamName()} (ID: {formData.team_id})
                                                 </div>
                                             )}
                                         </div>
@@ -400,7 +404,7 @@ export function ScoreAdjustmentManagePage() {
 
                                     {editingAdjustment && (
                                         <div className="space-y-2">
-                                            <Label>队伍</Label>
+                                            <Label>{t("team.label")}</Label>
                                             <div className="p-3 bg-muted rounded-md">
                                                 <div className="font-medium">{editingAdjustment.team_name}</div>
                                                 <div className="text-xs text-muted-foreground">ID: {editingAdjustment.team_id}</div>
@@ -409,7 +413,7 @@ export function ScoreAdjustmentManagePage() {
                                     )}
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="type">修正类型</Label>
+                                        <Label htmlFor="type">{t("type")}</Label>
                                         <Select
                                             value={formData.adjustment_type}
                                             onValueChange={(value) => setFormData(prev => ({ ...prev, adjustment_type: value as any }))}
@@ -418,15 +422,15 @@ export function ScoreAdjustmentManagePage() {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="cheat">作弊扣分</SelectItem>
-                                                <SelectItem value="reward">奖励加分</SelectItem>
-                                                <SelectItem value="other">其他调整</SelectItem>
+                                                <SelectItem value="cheat">{t("cheat")}</SelectItem>
+                                                <SelectItem value="reward">{t("rewart")}</SelectItem>
+                                                <SelectItem value="other">{t("other")}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="score">分数变化</Label>
+                                        <Label htmlFor="score">{t("change.label")}</Label>
                                         <Input
                                             id="score"
                                             type="number"
@@ -449,17 +453,17 @@ export function ScoreAdjustmentManagePage() {
                                                 }
                                                 // 对于 '-', '.', '-.' 等中间状态，只更新显示值，不更新数字状态
                                             }}
-                                            placeholder="输入分数变化量（正数为加分，负数为扣分）"
+                                            placeholder={t("change.placeholder")}
                                         />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="reason">修正原因</Label>
+                                        <Label htmlFor="reason">{t("reason.label")}</Label>
                                         <Textarea
                                             id="reason"
                                             value={formData.reason}
                                             onChange={(e) => setFormData(prev => ({ ...prev, reason: e.target.value }))}
-                                            placeholder="请输入修正原因..."
+                                            placeholder={t("reason.placeholder")}
                                             rows={3}
                                         />
                                     </div>
@@ -470,14 +474,14 @@ export function ScoreAdjustmentManagePage() {
                                             onClick={() => setDialogOpen(false)}
                                             className="flex-1"
                                         >
-                                            取消
+                                            {commonT("cancel")}
                                         </Button>
                                         <Button
                                             onClick={editingAdjustment ? handleUpdate : handleCreate}
                                             className="flex-1"
                                             disabled={!formData.team_id || !formData.reason}
                                         >
-                                            {editingAdjustment ? '更新' : '创建'}
+                                            {editingAdjustment ? t("update.title") : t("create.title")}
                                         </Button>
                                     </div>
                                 </div>
@@ -495,28 +499,28 @@ export function ScoreAdjustmentManagePage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Calculator className="w-5 h-5" />
-                                    分数修正记录
+                                    {t("history.title")}
                                     <Badge variant="outline" className="ml-auto">
-                                        {filteredAdjustments.length} 条记录
+                                        {t("history.count", { count: filteredAdjustments.length })}
                                     </Badge>
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 {loading ? (
                                     <div className="flex items-center justify-center py-8">
-                                        <div className="text-muted-foreground">加载中...</div>
+                                        <div className="text-muted-foreground">{commonT("loading")}</div>
                                     </div>
                                 ) : filteredAdjustments.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-8 text-center">
                                         <Calculator className="w-12 h-12 text-muted-foreground mb-4" />
-                                        <h3 className="text-lg font-medium mb-2">暂无分数修正记录</h3>
+                                        <h3 className="text-lg font-medium mb-2">{t("history.empty.1")}</h3>
                                         <p className="text-muted-foreground mb-4">
-                                            {searchTerm ? '没有找到符合条件的记录' : '还没有任何分数修正记录'}
+                                            {searchTerm ? t("history.empty.2") : t("history.empty.3")}
                                         </p>
                                         {!searchTerm && (
                                             <Button onClick={openCreateDialog}>
                                                 <Plus className="w-4 h-4 mr-2" />
-                                                添加第一条记录
+                                                {t("create.empty")}
                                             </Button>
                                         )}
                                     </div>
@@ -524,14 +528,14 @@ export function ScoreAdjustmentManagePage() {
                                     <Table>
                                         <TableHeader>
                                             <TableRow>
-                                                <TableHead>编号</TableHead>
-                                                <TableHead>队伍名称</TableHead>
-                                                <TableHead>修正类型</TableHead>
-                                                <TableHead>分数变化</TableHead>
-                                                <TableHead>修正原因</TableHead>
-                                                <TableHead>修正时间</TableHead>
-                                                <TableHead>操作者</TableHead>
-                                                <TableHead className="text-right">操作</TableHead>
+                                                <TableHead>{t("id")}</TableHead>
+                                                <TableHead>{t("team.label")}</TableHead>
+                                                <TableHead>{t("type")}</TableHead>
+                                                <TableHead>{t("change.label")}</TableHead>
+                                                <TableHead>{t("reason.label")}</TableHead>
+                                                <TableHead>{t("operation.time")}</TableHead>
+                                                <TableHead>{t("operation.operator")}</TableHead>
+                                                <TableHead className="text-right">{t("operation.label")}</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -607,15 +611,15 @@ export function ScoreAdjustmentManagePage() {
             <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>确认删除分数修正记录</AlertDialogTitle>
+                        <AlertDialogTitle>{t("delete.title")}</AlertDialogTitle>
                         <AlertDialogDescription className="space-y-2">
-                            <div>确定要删除这条分数修正记录吗？此操作无法撤销。</div>
+                            <div>{t("delete.dialog")}</div>
                             {deletingAdjustmentInfo && (
                                 <div className="mt-3 p-3 bg-muted rounded-md text-sm">
-                                    <div><strong>记录ID:</strong> #{deletingAdjustmentInfo.adjustment_id}</div>
-                                    <div><strong>队伍:</strong> {deletingAdjustmentInfo.team_name}</div>
-                                    <div><strong>分数变化:</strong> {deletingAdjustmentInfo.score_change >= 0 ? '+' : ''}{deletingAdjustmentInfo.score_change}</div>
-                                    <div><strong>原因:</strong> {deletingAdjustmentInfo.reason}</div>
+                                    <div><strong>{t("id")}:</strong> #{deletingAdjustmentInfo.adjustment_id}</div>
+                                    <div><strong>{t("team.label")}:</strong> {deletingAdjustmentInfo.team_name}</div>
+                                    <div><strong>{t("change.label")}:</strong> {deletingAdjustmentInfo.score_change >= 0 ? '+' : ''}{deletingAdjustmentInfo.score_change}</div>
+                                    <div><strong>{t("reason.label")}:</strong> {deletingAdjustmentInfo.reason}</div>
                                 </div>
                             )}
                         </AlertDialogDescription>
@@ -626,13 +630,13 @@ export function ScoreAdjustmentManagePage() {
                             setDeletingAdjustmentId(null);
                             setDeletingAdjustmentInfo(null);
                         }}>
-                            取消
+                            {commonT("cancel")}
                         </AlertDialogCancel>
                         <AlertDialogAction
                             onClick={confirmDelete}
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                            确认删除
+                            {commonT("confirm")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

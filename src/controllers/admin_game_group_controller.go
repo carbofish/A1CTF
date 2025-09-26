@@ -14,7 +14,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// AdminGetGameGroups 获取比赛分组列表
 func AdminGetGameGroups(c *gin.Context) {
 	gameIDStr := c.Param("game_id")
 	gameID, err := strconv.ParseInt(gameIDStr, 10, 64)
@@ -27,7 +26,7 @@ func AdminGetGameGroups(c *gin.Context) {
 	}
 
 	var groups []models.GameGroup
-	if err := dbtool.DB().Where("game_id = ?", gameID).Order("display_order ASC, created_at ASC").Find(&groups).Error; err != nil {
+	if err := dbtool.DB().Where("game_id = ?", gameID).Order("display_order ASC, created_at ASC").Preload("Teams").Find(&groups).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
 			Code:    500,
 			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadGameGroups"}),
@@ -35,13 +34,28 @@ func AdminGetGameGroups(c *gin.Context) {
 		return
 	}
 
+	result := make([]webmodels.AdminGameGroupItem, 0)
+
+	for _, group := range groups {
+		groupItem := webmodels.AdminGameGroupItem{
+			GroupID:     group.GroupID,
+			GameID:      group.GameID,
+			GroupName:   group.GroupName,
+			InviteCode:  group.InviteCode,
+			Description: group.Description,
+			PeopleCount: int64(len(group.Teams)),
+			CreatedAt:   group.CreatedAt,
+			UpdatedAt:   group.UpdatedAt,
+		}
+		result = append(result, groupItem)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
-		"data": groups,
+		"data": result,
 	})
 }
 
-// AdminCreateGameGroup 创建比赛分组
 func AdminCreateGameGroup(c *gin.Context) {
 	gameIDStr := c.Param("game_id")
 	gameID, err := strconv.ParseInt(gameIDStr, 10, 64)
@@ -99,7 +113,6 @@ func AdminCreateGameGroup(c *gin.Context) {
 	})
 }
 
-// AdminUpdateGameGroup 更新比赛分组
 func AdminUpdateGameGroup(c *gin.Context) {
 	gameIDStr := c.Param("game_id")
 	gameID, err := strconv.ParseInt(gameIDStr, 10, 64)
@@ -176,7 +189,6 @@ func AdminUpdateGameGroup(c *gin.Context) {
 	})
 }
 
-// AdminDeleteGameGroup 删除比赛分组
 func AdminDeleteGameGroup(c *gin.Context) {
 	gameIDStr := c.Param("game_id")
 	gameID, err := strconv.ParseInt(gameIDStr, 10, 64)

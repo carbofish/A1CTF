@@ -1,4 +1,4 @@
-import { Award, Flag, Medal } from "lucide-react";
+import { Award, Flag, Medal, Tag } from "lucide-react";
 import { MacScrollbar } from "mac-scrollbar";
 import { useTheme } from "next-themes";
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
@@ -10,12 +10,15 @@ import { GameScoreboardData, PaginationInfo, TeamScore, UserSimpleGameChallenge 
 import AvatarUsername from "./modules/AvatarUsername";
 import { challengeCategoryIcons } from "utils/ClientAssets";
 import { useTranslation } from "react-i18next";
+import { Badge } from "./ui/badge";
+import ScrollingText from "./modules/ScrollingText";
 
 export function ScoreTable(
     {
         scoreBoardModel,
         setShowUserDetail,
         challenges,
+        showGroupTags,
         pageSize: _pageSize,
         pagination,
         curPage,
@@ -28,6 +31,7 @@ export function ScoreTable(
         pageSize: number,
         pagination: PaginationInfo | undefined,
         curPage: number,
+        showGroupTags: boolean,
         setCurPage: Dispatch<SetStateAction<number>>,
         isLoading: boolean
     }
@@ -213,7 +217,7 @@ export function ScoreTable(
                     </div>
                 )}
 
-                <div id="left-container" className="min-w-[300px] max-w-[18vw] flex-none overflow-hidden">
+                <div id="left-container" className="min-w-[300px] max-w-[25vw] flex-none overflow-hidden">
                     <div className="flex flex-col overflow-hidden">
                         <div className={`w-full border-b-2 h-12 border-t-2 transition-[border-color] duration-300 flex items-center justify-center`}>
                             {/* <span className="font-bold">Username</span> */}
@@ -230,12 +234,22 @@ export function ScoreTable(
                                         </div>
                                         <AvatarUsername avatar_url={item.team_avatar} username={item.team_name ?? ""} size={32} fontSize={14} />
                                     </div>
-                                    <div className="flex-1 overflow-hidden select-none">
-                                        <a className="text-nowrap text-ellipsis overflow-hidden hover:underline focus:underline" data-tooltip-id="challengeTooltip" data-tooltip-html={`<div class='text-sm'>${item.team_name} - ${item.score} pts</div>`}
+                                    <div className="flex-1 overflow-hidden select-none flex gap-2 items-center">
+                                        <a className="text-nowrap min-w-[25%] text-ellipsis overflow-hidden hover:underline focus:underline" data-tooltip-id="challengeTooltip" data-tooltip-html={`<div class='text-sm'>${item.team_name} - ${item.score} pts</div>`}
                                             onClick={() => {
                                                 setShowUserDetail(item || {})
                                             }}
                                         >{item.team_name}</a>
+                                        { item.group_id && showGroupTags && (
+                                            <Badge 
+                                                className="text-xs p-0 px-1 bg-primary/10 overflow-hidden hover:bg-primary/10 text-primary font-medium select-none flex gap-1 items-center"
+                                                data-tooltip-id="challengeTooltip" 
+                                                data-tooltip-html={`<div class='text-sm'>${item.group_name}</div>`}
+                                            >
+                                                <Tag size={14} />
+                                                <ScrollingText text={item.group_name ?? "None"} speed={10} fade={5} leftScroll={3} rightScroll={5} />
+                                            </Badge>
+                                        ) }
                                     </div>
                                     <div className="justify-end gap-1 hidden lg:flex">
                                         <span>{item.score}</span>

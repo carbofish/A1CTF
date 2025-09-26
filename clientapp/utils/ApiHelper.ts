@@ -89,7 +89,7 @@ const handleGlobalError = (error: any, config?: any) => {
             } else if (data.detail) {
                 errorMessage = data.detail;
             }
-        } else if (typeof data === 'string') {
+        } else if (typeof data === 'string' && data.length > 0) {
             errorMessage = data;
         } else {
             // 根据状态码提供默认错误信息
@@ -185,7 +185,7 @@ export interface ErrorMessage {
 // 标记错误为已处理，防止全局错误处理器重复处理
 export const markErrorAsHandled = (error: any) => {
     if (error && typeof error === 'object') {
-        
+
         error._isHandled = true;
     }
     return error;

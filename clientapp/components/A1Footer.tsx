@@ -29,7 +29,7 @@ const A1Footer = () => {
                 {clientConfig.systemICP ? (
                     <>
                         <span className="ml-2 mr-2 hidden md:block">/</span>
-                        <a className="hover:underline decoration-2 underline-offset-4" onClick={() => {
+                        <a className="hover:underline decoration-2 underline-offset-4 hidden md:block" onClick={() => {
                             window.open("http://beian.miit.gov.cn/")
                         }}>{clientConfig.systemICP}</a>
                     </>

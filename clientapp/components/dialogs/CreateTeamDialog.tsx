@@ -35,11 +35,13 @@ import { api } from "utils/ApiHelper";
 import { toast } from 'react-toastify/unstyled';
 import { useTranslation } from "react-i18next";
 import { GameGroup } from "utils/A1API"
+import { useGame } from "hooks/UseGame"
 
-export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, children: React.ReactNode }> = ({ callback: updateTeam, gameID , children }) => {
+export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, children: React.ReactNode }> = ({ callback: updateTeam, gameID, children }) => {
 
     const { t } = useTranslation("teams")
     const [groups, setGroups] = useState<GameGroup[]>([])
+    const { gameInfo } = useGame(gameID)
     const [loadingGroups, setLoadingGroups] = useState(false)
 
     const formSchema = z.object({
@@ -49,6 +51,7 @@ export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, 
         slogan: z.string(),
         description: z.string().optional(),
         groupId: z.string().optional(),
+        invite_code: gameInfo?.group_invite_code_enabled ? z.string().uuid() : z.string().optional(),
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -57,6 +60,7 @@ export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, 
             teamName: "",
             slogan: "",
             groupId: undefined,
+            invite_code: undefined,
         },
     })
 
@@ -83,7 +87,8 @@ export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, 
         const payload: any = {
             name: values.teamName,
             slogan: values.slogan,
-            description: values.description ?? ""
+            description: values.description ?? "",
+            invite_code: values.invite_code ?? undefined,
         }
 
         // 如果选择了分组，添加group_id
@@ -110,9 +115,9 @@ export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, 
                 onInteractOutside={(e) => e.preventDefault()}
             >
                 <DialogHeader>
-                    <DialogTitle>{ t("create_team") }</DialogTitle>
+                    <DialogTitle>{t("create_team")}</DialogTitle>
                     <DialogDescription>
-                        { t("create_team_desc") }
+                        {t("create_team_desc")}
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
@@ -122,12 +127,12 @@ export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, 
                             name="teamName"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{ t("team_name") }</FormLabel>
+                                    <FormLabel>{t("team_name")}</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="a1team" {...field} />
+                                        <Input placeholder="a1team" {...field} autoComplete="off" />
                                     </FormControl>
                                     <FormDescription>
-                                        { t("team_name_desc") }
+                                        {t("team_name_desc")}
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
@@ -135,7 +140,7 @@ export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, 
                         />
 
                         {/* 分组选择 */}
-                        {groups.length > 0 && (
+                        {groups.length > 0 && !gameInfo?.group_invite_code_enabled && (
                             <FormField
                                 control={form.control}
                                 name="groupId"
@@ -166,12 +171,28 @@ export const CreateTeamDialog: React.FC<{ callback: () => void, gameID: number, 
                             />
                         )}
 
+                        {gameInfo?.group_invite_code_enabled && (
+                            <FormField
+                                control={form.control}
+                                name="invite_code"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{t("group_invite_code")}</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="9f96ec31....." {...field} autoComplete="off" />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+
                         <FormField
                             control={form.control}
                             name="slogan"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>{ t("slogan") }</FormLabel>
+                                    <FormLabel>{t("slogan")}</FormLabel>
                                     <FormControl>
                                         <Textarea placeholder="We can win!" {...field} />
                                     </FormControl>

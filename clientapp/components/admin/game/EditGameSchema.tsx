@@ -80,6 +80,7 @@ export const EditGameFormSchema = z.object({
         })
     ).optional(),
     visible: z.boolean(),
+    group_invite_code_enable: z.boolean(),
     challenges: z.array(
         z.object({
             challenge_id: z.number(),

@@ -1,4 +1,4 @@
-import { Mdx } from "components/MdxCompoents";
+import LazyMdxCompoents from "components/modules/LazyMdxCompoents";
 import dayjs from "dayjs";
 import { BringToFront, CalendarClock } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -32,7 +32,7 @@ export default function ChallengeHintCard(
                 </div>
                 <div className="border-t border-dashed border-foreground/10" />
                 <div className="prose prose-sm sm:prose-base max-w-none text-foreground/90 dark:text-foreground/80">
-                    <Mdx source={hint} />
+                    <LazyMdxCompoents source={hint} />
                 </div>
             </div>
         </div>

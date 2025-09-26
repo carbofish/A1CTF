@@ -131,7 +131,15 @@ func HandleContainerStopTask(ctx context.Context, t *asynq.Task) error {
 		AllowDNS: task.Challenge.AllowDNS,
 	}
 
-	err := k8stool.DeletePod(&podInfo)
+	flatPorts := make([]int32, 0)
+
+	for _, port := range task.ContainerExposeInfos {
+		for _, port2 := range port.ExposePorts {
+			flatPorts = append(flatPorts, port2.Port)
+		}
+	}
+
+	err := k8stool.DeletePod(&podInfo, flatPorts)
 	if err != nil {
 		LogContainerOperation(nil, nil, models.ActionContainerStopping, task.ContainerID, map[string]interface{}{
 			"game_id":               task.GameID,
@@ -198,7 +206,15 @@ func HandleContainerFailedTask(ctx context.Context, t *asynq.Task) error {
 		AllowDNS: task.Challenge.AllowDNS,
 	}
 
-	err := k8stool.DeletePod(&podInfo)
+	flatPorts := make([]int32, 0)
+
+	for _, port := range task.ContainerExposeInfos {
+		for _, port2 := range port.ExposePorts {
+			flatPorts = append(flatPorts, port2.Port)
+		}
+	}
+
+	err := k8stool.DeletePod(&podInfo, flatPorts)
 	if err != nil {
 		LogContainerOperation(nil, nil, models.ActionContainerFailed, task.ContainerID, map[string]interface{}{
 			"game_id":               task.GameID,

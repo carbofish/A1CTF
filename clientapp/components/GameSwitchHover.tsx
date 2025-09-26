@@ -1,137 +1,173 @@
-import { motion, AnimatePresence, useAnimate } from 'framer-motion';
-import { useEffect, useState } from 'react';
 import { useGameSwitchContext } from "contexts/GameSwitchContext";
-import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export default function GameSwitchHover({ animation }: { animation: boolean }) {
+import { animated, useTransition } from "@react-spring/web";
+import { useCallback } from "react";
+import { useGlobalVariableContext } from "contexts/GlobalVariableContext";
+import { Flag, LoaderCircle } from "lucide-react";
+
+export default function GameSwitchHover() {
 
     const { t } = useTranslation()
     const { isChangingGame, curSwitchingGame, posterData } = useGameSwitchContext();
+    const { clientConfig } = useGlobalVariableContext();
 
-    const [shouldAnime, setShouldAnime] = useState(false)
-    const [animeMethod, setAnimeMethod] = useState("easeInOut")
-    const [exitAnimationTime, setExitAnimationTime] = useState(0)
+    const DELAY = 300;
 
-    const [scope, _animate] = useAnimate()
+    const transition_for_bg = useTransition(isChangingGame, {
+        from: {
+            opacity: 0,
+        },
+        enter: {
+            opacity: 1,
+            config: { tension: 220, friction: 20, clamp: true }
+        },
+        leave: [
+            { delay: DELAY },
+            { 
+                opacity: 0,
+                config: { tension: 220, friction: 20, clamp: true }
+            },
+        ],
+    });
 
-    useEffect(() => {
-        setShouldAnime(true)
-        setAnimeMethod("easeInOut")
-        setExitAnimationTime(0.4)
-    }, [])
+    const transitions = useTransition(isChangingGame, {
+        from: {
+            opacity: 0.4,
+            backdropFilter: "blur(2px)"
+        },
+        enter: {
+            opacity: 1,
+            backdropFilter: "blur(10px)",
+            config: { tension: 220, friction: 100, clamp: true }
+        },
+        leave: [
+            { delay: DELAY },
+            { 
+                opacity: 0, backdropFilter: "blur(0px)",
+                config: { tension: 220, friction: 20, clamp: true }
+            },
+        ],
+    });
 
-    return (
-        <AnimatePresence>
-            {isChangingGame && (
-                <motion.div className='absolute w-screen h-screen top-0 left-0 z-[100] bg-background overflow-hidden' key="exitAnime"
-                    initial={{
-                        translateY: "-100%"
-                    }}
-                    animate={{
-                        translateY: "0%"
-                    }}
-                    exit={{
-                        translateY: "-100%"
-                    }}
-                    transition={{
-                        ease: animeMethod,
-                        duration: shouldAnime ? exitAnimationTime : 0
+    const transitions_left_logo = useTransition(isChangingGame, {
+        from: {
+            opacity: 0,
+            y: -8,                 // 数值 spring，用来拼 transform
+            scale: 0.98,
+            rotate: '0deg'
+        },
+        enter: [
+            { delay: DELAY },        // enter 延迟
+            {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                rotate: '10deg',
+                config: { tension: 300, friction: 80 }
+            }
+        ],
+        leave: {
+            opacity: 0,            // 退出淡化
+            y: -8,                 // 轻微上移（也可以改成 x: 12 侧移）
+            scale: 0.98,
+            rotate: '0deg',
+            config: { tension: 280, friction: 22 }  // 更快更干脆
+        }
+    });
+
+    const pickIconSrc = useCallback((): string | null => {
+        if (!curSwitchingGame || !clientConfig) return null;
+        const icon = curSwitchingGame.dark_icon ?? clientConfig.SVGIconDark;
+        if (!icon) return null;
+        return icon
+    }, [curSwitchingGame, clientConfig]);
+
+    return <div className="pointer-events-none">
+        {transition_for_bg((style, visible) => (
+            visible && (
+                <animated.div
+                    className="absolute top-0 left-0 h-screen w-screen z-40"
+                    style={{
+                        backgroundImage: `url(${posterData})`,
+                        backgroundSize: "cover",
+                        opacity: style.opacity,
                     }}
                 >
-                    <motion.div ref={scope} className='w-full h-full bg-cover'
-                        key="exitscale"
+                </animated.div>
+            )
+        ))}
+
+        {transitions((style, visible) => (
+            visible && (
+                <animated.div className="absolute top-0 left-0 h-screen w-screen bg-black/70 z-40" style={{
+                    opacity: style.opacity,
+                    backdropFilter: style.backdropFilter
+                }} />
+            )
+        ))}
+
+        {transitions_left_logo((style, visible) => (
+            visible && (
+                <animated.div
+                    className="absolute top-25 left-25 z-40 flex gap-6 items-center"
+                    style={{ opacity: style.opacity }}
+                >
+                    <animated.div
                         style={{
-                            backgroundImage: `url(${posterData})`,
-                            // backgroundSize: "100%"
-                        }}
-                        initial={{
-                            scale: 1
-                        }}
-                        animate={{
-                            scale: 1.08
-                        }}
-                        transition={{
-                            duration: animation ? 3 : (shouldAnime ? exitAnimationTime : 0),
-                            ease: "easeInOut"
-                            // delay: 0.6
+                            rotate: style.rotate,
+                            transform: style.y.to((vy) => `translateY(${vy}px)`) // 顶部旗子
                         }}
                     >
-                    </motion.div>
-                    <motion.div
-                        className='absolute w-screen h-screen top-0 left-0'
-                        initial={{
-                            backdropFilter: "blur(5px)",
-                            backgroundColor: "rgba(0, 0, 0, 0)"
-                        }}
-                        animate={{
-                            backdropFilter: "blur(8px)",
-                            backgroundColor: "rgba(0, 0, 0, 0.4)"
-                        }}
-                        transition={{
-                            duration: animation ? 3 : (shouldAnime ? exitAnimationTime : 0),
-                            ease: "easeInOut"
-                            // delay: 0.6
+                        <Flag className="w-30 h-30 text-white" />
+                    </animated.div>
+                    <animated.div
+                        className="flex flex-col gap-1"
+                        style={{
+                            transformOrigin: 'left',
+                            transform: style.y.to((vy) => `translateY(${vy}px)`)
                         }}
                     >
-                    </motion.div>
-                    <div className='absolute top-0 left-0 w-screen h-screen flex items-center justify-center'>
-                        <motion.div
-                            // initial={{ scale: 1, translateY: fromY }}
-                            // animate={{ scale: 1, translateY: 0 }}
-                            // transition={{
-                            //     duration: shouldAnime ? 0.5 : 0,
-                            //     ease: 'easeInOut',
-                            //     delay: shouldAnime ? 0.4 : 0
-                            // }}
-                            className="flex flex-col z-20 items-center text-white p-10 w-full overflow-hidden"
-                        >
-                            <motion.div
-                                initial={{
-                                    opacity: 0,
-                                    translateY: "-10%"
-                                }}
-                                animate={{
-                                    opacity: 1,
-                                    translateY: "0%"
-                                }}
-                                transition={{
-                                    duration: animation ? 0.5 : 0,
-                                    delay: animation ? 0.5 : 0
-                                }}
-                            >
-                                <img
-                                    className="mb-5 rounded-xl shadow-lg flex-shrink-0 flex-grow-0"
-                                    src={posterData}
-                                    alt="game-cover"
-                                    width={700}
-                                    height={100}
-                                />
-                            </motion.div>
-                            <motion.div className='flex flex-col w-full items-center overflow-hidden'
-                                initial={{
-                                    height: "0px"
-                                }}
-                                animate={{
-                                    height: "100%"
-                                }}
-                                transition={{
-                                    duration: animation ? 0.5 : 0,
-                                    delay: animation ? 1.2 : 0,
-                                    ease: "easeInOut"
-                                }}
-                            >
-                                <span className="text-3xl font-bold">{curSwitchingGame.name}</span>
-                                <p className="mt-2">{curSwitchingGame.summary}</p>
-                                <div className='flex mt-4'>
-                                    <Loader2 className="animate-spin" />
-                                    <span className="font-bold ml-3">{t("loading")}</span>
-                                </div>
-                            </motion.div>
-                        </motion.div>
-                    </div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-    );
+                        <span className="text-3xl text-orange-400 font-bold italic">Game</span>
+                        <span className="text-5xl text-white font-bold italic ">{curSwitchingGame.name}</span>
+                    </animated.div>
+                </animated.div>
+            )
+        ))}
+
+        {transitions_left_logo((style, visible) => (
+            visible && (
+                <animated.div
+                    className="absolute bottom-25 right-25 z-40 flex gap-6 items-center"
+                    style={{
+                        opacity: style.opacity,
+                        transform: style.y.to((vy) => `translateY(${-vy}px)`)
+                    }}
+                >
+                    <animated.div
+                        className="flex flex-col gap-1"
+                        style={{ transform: style.y.to((vy) => `translateY(${-vy}px)`) }}
+                    >
+                        <span className="text-3xl text-orange-400 font-bold italic text-right">Description</span>
+                        <span className="text-5xl text-white font-bold italic ">{curSwitchingGame.summary?.length ? curSwitchingGame.summary : "看起来这个比赛的主人很懒, 没有留下简介"}</span>
+                    </animated.div>
+                    <animated.div style={{ transform: style.y.to((vy) => `translateY(${-vy}px)`) }}>
+                        <img src={pickIconSrc() ?? ''} className="w-40 h-40" />
+                    </animated.div>
+                </animated.div>
+            )
+        ))}
+
+        {transitions_left_logo((style, visible) => (
+            visible && (
+                <animated.div
+                    className="absolute top-25 right-25 z-40 flex gap-3 items-center h-32"
+                    style={{ opacity: style.opacity, transform: style.y.to((vy) => `translateY(${vy}px)`) }}
+                >
+                    <LoaderCircle className="h-10 w-10 text-white animate-spin" />
+                    <span className="text-white text-2xl">Loading</span>
+                </animated.div>
+            )
+        ))}
+    </div>
 }

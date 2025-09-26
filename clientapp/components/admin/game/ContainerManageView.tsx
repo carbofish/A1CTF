@@ -11,7 +11,7 @@ import {
     useReactTable,
 } from "@tanstack/react-table"
 
-import { ArrowLeft, ArrowRight, ArrowUpDown, ChevronDown, MoreHorizontal, CopyIcon, ClockIcon, ClipboardList, ZapOff, RefreshCw, Terminal, Package } from "lucide-react"
+import { ArrowLeft, ArrowRight, ArrowUpDown, ChevronDown, MoreHorizontal, CopyIcon, ClockIcon, ClipboardList, ZapOff, Terminal, Package, RefreshCw } from "lucide-react"
 
 import * as React from "react"
 
@@ -24,6 +24,7 @@ import {
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuTrigger,
+    DropdownMenuGroup,
 } from "components/ui/dropdown-menu"
 
 import { Input } from "components/ui/input"
@@ -36,7 +37,7 @@ import {
     TableRow,
 } from "components/ui/table"
 
-import { api } from "utils/ApiHelper";
+import { api, createSkipGlobalErrorConfig } from "utils/ApiHelper";
 import { Badge } from "components/ui/badge";
 import {
     AlertDialog,
@@ -55,13 +56,13 @@ import {
     HoverCard,
     HoverCardContent,
     HoverCardTrigger,
-} from "components/ui/hover-card"
-import { AxiosResponse } from "axios"
-import { Label } from "components/ui/label"
-import copy from "copy-to-clipboard"
-import { copyWithResult } from "utils/ToastUtil"
-import ContainerTerminal from "components/modules/terminal/Terminal"
-import { DropdownMenuGroup } from "@radix-ui/react-dropdown-menu"
+} from "components/ui/hover-card";
+import { AxiosResponse } from "axios";
+import { Label } from "components/ui/label";
+import copy from "copy-to-clipboard";
+import { copyWithResult } from "utils/ToastUtil";
+import ContainerTerminal from "components/modules/terminal/Terminal";
+import { useTranslation } from "react-i18next"
 
 export type ContainerModel = {
     ID: string,
@@ -72,7 +73,7 @@ export type ContainerModel = {
     ExpireTime: Date,
     Ports: string,
     PodID: string,
-}
+};
 
 interface ConfirmDialogProps {
     isOpen: boolean;
@@ -89,34 +90,36 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     title,
     description
 }) => {
-    return (
-        <AlertDialog open={isOpen} onOpenChange={onClose}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>{title}</AlertDialogTitle>
-                    <AlertDialogDescription>{description}</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>取消</AlertDialogCancel>
-                    <AlertDialogAction onClick={onConfirm}>确认</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    );
+    const { t } = useTranslation()
+
+    return <AlertDialog open={isOpen} onOpenChange={onClose}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>{title}</AlertDialogTitle>
+                <AlertDialogDescription>{description}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                <AlertDialogAction onClick={onConfirm}>{t("confirm")}</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
 };
 
 export function ContainerManageView({
     gameId,
-    challengeID = undefined
+    challengeID
 }: {
     gameId: number,
-    challengeID?: number | undefined
+    challengeID?: number
 }) {
-    const [data, setData] = React.useState<AdminContainerItem[]>([])
-    const [sorting, setSorting] = React.useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-    const [rowSelection, setRowSelection] = React.useState({})
+
+    const { t } = useTranslation("game_edit")
+    const [data, setData] = React.useState<AdminContainerItem[]>([]);
+    const [sorting, setSorting] = React.useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+    const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+    const [rowSelection, setRowSelection] = React.useState({});
 
     const [pageSize, _setPageSize] = React.useState(30);
     const [curPage, setCurPage] = React.useState(0);
@@ -127,7 +130,6 @@ export function ContainerManageView({
     const [searchKeyword, setSearchKeyword] = React.useState("");
     const [debouncedSearchKeyword, setDebouncedSearchKeyword] = React.useState("");
 
-    // 对话框状态
     const [confirmDialog, setConfirmDialog] = React.useState({
         isOpen: false,
         title: "",
@@ -135,62 +137,64 @@ export function ContainerManageView({
         onConfirm: () => { },
     });
 
+    // 多终端数组
+    type TerminalInstance = {
+        id: string;
+        teamName: string;
+        podName: string;
+        containerName: string;
+        isOpen: boolean;
+    };
+    const [terminals, setTerminals] = React.useState<TerminalInstance[]>([]);
+
     // 防抖处理搜索关键词
     React.useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearchKeyword(searchKeyword);
-            setCurPage(0); // 重置到第一页
-        }, 200); // 200ms 防抖延迟
-
+            setCurPage(0);
+        }, 200);
         return () => clearTimeout(timer);
     }, [searchKeyword]);
 
-
-    // 处理容器删除
+    // 容器操作
     const handleDeleteContainer = (containerId: string) => {
         setConfirmDialog({
             isOpen: true,
-            title: "确认停止",
-            description: "您确定要停止这个容器吗？",
+            title: t("container.stop.title"),
+            description: t("container.stop.description"),
             onConfirm: () => {
                 toast.promise(
                     api.admin.adminDeleteContainer({ container_id: containerId }),
                     {
-                        pending: '正在停止容器...',
+                        pending: t("container.stop.pending"),
                         success: {
                             render({ data: _data }) {
-                                fetchContainers(); // 刷新数据
+                                fetchContainers();
                                 setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-                                return '容器正在停止';
+                                return t("container.stop.success")
                             }
                         },
-                        error: '停止容器失败'
+                        error: t("container.stop.error"),
                     }
                 );
             }
         });
     };
 
-    const [isTerminalOpen, setIsTerminalOpen] = React.useState(false);
-    const [terminalPod, setTerminalPod] = React.useState<string | null>(null);
-    const [terminalContainer, setTerminalContainer] = React.useState<string | null>(null);
-
-    // 处理批量停止容器
     const handleBatchDeleteContainers = () => {
         const selectedRows = table.getFilteredSelectedRowModel().rows;
         const selectedContainerIds = selectedRows.map(row => row.original.container_id);
 
         if (selectedContainerIds.length === 0) {
-            toast.error("请至少选择一个容器");
+            toast.error(t("container.stop.batch.select"));
             return;
         }
 
         setConfirmDialog({
             isOpen: true,
-            title: "确认批量停止",
-            description: `您确定要停止选中的 ${selectedContainerIds.length} 个容器吗？`,
+            title: t("container.stop.batch.confirm"),
+            description: t("container.stop.batch.description", { count: selectedContainerIds.length }),
             onConfirm: () => {
-                // 批量停止容器
                 const promises = selectedContainerIds.map(containerId =>
                     api.admin.adminDeleteContainer({ container_id: containerId })
                 );
@@ -198,90 +202,69 @@ export function ContainerManageView({
                 toast.promise(
                     Promise.allSettled(promises),
                     {
-                        pending: `正在停止 ${selectedContainerIds.length} 个容器...`,
+                        pending: t("container.stop.batch.pending", { count: selectedContainerIds.length }),
                         success: {
                             render({ data: results }: { data: PromiseSettledResult<AxiosResponse>[] }) {
-                                const successCount = results.filter(result => result.status === 'fulfilled').length;
+                                const successCount = results.filter(r => r.status === 'fulfilled').length;
                                 const failCount = results.length - successCount;
 
-                                fetchContainers(); // 刷新数据
-                                setRowSelection({}); // 清空选择
+                                fetchContainers();
+                                setRowSelection({});
                                 setConfirmDialog(prev => ({ ...prev, isOpen: false }));
 
-                                if (failCount === 0) {
-                                    return `成功停止 ${successCount} 个容器`;
-                                } else {
-                                    return `成功停止 ${successCount} 个容器，${failCount} 个失败`;
-                                }
+                                if (failCount === 0) return t("container.stop.batch.success1", { count: successCount });
+                                else return t("container.stop.batch.success2", { s: successCount, f: failCount });
                             }
                         },
-                        error: '批量停止容器失败'
+                        error: t("container.stop.batch.error")
                     }
                 );
             }
         });
     };
 
-    // 提交延长容器生命周期
     const submitExtendContainer = (containerId: string) => {
         toast.promise(
-            api.admin.adminExtendContainer({
-                container_id: containerId,
-            }),
+            api.admin.adminExtendContainer({ container_id: containerId }, createSkipGlobalErrorConfig()),
             {
-                pending: '正在延长容器生命周期...',
-                success: {
-                    render({ data: _data }) {
-                        fetchContainers(); // 刷新数据
-                        return '容器生命周期已延长';
-                    }
-                },
-                error: '延长容器生命周期失败'
+                pending: t("container.extend.pending"),
+                success: { render() { fetchContainers(); return t("container.extend.success"); } },
+                error: t("container.extend.error"),
             }
         );
     };
 
-    // 获取容器Flag
     const handleGetContainerFlag = (containerId: string) => {
         toast.promise(
             api.admin.adminGetContainerFlag({ container_id: containerId }),
             {
-                pending: '正在获取容器Flag...',
+                pending: t("container.flag.pending"),
                 success: {
                     render({ data: response }: { data: AxiosResponse }) {
                         const flagContent = response.data.data.flag_content;
-                        // 复制到剪贴板
                         copy(flagContent);
-                        return `Flag已复制到剪贴板`;
+                        return t("container.flag.success")
                     }
                 },
-                error: '获取容器Flag失败'
+                error: t("container.flag.error")
             }
         );
     };
 
-    // 获取状态对应的颜色和中文显示
     const getStatusColorAndText = (status: ContainerStatus) => {
         switch (status) {
-            case ContainerStatus.ContainerRunning:
-                return { color: "#52C41A", text: "运行中" };
-            case ContainerStatus.ContainerStopped:
-                return { color: "#8C8C8C", text: "已停止" };
-            case ContainerStatus.ContainerStarting:
-                return { color: "#1890FF", text: "启动中" };
-            case ContainerStatus.ContainerError:
-                return { color: "#FF4D4F", text: "错误" };
-            case ContainerStatus.ContainerStopping:
-                return { color: "#FAAD14", text: "停止中" };
-            case ContainerStatus.ContainerQueueing:
-                return { color: "#722ED1", text: "队列中" };
-            case ContainerStatus.NoContainer:
-                return { color: "#D9D9D9", text: "无容器" };
-            default:
-                return { color: "#D9D9D9", text: "未知" };
+            case ContainerStatus.ContainerRunning: return { color: "#52C41A", text: t("container.status.running") };
+            case ContainerStatus.ContainerStopped: return { color: "#8C8C8C", text: t("container.status.stopped") };
+            case ContainerStatus.ContainerStarting: return { color: "#1890FF", text: t("container.status.starting") };
+            case ContainerStatus.ContainerError: return { color: "#FF4D4F", text: t("container.status.error") };
+            case ContainerStatus.ContainerStopping: return { color: "#FAAD14", text: t("container.status.stopping") };
+            case ContainerStatus.ContainerQueueing: return { color: "#722ED1", text: t("container.status.queueing") };
+            case ContainerStatus.NoContainer: return { color: "#D9D9D9", text: t("container.status.empty") };
+            default: return { color: "#D9D9D9", text: t("container.status.unknow") };
         }
     };
 
+    // 表格列
     const columns: ColumnDef<AdminContainerItem>[] = [
         {
             id: "select",
@@ -292,14 +275,14 @@ export function ContainerManageView({
                         (table.getIsSomePageRowsSelected() && "indeterminate")
                     }
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                    aria-label="全选"
+                    aria-label={t("container.table.select.header")}
                 />
             ),
             cell: ({ row }) => (
                 <Checkbox
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
-                    aria-label="选择行"
+                    aria-label={t("container.table.select.cell")}
                 />
             ),
             enableSorting: false,
@@ -307,7 +290,7 @@ export function ContainerManageView({
         },
         {
             accessorKey: "TeamName",
-            header: "队伍名称",
+            header: t("events.filter.team"),
             cell: ({ row }) => {
                 return (
                     <div className="flex gap-2 items-center">
@@ -327,7 +310,7 @@ export function ContainerManageView({
         },
         {
             accessorKey: "ChallengeName",
-            header: "题目名称",
+            header: t("events.filter.challenge"),
             cell: ({ row }) => (
                 <div className="flex gap-2 items-center">
                     {row.original.challenge_name}
@@ -345,7 +328,7 @@ export function ContainerManageView({
         },
         {
             accessorKey: "Status",
-            header: "状态",
+            header: t("events.submit.status"),
             cell: ({ row }) => {
                 const status = row.original.container_status as ContainerStatus;
                 const { color, text } = getStatusColorAndText(status);
@@ -367,14 +350,14 @@ export function ContainerManageView({
                         variant="ghost"
                         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                     >
-                        过期时间
+                        {t("container.table.expire")}
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
                 )
             },
             cell: ({ row }) => {
                 const expireTime = row.original.container_expiretime;
-                return <div>{dayjs(expireTime).format('YYYY-MM-DD HH:mm:ss')} ({dayjs(expireTime).diff(dayjs(), 'minutes')}mins)</div>
+                return <div>{dayjs(expireTime).format('YYYY-MM-DD HH:mm:ss')}{row.original.container_status === ContainerStatus.ContainerRunning ? ` (${dayjs(expireTime).diff(dayjs(), 'minutes')} mins)` : ""}</div>
             },
             sortingFn: (rowA, rowB, _columnId) => {
                 const dateA = dayjs(rowA.original.container_expiretime);
@@ -384,7 +367,7 @@ export function ContainerManageView({
         },
         {
             accessorKey: "Ports",
-            header: "访问入口",
+            header: t("container.table.ports"),
             cell: ({ row }) => {
 
                 let ports: string[] = []
@@ -403,7 +386,7 @@ export function ContainerManageView({
                         </HoverCardTrigger>
                         <HoverCardContent className="w-full p-4">
                             <div className="space-y-2">
-                                <h4 className="text-sm font-semibold">访问入口</h4>
+                                <h4 className="text-sm font-semibold">{t("container.table.ports")}</h4>
                                 {ports ? (
                                     <div className="text-sm">
                                         {ports.map((port, index) => (
@@ -423,7 +406,7 @@ export function ContainerManageView({
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-sm text-muted-foreground">无可用链接</div>
+                                    <div className="text-sm text-muted-foreground">{t("container.table.no_port")}</div>
                                 )}
                             </div>
                         </HoverCardContent>
@@ -433,7 +416,7 @@ export function ContainerManageView({
         },
         {
             id: "actions",
-            header: "操作",
+            header: t("action"),
             enableHiding: false,
             cell: ({ row }) => {
                 const container = row.original;
@@ -445,40 +428,45 @@ export function ContainerManageView({
                             className="h-8 w-8 p-0"
                             onClick={() => handleGetContainerFlag(container.container_id)}
                             data-tooltip-id="my-tooltip"
-                            data-tooltip-content="复制Flag"
+                            data-tooltip-content={t("container.flag.title")}
                             data-tooltip-place="top"
                         >
-                            <span className="sr-only">复制Flag</span>
+                            <span className="sr-only">{t("container.flag.title")}</span>
                             <CopyIcon className="h-4 w-4" />
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
+                                    disabled={container.container_status !== ContainerStatus.ContainerRunning}
                                     variant="ghost"
                                     className="h-8 w-8 p-0 text-blue-600"
                                     data-tooltip-id="my-tooltip"
-                                    data-tooltip-content="容器终端"
+                                    data-tooltip-content={t("container.terminal.title")}
                                     data-tooltip-place="top"
                                 >
-                                    <span className="sr-only">容器终端</span>
+                                    <span className="sr-only">{t("container.terminal.title")}</span>
                                     <Terminal className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="mr-5 p-2 select-none" align="start">
-                                <DropdownMenuLabel>选择一个容器</DropdownMenuLabel>
+                                <DropdownMenuLabel>{t("container.terminal.select")}</DropdownMenuLabel>
                                 <DropdownMenuGroup>
-                                    { container.container_name_list?.map((e, _) => (
-                                        <DropdownMenuItem key={e}
-                                            onClick={() => {
-                                                setIsTerminalOpen(true)
-                                                setTerminalPod(container.pod_id ?? "")
-                                                setTerminalContainer(e)
-                                            }}
-                                        >
+                                    {container.container_name_list?.map((e) => (
+                                        <DropdownMenuItem key={e} onClick={() => {
+                                            const id = `${container.pod_id}-${e}`;
+                                            setTerminals(prev => {
+                                                const existing = prev.find(t => t.id === id);
+                                                if (existing) {
+                                                    // 重新打开已存在的终端
+                                                    return prev.map(t => t.id === id ? { ...t, isOpen: true } : t);
+                                                }
+                                                return [...prev, { id, teamName: container?.team_name ?? "", podName: container?.pod_id ?? "", containerName: e, isOpen: true }];
+                                            });
+                                        }}>
                                             <Package />
                                             {e}
                                         </DropdownMenuItem>
-                                    )) }
+                                    ))}
                                 </DropdownMenuGroup>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -487,41 +475,42 @@ export function ContainerManageView({
                             className="h-8 w-8 p-0 text-red-600"
                             onClick={() => handleDeleteContainer(container.container_id)}
                             data-tooltip-id="my-tooltip"
-                            data-tooltip-content="停止容器"
+                            data-tooltip-content={t("container.stop.stop")}
                             data-tooltip-place="top"
                         >
-                            <span className="sr-only">停止容器</span>
+                            <span className="sr-only">{t("container.stop.stop")}</span>
                             <ZapOff className="h-4 w-4" />
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">打开菜单</span>
+                                    <span className="sr-only">{t("team.menu.title")}</span>
                                     <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" >
-                                <DropdownMenuLabel>操作</DropdownMenuLabel>
+                                <DropdownMenuLabel>{t("action")}</DropdownMenuLabel>
                                 <DropdownMenuItem
                                     onClick={() => {
                                         copyWithResult(container.container_id)
                                     }}
                                 >
                                     <ClipboardList className="h-4 w-4 mr-2" />
-                                    复制容器ID
+                                    {t("container.terminal.copy.id")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => copyWithResult(container.pod_id)}
                                 >
                                     <ClipboardList className="h-4 w-4 mr-2" />
-                                    复制PodID
+                                    {t("container.terminal.copy.pod")}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
+                                    disabled={container.container_status !== ContainerStatus.ContainerRunning}
                                     onClick={() => submitExtendContainer(container.container_id)}
                                     className="text-blue-600"
                                 >
                                     <ClockIcon className="h-4 w-4 mr-2" />
-                                    延长生命周期
+                                    {t("container.extend.title")}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -531,7 +520,6 @@ export function ContainerManageView({
         },
     ]
 
-    // 获取容器列表数据
     const fetchContainers = () => {
         const payload: AdminListContainersPayload = {
             game_id: gameId,
@@ -540,22 +528,15 @@ export function ContainerManageView({
             challenge_id: challengeID ?? -1,
             show_failed: showFailedContainer
         };
-
-        // 如果有搜索关键词，添加到请求中
-        if (debouncedSearchKeyword.trim()) {
-            payload.search = debouncedSearchKeyword.trim();
-        }
+        if (debouncedSearchKeyword.trim()) payload.search = debouncedSearchKeyword.trim();
 
         api.admin.adminListContainers(payload).then((res: any) => {
             setTotalCount(res.data.total ?? 0);
             setData(res.data.data);
-        })
+        });
     };
 
-    // 处理搜索
-    const handleSearch = (value: string) => {
-        setSearchKeyword(value);
-    };
+    const handleSearch = (value: string) => setSearchKeyword(value);
 
     const table = useReactTable({
         data,
@@ -574,7 +555,7 @@ export function ContainerManageView({
             columnVisibility,
             rowSelection,
         },
-    })
+    });
 
     React.useEffect(() => {
         table.setPageSize(pageSize);
@@ -583,19 +564,26 @@ export function ContainerManageView({
 
     return (
         <>
-            <ContainerTerminal
-                podName={terminalPod ?? ""}
-                containerName={terminalContainer ?? ""}
-                isOpen={isTerminalOpen}
-                setIsOpen={setIsTerminalOpen}
-                setTerminalPod={setTerminalPod}
-                setTerminalContainer={setTerminalContainer}
-            />
+            {/* 渲染多终端 */}
+            {terminals.map(t => t.isOpen && (
+                <ContainerTerminal
+                    key={t.id}
+                    teamName={t.teamName}
+                    podName={t.podName}
+                    containerName={t.containerName}
+                    isOpen={t.isOpen}
+                    setIsOpen={(open) => {
+                        if (!open) setTerminals(prev => prev.map(x => x.id === t.id ? { ...x, isOpen: false } : x));
+                    }}
+                    setTerminalPod={() => { }}
+                    setTerminalContainer={() => { }}
+                />
+            ))}
+
             <div className="w-full flex flex-col gap-4">
                 <div className="flex items-center justify-end space-x-2 select-none">
                     <div className="flex-1 text-sm text-muted-foreground flex items-center">
-                        {table.getFilteredSelectedRowModel().rows.length} / {" "}
-                        {table.getFilteredRowModel().rows.length} 行已选择
+                        {t("team.select", { a: table.getFilteredSelectedRowModel().rows.length, b: table.getFilteredRowModel().rows.length })}
                     </div>
                     <div className="flex gap-3 items-center">
                         <Button
@@ -622,12 +610,12 @@ export function ContainerManageView({
                 <div className="flex items-center gap-2">
                     <div className="flex flex-col gap-2">
                         <Input
-                            placeholder="请输入关键词"
+                            placeholder={t("events.filter.placeholder")}
                             value={searchKeyword}
                             onChange={(event) => handleSearch(event.target.value)}
                             className="max-w-lg"
                         />
-                        <span className="text-xs text-muted-foreground">支持队伍ID, PodID, 容器ID, 队伍名称, 题目名称, 题目ID, 队伍ID</span>
+                        <span className="text-xs text-muted-foreground">{t("container.search")}</span>
                     </div>
                     <div className="flex gap-2 ml-auto items-center">
                         <Label className="hover:bg-accent/50 cursor-pointer flex items-start gap-3 rounded-lg border p-[10px] has-[[aria-checked=true]]:border-red-600 has-[[aria-checked=true]]:bg-red-50 dark:has-[[aria-checked=true]]:border-red-900 dark:has-[[aria-checked=true]]:bg-red-950">
@@ -641,7 +629,7 @@ export function ContainerManageView({
                             />
                             <div className="grid gap-1.5 font-normal">
                                 <p className="text-sm leading-none font-medium">
-                                    显示错误容器
+                                    {t("container.show.error")}
                                 </p>
                             </div>
                         </Label>
@@ -652,12 +640,12 @@ export function ContainerManageView({
                             disabled={table.getFilteredSelectedRowModel().rows.length === 0}
                         >
                             <ZapOff className="h-4 w-4 mr-2" />
-                            批量停止 ({table.getFilteredSelectedRowModel().rows.length})
+                            {t("container.stop.batch.title", { count: table.getFilteredSelectedRowModel().rows.length })}
                         </Button>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline">
-                                    显示项目 <ChevronDown />
+                                    {t("container.show.item")} <ChevronDown />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="select-none">
@@ -728,7 +716,7 @@ export function ContainerManageView({
                                         colSpan={columns.length}
                                         className="h-24 text-center"
                                     >
-                                        暂无数据
+                                        {t("container.empty")}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -737,7 +725,7 @@ export function ContainerManageView({
                 </div>
             </div>
 
-            {/* 确认对话框 */}
+
             <ConfirmDialog
                 isOpen={confirmDialog.isOpen}
                 onClose={() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))}
@@ -746,5 +734,5 @@ export function ContainerManageView({
                 description={confirmDialog.description}
             />
         </>
-    )
+    );
 }

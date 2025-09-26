@@ -251,6 +251,9 @@ var PermissionMap = map[string]PermissionSetting{
 	"/api/game/:game_id/flag/:challenge_id":      {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{}},
 	"/api/game/:game_id/flag/:judge_id":          {RequestMethod: []string{"GET"}, Permissions: []models.UserRole{}},
 
+	// 分组邀请码相关权限
+	"/api/game/:game_id/group/invite-code": {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{}},
+
 	"/api/admin/container/list":   {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
 	"/api/admin/container/delete": {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
 	"/api/admin/container/extend": {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},

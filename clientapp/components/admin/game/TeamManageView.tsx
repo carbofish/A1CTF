@@ -11,7 +11,7 @@ import {
     useReactTable,
 } from "@tanstack/react-table"
 
-import { ArrowLeft, ArrowRight, ArrowUpDown, ChevronDown, MoreHorizontal, LockIcon, CheckIcon, TrashIcon, UnlockIcon, ClipboardList, RefreshCw, Copy } from "lucide-react"
+import { ArrowLeft, ArrowRight, ArrowUpDown, ChevronDown, MoreHorizontal, LockIcon, CheckIcon, TrashIcon, UnlockIcon, ClipboardList, RefreshCw, Copy, Tag } from "lucide-react"
 
 import * as React from "react"
 
@@ -38,7 +38,7 @@ import {
 
 
 import { Badge } from "../../ui/badge";
-import { ParticipationStatus } from "utils/A1API";
+import { AdminListTeamItem, ParticipationStatus } from "utils/A1API";
 
 import { api } from "utils/ApiHelper";
 import AvatarUsername from "../../modules/AvatarUsername";
@@ -56,20 +56,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar"
 import { copyWithResult } from "utils/ToastUtil"
 import { useTranslation } from "react-i18next"
+import useSWR from "swr"
 
-export type TeamModel = {
-    team_id: number,
-    team_name: string,
-    team_avatar: string | null,
-    team_slogan: string | null,
-    members: {
-        avatar: string | null,
-        user_name: string,
-        user_id: string
-    }[],
-    status: ParticipationStatus,
-    score: number
-}
+type TeamModel = AdminListTeamItem
 
 interface ConfirmDialogProps {
     isOpen: boolean;
@@ -111,7 +100,6 @@ export function TeamManageView(
     }
 ) {
     const { t } = useTranslation("game_edit")
-    const [data, setData] = React.useState<TeamModel[]>([])
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
         []
@@ -295,12 +283,14 @@ export function TeamManageView(
                 const status = row.getValue("status") as ParticipationStatus;
                 const { color, text } = getStatusColorAndText(status);
                 return (
-                    <Badge
-                        className="capitalize w-[60px] px-[5px] flex justify-center select-none"
-                        style={{ backgroundColor: color }}
-                    >
-                        {text}
-                    </Badge>
+                    <div className="w-full flex">
+                        <Badge
+                            className="capitalize px-[10px] flex justify-center select-none"
+                            style={{ backgroundColor: color }}
+                        >
+                            {text}
+                        </Badge>
+                    </div>
                 )
             },
         },
@@ -371,13 +361,26 @@ export function TeamManageView(
             },
         },
         {
+            accessorKey: "group_name",
+            header: t("team.group_name"),
+            cell: ({ row }) => <div className="flex gap-2 items-center">
+                {row.original.group_id != -1 && (
+                    <>
+                        <Tag size={14} />
+                        <span className="text-xs">{row.getValue("group_name") || ""}</span>
+                        <Badge className="p-0 px-1">#{row.original.group_id || -1}</Badge>
+                    </>
+                )}
+            </div>,
+        },
+        {
             accessorKey: "team_slogan",
             header: t("team.slogan"),
             cell: ({ row }) => <div>{row.getValue("team_slogan") || ""}</div>,
         },
         {
             id: "actions",
-            header: t("group.action"),
+            header: t("action"),
             enableHiding: false,
             cell: ({ row }) => {
                 const team = row.original;
@@ -404,7 +407,7 @@ export function TeamManageView(
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" >
-                                <DropdownMenuLabel>{t("group.action")}</DropdownMenuLabel>
+                                <DropdownMenuLabel>{t("action")}</DropdownMenuLabel>
                                 <DropdownMenuItem
                                     onClick={() => {
                                         copyWithResult(team.team_id || '', t("events.filter.team_id"))
@@ -445,25 +448,26 @@ export function TeamManageView(
     ]
 
     // 获取队伍列表数据
-    const fetchTeams = () => {
-        const payload: any = {
-            game_id: gameId,
-            size: pageSize,
-            offset: pageSize * curPage
-        };
+    const { data = [], mutate: fetchTeams, isLoading } = useSWR<TeamModel[]>(`/api/admin/team/list?game_id=${gameId}&size=${pageSize}&page=${curPage}&search=${debouncedSearchKeyword.trim()}`,
+        async () => {
+            const payload: any = {
+                game_id: gameId,
+                size: pageSize,
+                offset: pageSize * curPage
+            }
+            if (debouncedSearchKeyword.trim()) {
+                payload.search = debouncedSearchKeyword.trim()
+            }
+            const res = await api.admin.adminListTeams(payload)
 
-        // 如果有搜索关键词，添加到请求中
-        if (debouncedSearchKeyword.trim()) {
-            payload.search = debouncedSearchKeyword.trim();
-        }
-
-        api.admin.adminListTeams(payload).then((res) => {
-            setTotalCount(res.data.total ?? 0);
-            const formattedData: TeamModel[] = res.data.data.map(item => ({
+            setTotalCount(res.data.total ?? 0)
+            return res.data.data.map(item => ({
                 team_id: item.team_id,
                 team_name: item.team_name,
                 team_avatar: item.team_avatar || null,
                 team_slogan: item.team_slogan || null,
+                group_name: item.group_name || null,
+                group_id: item.group_id || -1,
                 members: item.members.map(member => ({
                     avatar: member.avatar || null,
                     user_name: member.user_name,
@@ -471,10 +475,9 @@ export function TeamManageView(
                 })),
                 status: item.status,
                 score: item.score
-            }));
-            setData(formattedData);
-        })
-    };
+            })) as TeamModel[]
+        }
+    )
 
     // 处理搜索
     const handleSearch = (value: string) => {
@@ -502,15 +505,14 @@ export function TeamManageView(
 
     React.useEffect(() => {
         table.setPageSize(pageSize);
-        fetchTeams();
-    }, [curPage, pageSize, gameId, debouncedSearchKeyword]);
+    }, [pageSize]);
 
     return (
         <>
             <div className="w-full flex flex-col gap-4">
                 <div className="flex items-center space-x-2">
                     <div className="flex-1 text-sm text-muted-foreground flex items-center">
-                        {t("team.select", { a: table.getFilteredSelectedRowModel().rows.length, b: table.getFilteredRowModel().rows.length })}
+                        {isLoading ? t("team.loading") : t("team.select", { a: table.getFilteredSelectedRowModel().rows.length, b: table.getFilteredRowModel().rows.length })}
                     </div>
                     <div className="flex gap-3 items-center">
                         <Button
@@ -527,7 +529,9 @@ export function TeamManageView(
                         <Button
                             variant="outline"
                             size="icon"
-                            onClick={() => setCurPage(curPage + 1)}
+                            onClick={() => {
+                                setCurPage(curPage + 1)
+                            }}
                             disabled={curPage >= Math.ceil(totalCount / pageSize) - 1}
                         >
                             <ArrowRight />
@@ -577,54 +581,58 @@ export function TeamManageView(
                     </div>
                 </div>
                 <div className="rounded-md border">
-                    <Table>
-                        <TableHeader>
-                            {table.getHeaderGroups().map((headerGroup) => (
-                                <TableRow key={headerGroup.id}>
-                                    {headerGroup.headers.map((header) => {
-                                        return (
-                                            <TableHead key={header.id}>
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(
-                                                        header.column.columnDef.header,
-                                                        header.getContext()
-                                                    )}
-                                            </TableHead>
-                                        )
-                                    })}
-                                </TableRow>
-                            ))}
-                        </TableHeader>
-                        <TableBody>
-                            {table.getRowModel().rows?.length ? (
-                                table.getRowModel().rows.map((row) => (
-                                    <TableRow
-                                        key={row.id}
-                                        data-state={row.getIsSelected() && "selected"}
-                                    >
-                                        {row.getVisibleCells().map((cell) => (
-                                            <TableCell key={cell.id}>
-                                                {flexRender(
-                                                    cell.column.columnDef.cell,
-                                                    cell.getContext()
-                                                )}
-                                            </TableCell>
-                                        ))}
+                    {isLoading ? (
+                        <></>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key={headerGroup.id}>
+                                        {headerGroup.headers.map((header) => {
+                                            return (
+                                                <TableHead key={header.id}>
+                                                    {header.isPlaceholder
+                                                        ? null
+                                                        : flexRender(
+                                                            header.column.columnDef.header,
+                                                            header.getContext()
+                                                        )}
+                                                </TableHead>
+                                            )
+                                        })}
                                     </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={columns.length}
-                                        className="h-24 text-center"
-                                    >
-                                        {t("team.empty")}
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                                ))}
+                            </TableHeader>
+                            <TableBody>
+                                {table.getRowModel().rows?.length ? (
+                                    table.getRowModel().rows.map((row) => (
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={row.getIsSelected() && "selected"}
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id}>
+                                                    {flexRender(
+                                                        cell.column.columnDef.cell,
+                                                        cell.getContext()
+                                                    )}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={columns.length}
+                                            className="h-24 text-center"
+                                        >
+                                            {t("team.empty")}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    )}
                 </div>
             </div>
             <ConfirmDialog

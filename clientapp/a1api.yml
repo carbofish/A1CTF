@@ -1725,6 +1725,21 @@ paths:
       responses:
         '200':
           description: Container life extended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: object
+                    properties:
+                      new_expire_time:
+                        type: string
+                        format: date-time
+                    required:
+                      - new_expire_time
         '400':
           description: Bad request
         '500':
@@ -2951,7 +2966,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/GameGroup'
+                      $ref: '#/components/schemas/AdminGameGroupItem'
                 required:
                   - code
                   - data
@@ -2983,6 +2998,51 @@ paths:
                     type: integer
                   data:
                     $ref: '#/components/schemas/GameGroup'
+                required:
+                  - code
+                  - data
+  /api/game/{game_id}/group/invite-code:
+    post:
+      tags: [user]
+      operationId: userGetGroupInviteCodeDetail
+      summary: get the invite code detail of a group
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                invite_code:
+                  type: string
+              required:
+                - invite_code
+        required: true
+      responses:
+        '200':
+          description: Get the invite code detail of a group success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                  data:
+                    type: object
+                    properties:
+                      group_name:
+                        type: string
+                      group_id:
+                        type: integer
+                    required:
+                      - group_name
+                      - group_id
                 required:
                   - code
                   - data
@@ -3865,6 +3925,8 @@ components:
           type: number
         third_blood_reward:
           type: number
+        group_invite_code_enable:
+          type: boolean
         challenges:
           type: array
           items:
@@ -3896,12 +3958,18 @@ components:
         poster:
           type: string
           nullable: true
+        group_invite_code_enabled:
+          type: boolean
         start_time:
           type: string
           format: date-time
         end_time:
           type: string
           format: date-time
+        dark_icon:
+          type: string
+        light_icon:
+          type: string
         visible:
           type: boolean
       required:
@@ -4187,6 +4255,8 @@ components:
           type: integer
         container_number_limit:
           type: integer
+        group_invite_code_enabled:
+          type: boolean
         require_wp:
           type: boolean
         wp_expire_time:
@@ -4583,6 +4653,12 @@ components:
         team_slogan:
           type: string
           nullable: true
+        group_name:
+          type: string
+          nullable: true
+        group_id:
+          type: integer
+          nullable: true
         members:
           type: array
           items:
@@ -4879,6 +4955,9 @@ components:
           type: string
           format: date-time
           description: 创建时间
+        invite_code:
+          type: string
+          description: 邀请码
         updated_at:
           type: string
           format: date-time
@@ -4894,6 +4973,40 @@ components:
         - created_at
         - updated_at
         - teams
+    AdminGameGroupItem:
+      type: object
+      properties:
+        group_id:
+          type: integer
+          description: 分组ID
+        group_name:
+          type: string
+          description: 分组名称
+        group_description:
+          type: string
+          nullable: true
+          description: 分组描述
+        display_order:
+          type: integer
+          description: 显示顺序
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+        invite_code:
+          type: string
+          description: 邀请码
+        updated_at:
+          type: string
+          format: date-time
+          description: 更新时间
+        people_count:
+          type: number
+      required:
+        - group_id
+        - group_name
+        - display_order
+        - people_count
     CreateGameGroupPayload:
       type: object
       properties:

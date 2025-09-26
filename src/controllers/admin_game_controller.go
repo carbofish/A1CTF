@@ -168,28 +168,29 @@ func AdminGetGame(c *gin.Context) {
 	game := c.MustGet("game").(models.Game)
 
 	result := gin.H{
-		"game_id":                game.GameID,
-		"name":                   game.Name,
-		"summary":                game.Summary,
-		"description":            game.Description,
-		"poster":                 game.Poster,
-		"invite_code":            game.InviteCode,
-		"start_time":             game.StartTime,
-		"end_time":               game.EndTime,
-		"practice_mode":          game.PracticeMode,
-		"team_number_limit":      game.TeamNumberLimit,
-		"container_number_limit": game.ContainerNumberLimit,
-		"require_wp":             game.RequireWp,
-		"wp_expire_time":         game.WpExpireTime,
-		"stages":                 game.Stages,
-		"visible":                game.Visible,
-		"game_icon_light":        game.GameIconLight,
-		"game_icon_dark":         game.GameIconDark,
-		"first_blood_reward":     game.FirstBloodReward,
-		"second_blood_reward":    game.SecondBloodReward,
-		"third_blood_reward":     game.ThirdBloodReward,
-		"team_policy":            game.TeamPolicy,
-		"challenges":             make([]gin.H, 0),
+		"game_id":                  game.GameID,
+		"name":                     game.Name,
+		"summary":                  game.Summary,
+		"description":              game.Description,
+		"poster":                   game.Poster,
+		"invite_code":              game.InviteCode,
+		"start_time":               game.StartTime,
+		"end_time":                 game.EndTime,
+		"practice_mode":            game.PracticeMode,
+		"team_number_limit":        game.TeamNumberLimit,
+		"container_number_limit":   game.ContainerNumberLimit,
+		"require_wp":               game.RequireWp,
+		"wp_expire_time":           game.WpExpireTime,
+		"stages":                   game.Stages,
+		"visible":                  game.Visible,
+		"game_icon_light":          game.GameIconLight,
+		"game_icon_dark":           game.GameIconDark,
+		"first_blood_reward":       game.FirstBloodReward,
+		"second_blood_reward":      game.SecondBloodReward,
+		"third_blood_reward":       game.ThirdBloodReward,
+		"team_policy":              game.TeamPolicy,
+		"group_invite_code_enable": game.GroupInviteCodeEnabled,
+		"challenges":               make([]gin.H, 0),
 	}
 
 	// 查询所有 challenges
@@ -364,6 +365,14 @@ func AdminUpdateGameChallenge(c *gin.Context) {
 		var judgeConfig models.JudgeConfig
 		if judgeConfigBytes, err := sonic.Marshal(judgeConfigData); err == nil {
 			if err := sonic.Unmarshal(judgeConfigBytes, &judgeConfig); err == nil {
+				// FlagTemplate 必须存在，且长度不少于3个字符
+				if judgeConfig.FlagTemplate == nil || *judgeConfig.FlagTemplate == "" || len(*judgeConfig.FlagTemplate) < 4 {
+					c.JSON(http.StatusBadRequest, gin.H{
+						"code":    400,
+						"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidFlagTemplate"}),
+					})
+					return
+				}
 				updateData["judge_config"] = judgeConfig
 				updateFields = append(updateFields, "judge_config")
 			}
@@ -410,9 +419,7 @@ func AdminUpdateGameChallenge(c *gin.Context) {
 	}
 
 	if shouldSendNotice {
-		go func() {
-			noticetool.InsertNotice(gameID, models.NoticeNewHint, noticeData)
-		}()
+		noticetool.InsertNotice(gameID, models.NoticeNewHint, noticeData)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -452,6 +459,7 @@ func AdminUpdateGame(c *gin.Context) {
 	game.FirstBloodReward = payload.FirstBloodReward
 	game.SecondBloodReward = payload.SecondBloodReward
 	game.ThirdBloodReward = payload.ThirdBloodReward
+	game.GroupInviteCodeEnabled = payload.GroupInviteCodeEnabled
 
 	// 更新 Belong stage
 	for _, chal := range payload.Challenges {
@@ -603,9 +611,7 @@ func AdminCreateNotice(c *gin.Context) {
 	}
 
 	// 使用 notice_tool 插入公告
-	go func() {
-		noticetool.InsertNotice(gameID, models.NoticeNewAnnounce, []string{payload.Title, payload.Content})
-	}()
+	noticetool.InsertNotice(gameID, models.NoticeNewAnnounce, []string{payload.Title, payload.Content})
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,

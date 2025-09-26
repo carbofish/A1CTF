@@ -41,6 +41,9 @@ export default function ChallengeManageSheet(
     }
 ) {
 
+    // 初始化的时候加载 game_edit 的 i18n，防止切换到容器管理和事件管理的时候页面会有感刷新
+    useTranslation("game_edit")
+
     const { t } = useTranslation("challenge_manage")
     const { theme } = useTheme()
     const [isOpen, setIsOpen] = useState(false)

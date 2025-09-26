@@ -6,7 +6,7 @@ import {
     DialogTrigger,
 } from "components/ui/dialog"
 import React, { ReactNode, useState } from "react"
-import ThemedEditor from "./ThemedEditor"
+import LazyThemedEditor from "components/modules/LazyThemedEditor";
 import { cn } from "lib/utils"
 import { PencilRulerIcon } from "lucide-react"
 import type { editor } from 'monaco-editor';
@@ -53,7 +53,7 @@ export default function EditorDialog(
                         </div>
                     </DialogTitle>
                 </DialogHeader>
-                <ThemedEditor
+                <LazyThemedEditor
                     value={value}
                     onChange={onChange}
                     language={language}

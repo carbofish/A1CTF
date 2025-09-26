@@ -15,10 +15,11 @@ type UserAttachmentConfig struct {
 }
 
 type UserCreateTeamPayload struct {
-	Name        string `json:"name" binding:"required"`
-	Description string `json:"description"`
-	Slogan      string `json:"slogan"`
-	GroupID     *int64 `json:"group_id"`
+	Name        string  `json:"name" binding:"required"`
+	Description string  `json:"description"`
+	Slogan      string  `json:"slogan"`
+	GroupID     *int64  `json:"group_id"`
+	InviteCode  *string `json:"invite_code"`
 }
 
 type UserSubmitFlagPayload struct {
@@ -218,4 +219,8 @@ type ForgetPasswordWithVerifyCodePayload struct {
 
 type ForgetPasswordSendMailPayload struct {
 	Email string `json:"email" binding:"email"`
+}
+
+type UserGetGroupInviteCodeGroupPayload struct {
+	InviteCode string `json:"invite_code" binding:"required,uuid4"`
 }

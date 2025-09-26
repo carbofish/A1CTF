@@ -1,7 +1,6 @@
 import { UseFormReturn } from "react-hook-form";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "components/ui/form";
 import { SystemSettingsValues } from "./AdminSettingsPage";
-import ThemedEditor from "components/modules/ThemedEditor";
 import { Input } from "components/ui/input";
 
 import {
@@ -18,6 +17,7 @@ import { Send } from "lucide-react";
 import { toast } from "react-toastify/unstyled";
 import { api } from "utils/ApiHelper";
 import { useTranslation } from "react-i18next";
+import LazyThemedEditor from "components/modules/LazyThemedEditor";
 
 export default function TemplateSettings(
     { form }: {
@@ -81,7 +81,7 @@ export default function TemplateSettings(
                                         <FormMessage className="text-[14px]" />
                                     </div>
                                     <FormControl>
-                                        <ThemedEditor
+                                        <LazyThemedEditor
                                             value={field.value}
                                             onChange={field.onChange}
                                             language="html"
@@ -145,7 +145,7 @@ export default function TemplateSettings(
                                         <FormMessage className="text-[14px]" />
                                     </div>
                                     <FormControl>
-                                        <ThemedEditor
+                                        <LazyThemedEditor
                                             value={field.value}
                                             onChange={field.onChange}
                                             language="html"

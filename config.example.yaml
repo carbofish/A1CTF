@@ -19,6 +19,8 @@ system:
   # don't use 0.0.0.0/0, it's dangerous
   trusted-proxies:
     - 0.0.0.0/0
+  # enable pprof for performance profiling, default is false
+  pprof-enable: false
 
 redis:
   address: localhost:6379
@@ -29,6 +31,16 @@ k8s:
   k8s-config-file: "k8sconfig.yaml"
   node-ip-map:
     - { name: "vm-4-3-ubuntu", "address": "example.com/1.1.1.1" }
+  # manual port assignments
+  manual-port-assignments:
+    enabled: false
+    port-range-map:
+     # You can add multiple port range map with same node name
+     # - { name: "vm-4-3-ubuntu", "start": 23101, "end": 24101 }
+     # - { name: "vm-4-3-ubuntu", "start": 24102, "end": 25102 }
+  pull-secret-names:
+    # You can add multiple pull secret names here, make sure they are created in the a1ctf-challenges namespace as the pods
+    # - default-name
 
 postgres:
   host: localhost

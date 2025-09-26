@@ -1,0 +1,58 @@
+{
+    "title": "分数修正管理",
+    "detail": "管理比赛分数调整记录",
+    "error": "加载数据失败",
+    "cheat": "作弊扣分",
+    "rewart": "奖励加分",
+    "other": "其他调整",
+    "unknow": "未知",
+    "create": {
+        "title": "添加修正",
+        "success": "分数修正创建成功",
+        "dialog": "添加分数修正",
+        "empty": "添加一条记录"
+    },
+    "update": {
+        "title": "更新修正",
+        "success": "分数修正更新成功",
+        "dialog": "编辑分数修正"
+    },
+    "delete": {
+        "title": "确认删除分数修正记录",
+        "dialog": "确定要删除这条分数修正记录吗？此操作无法撤销！",
+        "success": "分数修正删除成功"
+    },
+    "back": "返回比赛列表",
+    "search": "搜索队伍名称或原因...",
+    "team": {
+        "label": "队伍名称",
+        "search": "搜索队伍名称...",
+        "searching": "搜索中...",
+        "empty": "未找到匹配的队伍",
+        "selected": "已选择"
+    },
+    "type": "修正类型",
+    "change": {
+        "label": "分数变化",
+        "placeholder": "输入分数变化量（正数为加分，负数为扣分）"
+    },
+    "reason": {
+        "label": "修正原因",
+        "placeholder": "请输入修正原因"
+    },
+    "history": {
+        "title": "分数修正记录",
+        "count": "{{count}} 条记录",
+        "empty": {
+            "1": "暂无分数修正记录",
+            "2": "没有找到符合条件的记录",
+            "3": "还没有任何分数修正记录"
+        }
+    },
+    "operation": {
+        "label": "操作",
+        "time": "修正时间",
+        "operator": "操作者"
+    },
+    "id": "记录 ID"
+}

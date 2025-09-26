@@ -1,9 +1,9 @@
 import { MacScrollbar } from "mac-scrollbar";
-import { Mdx } from "./MdxCompoents";
 import { useTheme } from "next-themes";
 import { useMemo, useState } from "react";
 import { useGlobalVariableContext } from "contexts/GlobalVariableContext";
 import { Rss } from "lucide-react";
+import LazyMdxCompoents from "./modules/LazyMdxCompoents";
 
 export function AboutPage() {
 
@@ -15,7 +15,7 @@ export function AboutPage() {
 
     const memoizedDescription = useMemo(() => {
         return <div className="w-full">
-            <Mdx source={source} />
+            <LazyMdxCompoents source={source} />
         </div>
     }, [source]); // 只依赖description
 

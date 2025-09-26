@@ -27,7 +27,7 @@ import {
     ChartLegendContent,
 } from 'components/ui/chart';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell } from 'recharts';
-import { GameScoreboardData, TeamScore, UserFullGameInfo, UserSimpleGameChallenge, ChallengeCategory } from "utils/A1API";
+import { GameScoreboardData, TeamScore, UserFullGameInfo, UserSimpleGameChallenge } from "utils/A1API";
 
 export default function TeamScoreDetailPage(
     {
@@ -101,8 +101,8 @@ export default function TeamScoreDetailPage(
 
         // 获取所有可能的题目类型
         const allCategories = new Set<string>();
-        Object.values(ChallengeCategory).forEach((e) => {
-            allCategories.add(e.toString())
+        Object.keys(challenges).forEach((e) => {
+            allCategories.add(e.toString().toUpperCase())
         })
 
         const categoryCount: Record<string, number> = {};
@@ -374,7 +374,14 @@ export default function TeamScoreDetailPage(
                                                         )}
                                                     </Avatar>
                                                     <div className='flex-1'>
-                                                        <h2 className='text-2xl font-bold text-foreground mb-1'>{showUserDetail.team_name}</h2>
+                                                        <div className="flex gap-2 items-center">
+                                                            <h2 className='text-2xl font-bold text-foreground mb-1'>{showUserDetail.team_name}</h2>
+                                                            { showUserDetail.group_id && (
+                                                                <Badge className="text-sm bg-primary/10 hover:bg-primary/10 text-primary font-medium select-none">
+                                                                    # {showUserDetail.group_name}
+                                                                </Badge>
+                                                            ) }
+                                                        </div>
                                                         <p className='text-sm text-muted-foreground italic'>
                                                             "{showUserDetail.team_slogan || "They didn't say anything."}"
                                                         </p>

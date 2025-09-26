@@ -48,18 +48,19 @@ func AdminListTeams(c *gin.Context) {
 			OR team_slogan ILIKE ? 
 			OR team_id::text = ? OR team_hash = ? 
 			OR invite_code = ?
+			OR group_id::text = ?
 			OR EXISTS (
 				SELECT 1 FROM users u 
 				WHERE u.user_id = ANY(teams.team_members) 
 				AND u.username ILIKE ?
-			)`, searchPattern, searchPattern, payload.Search, payload.Search, payload.Search, searchPattern)
+			)`, searchPattern, searchPattern, payload.Search, payload.Search, payload.Search, payload.Search, searchPattern)
 		}
 	}
 
 	query = query.Order("team_id ASC")
 
 	var teams []models.Team
-	if err := query.Offset(payload.Offset).Limit(payload.Size).Find(&teams).Error; err != nil {
+	if err := query.Offset(payload.Offset).Limit(payload.Size).Preload("Group").Find(&teams).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
 			Code:    500,
 			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToFetchTeams"}),
@@ -112,15 +113,23 @@ func AdminListTeams(c *gin.Context) {
 			}
 		}
 
-		teamItems = append(teamItems, webmodels.AdminListTeamItem{
+		record := webmodels.AdminListTeamItem{
 			TeamID:     team.TeamID,
 			TeamName:   team.TeamName,
 			TeamAvatar: team.TeamAvatar,
 			TeamSlogan: team.TeamSlogan,
+			GroupName:  nil,
+			GroupID:    team.GroupID,
 			Members:    tmpMembers,
 			Status:     team.TeamStatus,
 			Score:      team.TeamScore,
-		})
+		}
+
+		if team.Group != nil {
+			record.GroupName = &team.Group.GroupName
+		}
+
+		teamItems = append(teamItems, record)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -375,16 +384,6 @@ func AdminDeleteTeam(c *gin.Context) {
 			tx.Rollback()
 		}
 	}()
-
-	// 删除队伍相关的加入申请
-	if err := tx.Where("team_id = ?", payload.TeamID).Delete(&models.TeamJoinRequest{}).Error; err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
-			Code:    500,
-			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToDeleteTeamJoinRequests"}),
-		})
-		return
-	}
 
 	// 删除队伍
 	if err := tx.Delete(&team).Error; err != nil {

@@ -15,13 +15,16 @@ type ErrorMessage struct {
 // User Game Controller
 
 type UserGameSimpleInfo struct {
-	GameID    int64     `json:"game_id"`
-	Name      string    `json:"name"`
-	Summary   *string   `json:"summary"`
-	StartTime time.Time `json:"start_time"`
-	EndTime   time.Time `json:"end_time"`
-	Visible   bool      `json:"visible"`
-	Poster    *string   `json:"poster"`
+	GameID                 int64     `json:"game_id"`
+	Name                   string    `json:"name"`
+	Summary                *string   `json:"summary"`
+	StartTime              time.Time `json:"start_time"`
+	GroupInviteCodeEnabled bool      `json:"group_invite_code_enabled"`
+	EndTime                time.Time `json:"end_time"`
+	Visible                bool      `json:"visible"`
+	Poster                 *string   `json:"poster"`
+	LightIcon              *string   `json:"light_icon"`
+	DarkIcon               *string   `json:"dark_icon"`
 }
 
 type UserFullGameInfo struct {
@@ -142,6 +145,8 @@ type AdminListTeamItem struct {
 	TeamName   string                      `json:"team_name"`
 	TeamAvatar *string                     `json:"team_avatar"`
 	TeamSlogan *string                     `json:"team_slogan"`
+	GroupName  *string                     `json:"group_name"`
+	GroupID    *int64                      `json:"group_id"`
 	Members    []AdminSimpleTeamMemberInfo `json:"members"`
 	Status     models.ParticipationStatus  `json:"status"`
 	Score      float64                     `json:"score"`
@@ -203,16 +208,6 @@ type CachedGameScoreBoardData struct {
 
 // Team management responses
 
-type TeamJoinRequestInfo struct {
-	RequestID  int64                    `json:"request_id"`
-	UserID     string                   `json:"user_id"`
-	Username   string                   `json:"username"`
-	UserAvatar *string                  `json:"user_avatar"`
-	Status     models.JoinRequestStatus `json:"status"`
-	CreateTime time.Time                `json:"create_time"`
-	Message    *string                  `json:"message"`
-}
-
 // 分组相关的响应模型
 type GameGroupSimple struct {
 	GroupID   int64  `json:"group_id"`
@@ -242,4 +237,15 @@ type AdminContainerItem struct {
 	PodID               string                 `json:"pod_id"`
 	TeamID              int64                  `json:"team_id"`
 	ChallengeID         int64                  `json:"challenge_id"`
+}
+
+type AdminGameGroupItem struct {
+	GroupID     int64     `json:"group_id"`
+	GameID      int64     `json:"game_id"`
+	GroupName   string    `json:"group_name"`
+	InviteCode  string    `json:"invite_code"`
+	Description *string   `json:"group_description"`
+	PeopleCount int64     `json:"people_count"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }

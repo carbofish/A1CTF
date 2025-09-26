@@ -1,21 +1,17 @@
-import { useEffect, useState } from "react";
 import { EditChallengeView } from "./EditChallengeView";
 import { AdminChallengeConfig } from "utils/A1API";
 import { api } from "utils/ApiHelper";
-export function EditChallengePage ({ challenge_id }: { challenge_id: number })
-{
-    const [ challengeInfo, setChallengeInfo ] = useState<AdminChallengeConfig>();
+import useSWR from "swr";
 
-    useEffect(() => {
-        // Fetch challenge info
-        api.admin.getChallengeInfo(challenge_id).then((res) => {
-            setChallengeInfo(res.data.data);
-        })
-    }, [challenge_id])
+export function EditChallengePage({ challenge_id }: { challenge_id: number }) {
+    const { data: challengeInfo = null } = useSWR<AdminChallengeConfig>(
+        `/api/admin/challenge/${challenge_id}`,
+        () => api.admin.getChallengeInfo(challenge_id).then((res) => res.data.data)
+    )
 
     return (
         <>
-            { challengeInfo && <EditChallengeView challenge_info={challengeInfo} /> }
+            {challengeInfo && <EditChallengeView challenge_info={challengeInfo} />}
         </>
     );
 }

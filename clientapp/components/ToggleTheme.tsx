@@ -209,7 +209,7 @@ const ThemeSwitcher = (
                         </div>
                     </Button>
                 </animated.div>
-                <animated.div 
+                {/* <animated.div 
                     className='flex border-[1.5px] rounded-[10px] w-44 p-1 shadow-md bg-background/90'
                     style={bgAnimSpring}
                     onMouseEnter={() => setBgAnimHovered(true)}
@@ -238,7 +238,7 @@ const ThemeSwitcher = (
                             </div>
                         </Button>
                     ) }
-                </animated.div>
+                </animated.div> */}
             </DropdownMenuContent>
         </DropdownMenu>
     )

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"a1ctf/src/db/models"
+	"a1ctf/src/tasks"
 	dbtool "a1ctf/src/utils/db_tool"
 	i18ntool "a1ctf/src/utils/i18n_tool"
 	"a1ctf/src/webmodels"
@@ -212,8 +213,8 @@ func AdminDeleteContainer(c *gin.Context) {
 		return
 	}
 
-	// 通知K8S删除容器（实际实现取决于系统架构）
-	// TODO: 调用K8S删除容器的逻辑
+	// 异步调用K8S删除容器的任务
+	tasks.NewContainerStopTask(container)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
@@ -246,6 +247,15 @@ func AdminExtendContainer(c *gin.Context) {
 				"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToQueryContainer"}),
 			})
 		}
+		return
+	}
+
+	// 非运行中的容器禁止延长时间
+	if container.ContainerStatus != models.ContainerRunning {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToUpdateContainerExpireTime"}),
+		})
 		return
 	}
 

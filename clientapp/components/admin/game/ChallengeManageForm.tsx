@@ -28,13 +28,14 @@ import { Bitcoin, Cloud, FileCode, Github, PlusCircle, Save, ScanBarcode, Shield
 
 
 import { Binary, Bot, Bug, FileSearch, GlobeLock, HardDrive, MessageSquareLock, Radar, Smartphone, SquareCode } from "lucide-react"
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AdminChallengeConfig } from "utils/A1API";
 import { api } from "utils/ApiHelper";
 import { toast } from 'react-toastify/unstyled';
 import { UploadFileDialog } from "components/dialogs/UploadFileDialog";
 import { Switch } from "components/ui/switch";
-import ThemedEditor from "components/modules/ThemedEditor";
+import LazyThemedEditor from "components/modules/LazyThemedEditor";
+import useSWR from "swr";
 
 interface ContainerFormProps {
     control: any;
@@ -446,14 +447,10 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
 }
 
 export function ChallengeManageFormWrapper({ challenge_id }: { challenge_id: number }) {
-    const [challengeInfo, setChallengeInfo] = useState<AdminChallengeConfig | undefined>();
-
-    useEffect(() => {
-        // Fetch challenge info
-        api.admin.getChallengeInfo(challenge_id).then((res) => {
-            setChallengeInfo(res.data.data);
-        })
-    }, [challenge_id])
+    const { data: challengeInfo = null } = useSWR<AdminChallengeConfig>(
+        `/api/admin/challenge/${challenge_id}`,
+        () => api.admin.getChallengeInfo(challenge_id).then((res => res.data.data))
+    )
 
     if (!challengeInfo) {
         return <></>
@@ -535,7 +532,7 @@ export function ChallengeManageForm({ challengeInfo }: { challengeInfo: AdminCha
     });
 
     const env_to_string = (data: { name: string, value: string }[]) => {
-        
+
         let env = ""
         data.forEach((item) => {
             env += `${item.name}=${item.value},`
@@ -762,7 +759,7 @@ export function ChallengeManageForm({ challengeInfo }: { challengeInfo: AdminCha
                                 <FormMessage className="text-[14px]" />
                             </div>
                             <FormControl>
-                                <ThemedEditor
+                                <LazyThemedEditor
                                     value={field.value}
                                     onChange={field.onChange}
                                     language="markdown"

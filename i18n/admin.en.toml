@@ -46,6 +46,14 @@ other = "Failed to load challenges"
 description = "Failed to create challenge"
 other = "Failed to create challenge"
 
+[FailedToCreateWithoutContainer]
+description = "Dynamic Flag requires container"
+other = "Dynamic Flag requires container"
+
+[InvalidFlagTemplate]
+description = "Flag must be at least 3 characters long"
+other = "Flag must be at least 3 characters long"
+
 [FailedToDeleteChallenge]
 description = "Failed to delete challenge"
 other = "Failed to delete challenge"

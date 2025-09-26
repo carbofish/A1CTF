@@ -1,5 +1,6 @@
 {
     "invite_code": "邀请码",
+    "group_invite_code": "分组邀请码",
     "members": "成员",
     "show_invite_code": "显示邀请码",
     "copy_invite_code": "复制邀请码",
@@ -28,6 +29,9 @@
     "create_team_success": "战队创建成功！",
     "create_team": "创建战队",
     "create_team_desc": "创建战队后，您可以邀请其他人加入",
+    "group_create_team_desc": "当前比赛启用了组绑定机制, 请你联系你的管理员获取邀请码, 以便你加入正确的组.",
+    "next_step": "下一步",
+    "form_invite_code_error": "组别邀请码格式错误",
     "join_team_success": "您已成功加入战队！",
     "join_team": "加入战队",
     "join_team_desc": "与好友并肩作战！",

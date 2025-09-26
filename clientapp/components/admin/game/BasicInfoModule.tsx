@@ -17,7 +17,7 @@ import ImageUploader from 'components/modules/ImageUploader';
 import { api } from 'utils/ApiHelper';
 import { SystemResourceType } from 'utils/A1API';
 import { DateTimePicker24h } from 'components/ui/data-time-picker';
-import ThemedEditor from 'components/modules/ThemedEditor';
+import LazyThemedEditor from "components/modules/LazyThemedEditor";
 import { useTranslation } from 'react-i18next';
 
 interface BasicInfoModuleProps {
@@ -152,7 +152,7 @@ export function BasicInfoModule({ form, gameID }: BasicInfoModuleProps) {
                                 <FormMessage className="text-[14px]" />
                             </div>
                             <FormControl>
-                                <ThemedEditor
+                                <LazyThemedEditor
                                     value={field.value}
                                     onChange={field.onChange}
                                     language="markdown"
@@ -207,6 +207,22 @@ export function BasicInfoModule({ form, gameID }: BasicInfoModuleProps) {
                             <div className="space-y-0.5">
                                 <FormLabel>{t("basic.visible.label")}</FormLabel>
                                 <FormDescription>{t("basic.visible.description")}</FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="group_invite_code_enable"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel>{t("basic.group_invite_code_enable.label")}</FormLabel>
+                                <FormDescription>{t("basic.group_invite_code_enable.description")}</FormDescription>
                             </div>
                             <FormControl>
                                 <Switch checked={field.value} onCheckedChange={field.onChange} />

@@ -1,5 +1,5 @@
-import { Mdx } from 'components/MdxCompoents';
-import ThemedEditor from 'components/modules/ThemedEditor';
+import LazyMdxCompoents from "components/modules/LazyMdxCompoents";
+import LazyThemedEditor from "components/modules/LazyThemedEditor";
 import { Button } from 'components/ui/button';
 import { Save } from 'lucide-react';
 import { MacScrollbar } from 'mac-scrollbar';
@@ -20,7 +20,7 @@ export default function AboutPage(
     const [debouncedSource, setDebouncedSource] = useState<string>("");
     const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const {t} = useTranslation("system_settings")
+    const { t } = useTranslation("system_settings")
 
     // 防抖函数
     const debouncedUpdateSource = useCallback((value: string) => {
@@ -44,7 +44,7 @@ export default function AboutPage(
 
     // 使用 useMemo 优化 Mdx 组件，只在 debouncedSource 改变时重新渲染
     const memoizedMdx = useMemo(() => {
-        return <Mdx source={debouncedSource} />;
+        return <LazyMdxCompoents source={debouncedSource} />;
     }, [debouncedSource]);
 
     const watchValue = useWatch({
@@ -54,7 +54,7 @@ export default function AboutPage(
 
     useEffect(() => {
         setAboutMeSource(watchValue || "A1CTF Platform")
-        debouncedUpdateSource(watchValue || "A1CTF Platform");
+        setDebouncedSource(watchValue || "A1CTF Platform")
     }, [watchValue])
 
     const { theme } = useTheme()
@@ -73,7 +73,7 @@ export default function AboutPage(
             <div className='w-full h-full overflow-hidden'>
                 <div className="h-full w-full flex gap-4">
                     <div className='h-full w-1/2'>
-                        <ThemedEditor
+                        <LazyThemedEditor
                             value={aboutMeSource}
                             onChange={(value) => {
                                 const newValue = value || "";
@@ -86,7 +86,7 @@ export default function AboutPage(
                         />
                     </div>
                     <div className='h-full w-1/2 border-2 rounded-md overflow-hidden relative'>
-                        
+
                         <MacScrollbar className='h-full w-full select-none'
                             skin={theme == "light" ? "light" : "dark"}
                         >

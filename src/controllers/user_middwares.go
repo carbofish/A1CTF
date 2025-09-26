@@ -245,32 +245,55 @@ func ChallengeStatusCheckMiddleWare(accessableAfterStageEnded bool) gin.HandlerF
 			return
 		}
 
-		curTime := time.Now()
-		challengeVisible := false
-		inVisibleDuetoStageOver := false
+		now := time.Now().UTC()
+
+		// 先用题目自身的 Visible 作为基础开关
+		baseVisible := gameChallenge.Visible
+
+		// 默认：未命中阶段限制时，按题目自身 Visible
+		challengeVisible := baseVisible
+		invisibleDueToStageOver := false
+		checkedStage := false
 
 		if game.Stages != nil && gameChallenge.BelongStage != nil {
-			for _, stage := range *game.Stages {
-				if stage.EndTime.Before(curTime) {
-					// 已经结束的 Stage
-					if stage.StageName == *gameChallenge.BelongStage {
+			stages := *game.Stages
+			if len(stages) > 0 {
+				for _, stage := range stages {
+					if stage.StageName != *gameChallenge.BelongStage {
+						continue
+					}
+					checkedStage = true
+
+					// 明确边界：采用 [start, end) 语义
+					start := stage.StartTime.UTC()
+					end := stage.EndTime.UTC()
+
+					if !now.Before(end) { // now >= end 视为已结束
 						if accessableAfterStageEnded {
-							challengeVisible = true
+							challengeVisible = baseVisible && true
 						} else {
-							inVisibleDuetoStageOver = true
+							challengeVisible = false
+							invisibleDueToStageOver = true
 						}
+					} else if !now.Before(start) { // start <= now < end 进行中
+						challengeVisible = baseVisible && true
+					} else {
+						// 未开始
+						challengeVisible = false
 					}
-				} else if stage.StartTime.Before(curTime) {
-					if stage.StageName == *gameChallenge.BelongStage {
-						challengeVisible = true
-					}
+					break // 命中归属阶段后立即退出
 				}
+			} else {
+				// 空切片：回退到题目 Visible
+				challengeVisible = baseVisible
 			}
-		} else {
-			challengeVisible = gameChallenge.Visible
 		}
 
-		if inVisibleDuetoStageOver {
+		if game.Stages != nil && gameChallenge.BelongStage != nil && !checkedStage {
+			challengeVisible = baseVisible
+		}
+
+		if invisibleDueToStageOver {
 			c.JSON(http.StatusConflict, webmodels.ErrorMessage{
 				Code:    429,
 				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InVisibleDuetoStageOver"}),

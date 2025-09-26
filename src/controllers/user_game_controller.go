@@ -34,13 +34,16 @@ func UserListGames(c *gin.Context) {
 		}
 
 		data = append(data, webmodels.UserGameSimpleInfo{
-			GameID:    game.GameID,
-			Name:      game.Name,
-			Summary:   game.Summary,
-			StartTime: game.StartTime,
-			EndTime:   game.EndTime,
-			Visible:   game.Visible,
-			Poster:    game.Poster,
+			GameID:                 game.GameID,
+			Name:                   game.Name,
+			Summary:                game.Summary,
+			StartTime:              game.StartTime,
+			EndTime:                game.EndTime,
+			GroupInviteCodeEnabled: game.GroupInviteCodeEnabled,
+			Visible:                game.Visible,
+			Poster:                 game.Poster,
+			LightIcon:              game.GameIconLight,
+			DarkIcon:               game.GameIconDark,
 		})
 	}
 
@@ -89,23 +92,24 @@ func UserGetGameDetailWithTeamInfo(c *gin.Context) {
 
 	// 基本游戏信息
 	gameInfo := gin.H{
-		"game_id":                game.GameID,
-		"name":                   game.Name,
-		"summary":                game.Summary,
-		"game_icon_light":        game.GameIconLight,
-		"game_icon_dark":         game.GameIconDark,
-		"poster":                 game.Poster,
-		"start_time":             game.StartTime,
-		"end_time":               game.EndTime,
-		"practice_mode":          game.PracticeMode,
-		"team_number_limit":      game.TeamNumberLimit,
-		"container_number_limit": game.ContainerNumberLimit,
-		"require_wp":             game.RequireWp,
-		"wp_expire_time":         game.WpExpireTime,
-		"stages":                 game.Stages,
-		"visible":                game.Visible,
-		"team_status":            team_status,
-		"team_info":              nil,
+		"game_id":                   game.GameID,
+		"name":                      game.Name,
+		"summary":                   game.Summary,
+		"game_icon_light":           game.GameIconLight,
+		"game_icon_dark":            game.GameIconDark,
+		"poster":                    game.Poster,
+		"start_time":                game.StartTime,
+		"end_time":                  game.EndTime,
+		"practice_mode":             game.PracticeMode,
+		"team_number_limit":         game.TeamNumberLimit,
+		"container_number_limit":    game.ContainerNumberLimit,
+		"require_wp":                game.RequireWp,
+		"wp_expire_time":            game.WpExpireTime,
+		"stages":                    game.Stages,
+		"visible":                   game.Visible,
+		"team_status":               team_status,
+		"group_invite_code_enabled": game.GroupInviteCodeEnabled,
+		"team_info":                 nil,
 	}
 
 	// 如果用户已加入队伍，添加队伍信息

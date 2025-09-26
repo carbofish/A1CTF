@@ -1,6 +1,6 @@
-import { Mdx } from "components/MdxCompoents";
+import LazyMdxCompoents from "components/modules/LazyMdxCompoents";
 import { useGlobalVariableContext } from "contexts/GlobalVariableContext";
-import { LibraryBig, QrCode } from "lucide-react";
+import { LibraryBig, Loader2, QrCode } from "lucide-react";
 import { MacScrollbar } from "mac-scrollbar";
 import GamePosterInfoModule from "./GamePosterInfoModule";
 import GameTeamStatusCard, { LoginFirstCard } from "components/modules/game/GameTeamStatusCard";
@@ -16,7 +16,7 @@ export default function GameInfoView(
     }
 ) {
     const { gameInfo, gameStatus, teamStatus, isLoading } = useGame(gameID)
-    const { gameDescription } = useGameDescription(gameID)
+    const { gameDescription, isLoading: isGameDescriptionLoading } = useGameDescription(gameID)
 
     const { checkLoginStatus } = useGlobalVariableContext()
 
@@ -31,7 +31,7 @@ export default function GameInfoView(
             <MacScrollbar className="w-full h-full"
                 skin={theme == "light" ? "light" : "dark"}
             >
-                <div className="px-10 flex">
+                <div className="px-10 flex h-full">
                     <div className="lg:w-[60%] w-full h-full py-10 pr-5 flex flex-col">
                         <div className="lg:hidden w-full aspect-video mb-10">
                             <GamePosterInfoModule
@@ -46,12 +46,21 @@ export default function GameInfoView(
                             <div className="flex-1" />
                             <QrCode />
                         </div>
-                        {gameDescription ? (
-                            <Mdx source={gameDescription || ""} />
-                        ) : (
-                            <div className="w-full h-[60vh] flex items-center justify-center select-none">
-                                <span className="font-bold text-lg">{t("no_game_info")}</span>
+                        {isGameDescriptionLoading ? (
+                            <div className="flex-1 flex gap-4 w-full items-center justify-center">
+                                <Loader2 className="animate-spin" />
+                                <span>{t("loading")}</span>
                             </div>
+                        ) : (
+                            gameDescription ? (
+                                <div className="pb-8 pt-4">
+                                    <LazyMdxCompoents source={gameDescription || ""} />
+                                </div>
+                            ) : (
+                                <div className="w-full h-[60vh] flex items-center justify-center select-none">
+                                    <span className="font-bold text-lg">{t("no_game_info")}</span>
+                                </div>
+                            )
                         )}
                     </div>
                     <div className="lg:w-[40%] hidden lg:block h-full flex-none">

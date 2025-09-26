@@ -1,7 +1,7 @@
 import { CirclePlus, Search, Trophy } from "lucide-react";
 import { MacScrollbar } from "mac-scrollbar";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { UserGameSimpleInfo } from "utils/A1API";
@@ -9,24 +9,20 @@ import { api } from "utils/ApiHelper";
 import { useNavigate } from "react-router";
 import GameCard from "./GameCard";
 import { useTranslation } from "react-i18next";
+import useSWR from "swr";
 
 export function AdminGameManagePage() {
 
     const { theme } = useTheme()
-    const [games, setGames] = useState<UserGameSimpleInfo[]>([])
-
     const { t } = useTranslation("game_manage")
-
     const navigate = useNavigate()
-
-    // 懒加载, 当前题目卡片是否在视窗内
     const [searchContent, setSearchContent] = useState("")
 
-    useEffect(() => {
-        api.admin.listGames({ size: 16, offset: 0 }).then((res) => {
-            setGames(res.data.data)
-        })
-    }, [])
+    // TODO 前后端适配分页
+    const { data: games = [], isLoading } = useSWR<UserGameSimpleInfo[]>(
+        "/admin/games/list",
+        () => api.admin.listGames({ size: 1024, offset: 0 }).then(res => res.data.data)
+    )
 
     // 过滤比赛
     const filteredGames = games.filter((game) => {
@@ -47,7 +43,7 @@ export function AdminGameManagePage() {
                             </div>
                             <div>
                                 <h1 className="text-2xl font-bold">{t("title")}</h1>
-                                <p className="text-sm text-muted-foreground">{t("sub_title", { length: games?.length ?? '?' })}</p>
+                                <p className="text-sm text-muted-foreground">{t("sub_title", { length: isLoading ? '?' : games.length })}</p>
                             </div>
                         </div>
 
@@ -118,7 +114,7 @@ export function AdminGameManagePage() {
                                 className="mt-4"
                             >
                                 <CirclePlus className="h-4 w-4" />
-                                t("add_game")
+                                {t("add_game")}
                             </Button>
                         )}
                     </div>

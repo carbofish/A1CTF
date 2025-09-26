@@ -29,7 +29,7 @@ import { Bitcoin, CircleArrowLeft, Cloud, FileCode, Github, PlusCircle, Save, Sc
 import CodeEditor from '@uiw/react-textarea-code-editor';
 
 import { Binary, Bot, Bug, FileSearch, GlobeLock, HardDrive, MessageSquareLock, Radar, Smartphone, SquareCode } from "lucide-react"
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { MacScrollbar } from "mac-scrollbar";
 import { AdminChallengeConfig } from "utils/A1API";
 import { api } from "utils/ApiHelper";
@@ -38,7 +38,8 @@ import { useNavigate } from "react-router";
 import { UploadFileDialog } from "components/dialogs/UploadFileDialog";
 import { Switch } from "components/ui/switch";
 import { useTheme } from "next-themes";
-import ThemedEditor from "components/modules/ThemedEditor";
+import LazyThemedEditor from "components/modules/LazyThemedEditor";
+import { useTranslation, Trans } from "react-i18next";
 
 interface ContainerFormProps {
     control: any;
@@ -73,12 +74,14 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
         name: `container_config.${index}.command`,
     });
 
+    const { t } = useTranslation("challenge_edit")
+
     return (
         <div className="border p-6 mb-4 rounded-lg hover:shadow-lg transition-shadow duration-300 gap-4 flex flex-col">
             <div className="flex justify-between items-center mb-2">
-                <span className="font-md font-semibold">容器 {index + 1}</span>
+                <span className="font-md font-semibold">{t("container.label")} [{index + 1}]</span>
                 <Button variant="destructive" type="button" onClick={() => removeContainer(index)}>
-                    删除容器
+                    {t("container.delete")}
                 </Button>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -88,7 +91,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                     render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center h-[20px]">
-                                <FormLabel>容器名称</FormLabel>
+                                <FormLabel>{t("container.name")}</FormLabel>
                                 <div className="flex-1" />
                                 <FormMessage className="text-[14px]" />
                             </div>
@@ -104,7 +107,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                     render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center h-[20px]">
-                                <FormLabel>镜像名称</FormLabel>
+                                <FormLabel>{t("container.image")}</FormLabel>
                                 <div className="flex-1" />
                                 <FormMessage className="text-[14px]" />
                             </div>
@@ -121,7 +124,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                 render={({ field }) => (
                     <FormItem>
                         <div className="flex items-center h-[20px]">
-                            <FormLabel>环境变量</FormLabel>
+                            <FormLabel>{t("container.env.label")}</FormLabel>
                             <div className="flex-1" />
                             <FormMessage className="text-[14px]" />
                         </div>
@@ -129,19 +132,23 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                             <Input {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormDescription>
-                            键值对的形式, 用逗号隔开, 如: KEY=VALUE,KEY2=VALUE2, 支持<a className="hover:underline hover:cursor-pointer underline-offset-2 text-red-400">模板变量</a>
+                            <Trans
+                                ns='challenge_edit'
+                                i18nKey="container.env.description"
+                                components={{ a: <a className="hover:underline hover:cursor-pointer underline-offset-2 text-red-400" /> }}
+                            />
                         </FormDescription>
                     </FormItem>
                 )}
             />
             <div className="flex flex-col gap-2">
                 <div className="flex items-center h-[20px] mb-4">
-                    <FormLabel>启动命令</FormLabel>
+                    <FormLabel>{t("container.cmd.label")}</FormLabel>
                     <div className="flex-1" />
                     <Button
                         variant="outline"
                         onClick={() => appendCommand("")}
-                    ><PlusCircle />添加启动命令</Button>
+                    ><PlusCircle />{t("container.cmd.add")}</Button>
                 </div>
                 {commands.length ? (
                     commands.map((_, commandIndex) => (
@@ -173,7 +180,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                     <></>
                 )}
                 <FormDescription>
-                    例如 bash -c "time" 你就需要创建三个 bash, -c, time
+                    {t("container.cmd.description")}
                 </FormDescription>
             </div>
             {/* <span className="text-md font-semibold mt-4">资源限制</span> */}
@@ -184,7 +191,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                     render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center h-[20px]">
-                                <FormLabel>CPU 资源限制 (毫核)</FormLabel>
+                                <FormLabel>{t("container.limit.cpu.label")}</FormLabel>
                                 <div className="flex-1" />
                                 <FormMessage className="text-[14px]" />
                             </div>
@@ -192,7 +199,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                                 <Input {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormDescription>
-                                1000 毫核 为 1 核心
+                                {t("container.limit.cpu.description")}
                             </FormDescription>
                         </FormItem>
                     )}
@@ -203,7 +210,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                     render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center h-[20px]">
-                                <FormLabel>内存限制 (M)</FormLabel>
+                                <FormLabel>{t("container.limit.cpu.label")}</FormLabel>
                                 <div className="flex-1" />
                                 <FormMessage className="text-[14px]" />
                             </div>
@@ -211,7 +218,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                                 <Input {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormDescription>
-                                单位为 MB
+                                {t("container.limit.mem.description")}
                             </FormDescription>
                         </FormItem>
                     )}
@@ -222,7 +229,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                     render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center h-[20px]">
-                                <FormLabel>存储限制 (M)</FormLabel>
+                                <FormLabel>{t("container.limit.store.label")}</FormLabel>
                                 <div className="flex-1" />
                                 <FormMessage className="text-[14px]" />
                             </div>
@@ -230,7 +237,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                                 <Input {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormDescription>
-                                单位为 MB
+                                {t("container.limit.store.description")}
                             </FormDescription>
                         </FormItem>
                     )}
@@ -238,7 +245,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
             </div>
             <div className="mt-4">
                 <div className="flex items-center mb-3">
-                    <span className="text-md font-semibold">端口暴露</span>
+                    <span className="text-md font-semibold">{t("container.port.label")}</span>
                     <div className="flex-1" />
                     <Button
                         type="button"
@@ -247,10 +254,10 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                         onClick={() => appendPort({ name: "", port: 0 })}
                     >
                         <PlusCircle />
-                        添加端口
+                        {t("container.port.add")}
                     </Button>
                 </div>
-                <span className="text-sm text-foreground/50">端口名称是你需要映射出来的端口的名称, 这会显示给选手, 端口号是容器内服务的端口, A1CTF会自动映射随机端口到宿主机上, 注意！一道题的不同容器不能同时暴露相同的端口! 比如: 容器1和容器2同时要求暴露80端口, 这会导致映射出问题! 请你在制作docker的时候选择不同的监听端口</span>
+                <span className="text-sm text-foreground/50">{t("container.port.description")}</span>
                 <div className="h-4" />
                 {portFields.map((port, portIndex) => (
                     <div key={port.id} className="flex gap-2 items-end mb-2">
@@ -260,7 +267,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                             render={({ field }) => (
                                 <FormItem className="flex-1">
                                     <div className="flex items-center w- h-[20px]">
-                                        <FormLabel>端口名称</FormLabel>
+                                        <FormLabel>{t("container.port.name")}</FormLabel>
                                         <div className="flex-1" />
                                         <FormMessage className="text-[14px]" />
                                     </div>
@@ -276,7 +283,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                             render={({ field }) => (
                                 <FormItem className="flex-1">
                                     <div className="flex items-center w- h-[20px]">
-                                        <FormLabel>端口号</FormLabel>
+                                        <FormLabel>{t("container.port.num")}</FormLabel>
                                         <div className="flex-1" />
                                         <FormMessage className="text-[14px]" />
                                     </div>
@@ -287,7 +294,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                             )}
                         />
                         <Button variant="destructive" type="button" onClick={() => removePort(portIndex)}>
-                            删除端口
+                            {t("container.port.delete")}
                         </Button>
                     </div>
                 ))}
@@ -303,12 +310,14 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
         name: `attachments.${index}.attach_type`, // Watch the specific field
     });
 
+    const { t } = useTranslation("challenge_edit")
+
     return (
         <div className="border p-6 mb-4 rounded-lg hover:shadow-lg transition-shadow duration-300">
             <div className="flex justify-between items-center mb-2">
-                <span className="font-md font-semibold">附件 {index + 1}</span>
+                <span className="font-md font-semibold">{t("attachment.label")} [{index + 1}]</span>
                 <Button variant="destructive" type="button" onClick={() => removeAttachment(index)}>
-                    删除附件
+                    {t("attachment.delete")}
                 </Button>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -318,7 +327,7 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
                     render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center h-[20px]">
-                                <FormLabel>附件名称</FormLabel>
+                                <FormLabel>{t("attachment.name")}</FormLabel>
                                 <div className="flex-1" />
                                 <FormMessage className="text-[14px]" />
                             </div>
@@ -334,7 +343,7 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
                     render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center h-[20px]">
-                                <FormLabel>附件类型</FormLabel>
+                                <FormLabel>{t("attachment.type.label")}</FormLabel>
                                 <div className="flex-1" />
                                 <FormMessage className="text-[14px]" />
                             </div>
@@ -344,7 +353,7 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
                             }} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="选择附件类型" />
+                                        <SelectValue placeholder={t("attachment.type.select")} />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent className="w-full flex">
@@ -352,32 +361,32 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
                                         <SelectItem value="STATICFILE">
                                             <div className="w-full flex gap-2 items-center h-[25px]">
                                                 <ScanBarcode />
-                                                <span className="text-[12px] font-bold">静态附件</span>
+                                                <span className="text-[12px] font-bold">{t("attachment.type.static")}</span>
                                             </div>
                                         </SelectItem>
                                         <SelectItem value="DYNAMICFILE" disabled>
                                             <div className="w-full flex gap-2 items-center h-[25px]">
                                                 <FileCode />
-                                                <span className="text-[12px] font-bold">动态附件</span>
+                                                <span className="text-[12px] font-bold">{t("attachment.type.dynamic")}</span>
                                             </div>
                                         </SelectItem>
                                         <SelectItem value="REMOTEFILE">
                                             <div className="w-full flex gap-2 items-center h-[25px]">
                                                 <Cloud />
-                                                <span className="text-[12px] font-bold">远程附件</span>
+                                                <span className="text-[12px] font-bold">{t("attachment.type.remote")}</span>
                                             </div>
                                         </SelectItem>
                                         <SelectItem value="ATTACHMENTPOOR" disabled>
                                             <div className="w-full flex gap-2 items-center h-[25px]">
                                                 <TableProperties />
-                                                <span className="text-[12px] font-bold">附件池(随机)</span>
+                                                <span className="text-[12px] font-bold">{t("attachment.type.pool")}</span>
                                             </div>
                                         </SelectItem>
                                     </SelectContent>
                                 </SelectContent>
                             </Select>
                             <FormDescription>
-                                请选择一个类别
+                                {t("attachment.type.select")}
                             </FormDescription>
                         </FormItem>
                     )}
@@ -390,7 +399,7 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
                     render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center h-[20px]">
-                                <FormLabel>附件下载地址</FormLabel>
+                                <FormLabel>{t("attachment.url")}</FormLabel>
                                 <div className="flex-1" />
                                 <FormMessage className="text-[14px]" />
                             </div>
@@ -411,12 +420,12 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
                             render={({ field }) => (
                                 <FormItem>
                                     <div className="flex items-center h-[20px]">
-                                        <FormLabel>附件ID</FormLabel>
+                                        <FormLabel>{t("attachment.id")}</FormLabel>
                                         <div className="flex-1" />
                                         <FormMessage className="text-[14px]" />
                                     </div>
                                     <FormControl>
-                                        <Input {...field} value={field.value ?? ""} placeholder="上传文件后自动填充" />
+                                        <Input {...field} value={field.value ?? ""} placeholder={t("attachment.placeholder")} />
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -428,21 +437,21 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
                             // 上传成功后自动填充文件ID和文件名
                             form.setValue(`attachments.${index}.attach_hash`, fileId);
                             form.setValue(`attachments.${index}.attach_name`, fileName);
-                            toast.success(`文件 "${fileName}" 上传成功`);
+                            toast.success(t("attachment.upload.success", { name: fileName }));
 
                             // 自动保存表单
                             try {
                                 await onFormSubmit();
                                 // toast.success("题目信息已自动保存");
                             } catch (error) {
-                                toast.error("自动保存失败，请手动保存");
+                                toast.error(t("attachment.upload.failed"));
                                 const _ = error;
                             }
                         }}
                     >
                         <Button type="button" className="[&_svg]:size-4">
                             <Upload />
-                            上传附件
+                            {t("attachment.upload.label")}
                         </Button>
                     </UploadFileDialog>
                 </div>
@@ -451,7 +460,9 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
     );
 }
 
-export function EditChallengeView({ challenge_info }: { challenge_info: AdminChallengeConfig }) {
+export function EditChallengeView({ challenge_info, isCreate = false }: { challenge_info: AdminChallengeConfig, isCreate?: boolean }) {
+
+    const { t } = useTranslation("challenge_edit")
 
     const categories: { [key: string]: any } = {
         "MISC": <Radar size={21} />,
@@ -470,16 +481,16 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
     };
 
     const formSchema = z.object({
-        name: z.string().min(2, { message: "名字最短要两个字符" }),
+        name: z.string().min(2, { message: t("form.name.error") }),
         description: z.string(),
         create_time: z.date().optional(),
         challenge_id: z.number().optional(),
         category: z.enum(Object.keys(categories) as [string, ...string[]], {
-            errorMap: () => ({ message: "需要选择一个有效的题目类别" })
+            errorMap: () => ({ message: t("form.category.error") })
         }),
         judge_config: z.object({
             judge_type: z.enum(["DYNAMIC", "SCRIPT"], {
-                errorMap: () => ({ message: "需要选择一个有效的题目类别" })
+                errorMap: () => ({ message: t("form.judge.error") })
             }),
             judge_script: z.string().optional(),
             flag_template: z.string().optional(),
@@ -490,29 +501,29 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
         // 新增 container_config 部分
         container_config: z.array(
             z.object({
-                name: z.string().min(1, { message: "请输入容器名称" }),
-                image: z.string().min(1, { message: "请输入镜像地址" }),
+                name: z.string().min(1, { message: t("container.error.name") }),
+                image: z.string().min(1, { message: t("container.error.image") }),
                 command: z.array(z.string()).nullable(),
                 env: z.string().nullable(),
                 expose_ports: z.array(
                     z.object({
-                        name: z.string().min(1, { message: "请输入端口名称" }),
-                        port: z.coerce.number({ invalid_type_error: "请输入数字" })
-                            .min(1, { message: "端口号不能小于 1" })
-                            .max(65535, { message: "端口号不能大于 65535" })
+                        name: z.string().min(1, { message: t("container.error.port.name") }),
+                        port: z.coerce.number({ invalid_type_error: t("container.error.port.num") })
+                            .min(1, { message: t("container.error.port.min") })
+                            .max(65535, { message: t("container.error.port.max") })
                     })
                 ),
-                cpu_limit: z.coerce.number({ invalid_type_error: "请输入 CPU 限制" }),
-                memory_limit: z.coerce.number({ invalid_type_error: "请输入内存限制" }),
-                storage_limit: z.coerce.number({ invalid_type_error: "请输入存储空间限制" })
+                cpu_limit: z.coerce.number({ invalid_type_error: t("container.error.cpu") }),
+                memory_limit: z.coerce.number({ invalid_type_error: t("container.error.mem") }),
+                storage_limit: z.coerce.number({ invalid_type_error: t("container.error.store") })
             })
         ),
         attachments: z.array(
             z.object({
                 attach_hash: z.string().nullable(),
-                attach_name: z.string().min(2, { message: "附件名称最少2个字符" }),
+                attach_name: z.string().min(2, { message: t("attachment.error.name") }),
                 attach_type: z.enum(["STATICFILE", "DYNAMICFILE", "REMOTEFILE", "ATTACHMENTPOOR"], {
-                    errorMap: () => ({ message: "需要选择一个有效的附件类型" })
+                    errorMap: () => ({ message: t("attachment.error.type") })
                 }),
                 attach_url: z.string().nullable(),
                 download_hash: z.string().nullable(),
@@ -522,7 +533,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
     });
 
     const env_to_string = (data: { name: string, value: string }[]) => {
-        
+
         let env = ""
         data.forEach((item) => {
             env += `${item.name}=${item.value},`
@@ -626,18 +637,18 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
             flag_type: values.flag_type
         };
 
-        api.admin.updateChallenge(challenge_info.challenge_id!, finalData as AdminChallengeConfig).then(() => {
-            toast.success("更新成功");
-        })
+        if (isCreate) {
+            api.admin.createChallenge(finalData as AdminChallengeConfig).then(() => {
+                toast.success(t("success.create"))
+            })
+        } else {
+            api.admin.updateChallenge(challenge_info.challenge_id!, finalData as AdminChallengeConfig).then(() => {
+                toast.success(t("success.update"));
+            })
+        }
     }
 
     const router = useNavigate()
-
-    useEffect(() => {
-        // form.reset(challenge_info as any);
-        // form.setValue("category", "MISC")
-    }, [])
-
     const { theme } = useTheme()
 
     return (
@@ -647,15 +658,15 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                     skin={theme == "light" ? "light" : "dark"}
                 >
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-20 pt-20 w-[80%] flex flex-col">
-                        <div className="flex">
+                        <div className="flex ml-auto">
                             <Button type="button" variant={"default"} onClick={() => {
                                 router(`/admin/challenges`)
                             }}>
                                 <CircleArrowLeft />
-                                Back to challenges
+                                {t("back")}
                             </Button>
                         </div>
-                        <span className="text-3xl font-bold">Edit - {challenge_info.name}</span>
+                        <span className="text-3xl font-bold">{isCreate ? t("title.create") : `${t("title.update")} - ${challenge_info.name}`}</span>
                         <span className="text-lg font-semibold">基本信息</span>
                         <div className="flex gap-10 items-center">
                             <div className="w-1/3">
@@ -665,7 +676,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                     render={({ field }) => (
                                         <FormItem>
                                             <div className="flex items-center h-[20px]">
-                                                <FormLabel>题目名称</FormLabel>
+                                                <FormLabel>{t("form.name.label")}</FormLabel>
                                                 <div className="flex-1" />
                                                 <FormMessage className="text-[14px]" />
                                             </div>
@@ -673,7 +684,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                                 <Input {...field} />
                                             </FormControl>
                                             <FormDescription>
-                                                请填写题目名称
+                                                {t("form.name.description")}
                                             </FormDescription>
                                         </FormItem>
                                     )}
@@ -686,14 +697,14 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                     render={({ field }) => (
                                         <FormItem>
                                             <div className="flex items-center h-[20px]">
-                                                <FormLabel>题目类型</FormLabel>
+                                                <FormLabel>{t("form.category.label")}</FormLabel>
                                                 <div className="flex-1" />
                                                 <FormMessage className="text-[14px]" />
                                             </div>
                                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="选择一个题目类别" />
+                                                        <SelectValue placeholder={t("form.category.description")} />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent className="w-full flex">
@@ -708,7 +719,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                                 </SelectContent>
                                             </Select>
                                             <FormDescription>
-                                                请选择一个评测模式
+                                                {t("form.category.description")}
                                             </FormDescription>
                                         </FormItem>
                                     )}
@@ -721,7 +732,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                     render={({ field }) => (
                                         <FormItem>
                                             <div className="flex items-center h-[20px]">
-                                                <FormLabel>评测模式</FormLabel>
+                                                <FormLabel>{t("form.judge.label")}</FormLabel>
                                                 <div className="flex-1" />
                                                 <FormMessage className="text-[14px]" />
                                             </div>
@@ -735,26 +746,26 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                             }} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="选择一个评测模式" />
+                                                        <SelectValue placeholder={t("form.judge.description")} />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent className="w-full flex">
                                                     <SelectItem value="DYNAMIC">
                                                         <div className="w-full flex gap-2 items-center h-[25px]">
                                                             <ScanBarcode />
-                                                            <span className="text-[12px] font-bold">文字匹配</span>
+                                                            <span className="text-[12px] font-bold">{t("form.judge.text")}</span>
                                                         </div>
                                                     </SelectItem>
                                                     <SelectItem value="SCRIPT" disabled>
                                                         <div className="w-full flex gap-2 items-center h-[25px]">
                                                             <FileCode />
-                                                            <span className="text-[12px] font-bold">脚本匹配</span>
+                                                            <span className="text-[12px] font-bold">{t("form.judge.script.name")}</span>
                                                         </div>
                                                     </SelectItem>
                                                 </SelectContent>
                                             </Select>
                                             <FormDescription>
-                                                请选择一个类别
+                                                {t("form.judge.description")}
                                             </FormDescription>
                                         </FormItem>
                                     )}
@@ -767,12 +778,12 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                             render={({ field }) => (
                                 <FormItem>
                                     <div className="flex items-center h-[20px]">
-                                        <FormLabel>题目简介</FormLabel>
+                                        <FormLabel>{t("form.description.label")}</FormLabel>
                                         <div className="flex-1" />
                                         <FormMessage className="text-[14px]" />
                                     </div>
                                     <FormControl>
-                                        <ThemedEditor
+                                        <LazyThemedEditor
                                             value={field.value}
                                             onChange={field.onChange}
                                             language="markdown"
@@ -780,7 +791,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                         />
                                     </FormControl>
                                     <FormDescription>
-                                        题目简介
+                                        {t("form.description.description")}
                                     </FormDescription>
                                 </FormItem>
                             )}
@@ -792,7 +803,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex items-center h-[20px]">
-                                            <FormLabel>评测脚本</FormLabel>
+                                            <FormLabel>{t("form.judge.script.label")}</FormLabel>
                                             <div className="flex-1" />
                                             <FormMessage className="text-[14px]" />
                                         </div>
@@ -800,7 +811,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                             <CodeEditor
                                                 value={field.value}
                                                 language="js"
-                                                placeholder="在这里输入你的评测脚本"
+                                                placeholder={t("form.judge.script.placeholder")}
                                                 onChange={(evn) => field.onChange(evn.target.value)}
                                                 padding={15}
                                                 style={{
@@ -812,13 +823,48 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                             />
                                         </FormControl>
                                         <FormDescription>
-                                            如果你选择了动态评测, 你需要提供一份符合格式要求的评测脚本
+                                            {t("form.judge.script.description")}
                                         </FormDescription>
                                     </FormItem>
                                 )}
                             />
                         ) : (
                             <>
+                                <FormField
+                                    control={form.control}
+                                    name="flag_type"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <div className="flex items-center h-[20px]">
+                                                <FormLabel>{t("form.flag.label")}</FormLabel>
+                                                <div className="flex-1" />
+                                                <FormMessage className="text-[14px]" />
+                                            </div>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder={t("form.flag.placeholder")} />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent className="w-full flex">
+                                                    <SelectItem key="FlagTypeDynamic" value="FlagTypeDynamic">
+                                                        <div className="w-full flex gap-2 items-center h-[30px]">
+                                                            <span className="text-[14px] font-bold">{t("form.flag.dynamic")}</span>
+                                                        </div>
+                                                    </SelectItem>
+                                                    <SelectItem key="FlagTypeStatic" value="FlagTypeStatic">
+                                                        <div className="w-full flex gap-2 items-center h-[30px]">
+                                                            <span className="text-[14px] font-bold">{t("form.flag.static")}</span>
+                                                        </div>
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormDescription>
+                                                {t("form.flag.description")}
+                                            </FormDescription>
+                                        </FormItem>
+                                    )}
+                                />
                                 <FormField
                                     control={form.control}
                                     name="judge_config.flag_template"
@@ -833,103 +879,25 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                                 <Input {...field} />
                                             </FormControl>
                                             <div className="flex flex-col text-[12px] text-foreground/60">
-                                                <span>Flag支持模板变量</span>
-                                                <span>[team_hash] 部分会被替换成队伍唯一标识符</span>
-                                                <span>[team_name] 部分会被替换成队伍名称</span>
-                                                <span>[game_id] 部分会被替换成比赛ID</span>
-                                                <span>[uuid] 部分会被替换成随机UUID</span>
-                                                <span>[random_string_??] 部分会被替换成随机字符串, 其中??表示字符串长度</span>
-                                                <span>如果你在题目设置中选择了动态Flag, 将会启用Leet进行反作弊</span>
-                                                <span>模板变量部分不会被Leet替换</span>
+                                                <Trans
+                                                    ns='challenge_edit'
+                                                    i18nKey="form.flag.info"
+                                                    components={{
+                                                        span: <span />,
+                                                        br: <br />
+                                                    }}
+                                                />
                                             </div>
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="flag_type"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <div className="flex items-center h-[20px]">
-                                                <FormLabel>Flag类型</FormLabel>
-                                                <div className="flex-1" />
-                                                <FormMessage className="text-[14px]" />
-                                            </div>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="选择一个Flag类型" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent className="w-full flex">
-                                                    <SelectItem key="FlagTypeDynamic" value="FlagTypeDynamic">
-                                                        <div className="w-full flex gap-2 items-center h-[30px]">
-                                                            <span className="text-[14px] font-bold">动态Flag (强制启用Leet)</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                    <SelectItem key="FlagTypeStatic" value="FlagTypeStatic">
-                                                        <div className="w-full flex gap-2 items-center h-[30px]">
-                                                            <span className="text-[14px] font-bold">静态Flag (无反作弊)</span>
-                                                        </div>
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormDescription>
-                                                请务必正确选择 Flag 类型, 在动态 Flag 模式下平台回使用Leet为每只队伍生成不同但是看起来相似的 Flag, 请你不要使用过短的 Flag
-                                            </FormDescription>
                                         </FormItem>
                                     )}
                                 />
                             </>
                         )}
 
-                        <div className="grid grid-cols-3 gap-4 mt-4">
-                            <FormField
-                                control={form.control}
-                                name="allow_wan"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>允许外网</FormLabel>
-                                            <FormDescription>
-                                                如果关闭, 则容器无法访问外部网络
-                                            </FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="allow_dns"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
-                                        <div className="space-y-0.5">
-                                            <FormLabel>DNS出网</FormLabel>
-                                            <FormDescription>
-                                                只有不出网时该选项才生效
-                                            </FormDescription>
-                                        </div>
-                                        <FormControl>
-                                            <Switch
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
                         {/* 动态容器列表 */}
                         <div className="mt-6">
                             <div className="flex items-center mb-4">
-                                <span className="text-lg font-semibold">容器列表</span>
+                                <span className="text-lg font-semibold">{t("container.list")}</span>
                                 <div className="flex-1" />
                                 <Button
                                     type="button"
@@ -949,7 +917,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                     }
                                 >
                                     <PlusCircle />
-                                    添加容器
+                                    {t("container.add")}
                                 </Button>
                             </div>
                             {containerFields.length > 0 ? containerFields.map((container, index) => (
@@ -960,13 +928,56 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                     removeContainer={removeContainer}
                                 />
                             )) : (
-                                <span className="text-sm text-foreground/70">还没有容器哦</span>
+                                <span className="text-sm text-foreground/70">{t("container.empty")}</span>
                             )}
                         </div>
 
+                        {containerFields.length > 0 && <div className="grid grid-cols-3 gap-4 mt-4">
+                            <FormField
+                                control={form.control}
+                                name="allow_wan"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
+                                        <div className="space-y-0.5">
+                                            <FormLabel>{t("container.wan.label")}</FormLabel>
+                                            <FormDescription>
+                                                {t("container.wan.description")}
+                                            </FormDescription>
+                                        </div>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="allow_dns"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
+                                        <div className="space-y-0.5">
+                                            <FormLabel>{t("container.dns.label")}</FormLabel>
+                                            <FormDescription>
+                                                {t("container.dns.description")}
+                                            </FormDescription>
+                                        </div>
+                                        <FormControl>
+                                            <Switch
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>}
+
                         <div className="mt-6">
                             <div className="flex items-center mb-4">
-                                <span className="text-lg font-semibold">附件列表</span>
+                                <span className="text-lg font-semibold">{t("attachment.list")}</span>
                                 <div className="flex-1" />
                                 <Button
                                     type="button"
@@ -984,7 +995,7 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                     }
                                 >
                                     <PlusCircle />
-                                    添加附件
+                                    {t("attachment.add")}
                                 </Button>
                             </div>
                             {attachmentsFields.length > 0 ? attachmentsFields.map((attachment, index) => (
@@ -1014,14 +1025,14 @@ export function EditChallengeView({ challenge_info }: { challenge_info: AdminCha
                                     }}
                                 />
                             )) : (
-                                <span className="text-sm text-foreground/70">还没有附件哦</span>
+                                <span className="text-sm text-foreground/70">{t("attachment.empty")}</span>
                             )}
                         </div>
 
                         <div className="flex">
                             <Button type="submit">
                                 <Save />
-                                提交
+                                {isCreate ? t("title.create") : t("title.update")}
                             </Button>
                         </div>
                     </form>

@@ -142,7 +142,7 @@ const PageHeader = () => {
                         )}
                     </div>
                 </div>
-                <div className="flex md:hidden items-center h-full w-full px-5">
+                <div className="flex md:hidden items-center h-full w-full px-5 pt-5">
                     <div className="flex w-full justify-start ml-4">
                         <Link to={`/`} className="flex items-center">
                             <img

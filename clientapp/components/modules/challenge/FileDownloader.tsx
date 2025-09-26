@@ -72,7 +72,7 @@ const FileDownloader = (
                     const pump = async () => {
                         const { done, value } = await reader.read();
                         if (done) {
-                            const blob = new Blob(chunks);
+                            const blob = new Blob(chunks as BlobPart[], { type: "application/octet-stream" });
                             const downloadUrl = URL.createObjectURL(blob);
 
                             setDownloadSpeed({

@@ -3,6 +3,7 @@
         "prev": "上一页",
         "next": "下一页"
     },
+    "action": "操作",
     "events": {
         "title": "比赛事件",
         "auto": "自动更新",
@@ -81,6 +82,10 @@
         "visible": {
             "label": "是否可见",
             "description": "比赛是否可见"
+        },
+        "group_invite_code_enable": {
+            "label": "启用组邀请码",
+            "description": "启动组邀请码后必须使用分组邀请码才能报名"
         },
         "icon": {
             "label": "比赛图标",
@@ -190,7 +195,11 @@
         },
         "option": "可选",
         "time": "创建时间",
-        "action": "操作",
+        "invite_code": "邀请码(仅在启用组邀请码后有效)",
+        "people_count": "队伍数量",
+        "group_id": "分组ID",
+        "copy": "复制邀请码",
+        "copy_success": "邀请码已复制到剪贴板",
         "empty": "暂无分组，点击\"创建分组\"开始添加"
     },
     "notice": {
@@ -264,13 +273,79 @@
         "list": "成员列表",
         "user_id": "用户ID",
         "slogan": "队伍口号",
+        "group_name": "分组名称",
         "menu": {
             "title": "打开菜单",
             "copy": "复制队伍ID"
         },
-        "empty":"暂无队伍数据",
+        "empty": "暂无队伍数据",
         "row": "列显示",
         "select": "{{a}} / {{b}} 行已选择",
         "support": "支持队伍名, 队伍ID, 成员用户名, 成员用户ID, 邀请码, 队伍Hash, 队伍口号"
+    },
+    "container": {
+        "status": {
+            "running": "运行中",
+            "stopped": "已停止",
+            "starting": "启动中",
+            "error": "错误",
+            "stopping": "停止中",
+            "queueing": "队列中",
+            "empty": "无容器",
+            "unknow": "未知"
+        },
+        "table": {
+            "select": {
+                "header": "全选",
+                "cell": "选择行"
+            },
+            "expire": "过期时间",
+            "ports": "访问入口",
+            "no_port": "无可用链接"
+        },
+        "stop": {
+            "stop": "停止容器",
+            "title": "确认停止",
+            "description": "您确定要停止这个容器吗？",
+            "pending": "正在停止容器...",
+            "success": "容器正在停止",
+            "error": "停止容器失败",
+            "batch": {
+                "title": "批量停止 ({{count}})",
+                "select": "请至少选择一个容器",
+                "confirm": "确认批量停止",
+                "description": "您确定要停止选中的 {{count}} 个容器吗？",
+                "pending": "正在停止 {{count}} 个容器...",
+                "success1": "成功停止 {{count}} 个容器",
+                "success2": "成功停止容器 {{s}} 个，失败 {{f}} 个",
+                "error": "批量停止容器失败"
+            }
+        },
+        "extend": {
+            "title": "延长容器时间",
+            "pending": "正在延长容器时间...",
+            "success": "容器时间已延长",
+            "error": "延长容器时间失败"
+        },
+        "flag": {
+            "title": "复制Flag",
+            "pending": "正在获取容器中的Flag...",
+            "success": "Flag已复制到剪贴板",
+            "error": "获取容器Flag失败"
+        },
+        "terminal": {
+            "title": "容器终端",
+            "select": "选择一个容器",
+            "copy": {
+                "id": "复制容器ID",
+                "pod": "复制PodID"
+            }
+        },
+        "search": "支持队伍ID, PodID, 容器ID, 队伍名称, 题目名称, 题目ID, 队伍ID",
+        "show": {
+            "error": "显示错误容器",
+            "item": "显示项目"
+        },
+        "empty": "暂无容器数据"
     }
 }

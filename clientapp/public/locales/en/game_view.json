@@ -34,6 +34,7 @@
         "participant": "Participant",
         "data_error": " incomplete data",
         "png_error": "Save Points Chart Error",
+        "show_group_tags": "Show Group Tags",
         "filename": " Scoreboard",
         "png": "PointsChart",
         "subject": "CTF Competition",

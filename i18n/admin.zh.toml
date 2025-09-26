@@ -46,6 +46,14 @@ other = "加载题目列表失败"
 description = "创建题目失败"
 other = "创建题目失败"
 
+[FailedToCreateWithoutContainer]
+description = "动态Flag需配置容器信息"
+other = "动态Flag需配置容器信息"
+
+[InvalidFlagTemplate]
+description = "Flag模板至少有3个字符"
+other = "Flag模板至少有3个字符"
+
 [FailedToDeleteChallenge]
 description = "删除题目失败"
 other = "删除题目失败"

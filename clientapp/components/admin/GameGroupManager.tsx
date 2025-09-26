@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from 'components/ui/button';
 import { Input } from 'components/ui/input';
 import { Textarea } from 'components/ui/textarea';
@@ -32,29 +32,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'react-toastify/unstyled';
 import { api } from 'utils/ApiHelper';
-import { PlusCircle, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, Pencil, Trash2, Clipboard } from 'lucide-react';
 import AlertConformer from 'components/modules/AlertConformer';
 import { useTranslation } from 'react-i18next';
-
-interface GameGroup {
-    group_id: number;
-    group_name: string;
-    group_description?: string;
-    display_order: number;
-    created_at: string;
-    updated_at: string;
-}
+import dayjs from 'dayjs';
+import { AdminGameGroupItem } from 'utils/A1API';
+import copy from 'copy-to-clipboard';
+import useSWR from 'swr';
 
 interface GameGroupManagerProps {
     gameId: number;
 }
 
 export function GameGroupManager({ gameId }: GameGroupManagerProps) {
-    const [groups, setGroups] = useState<GameGroup[]>([]);
-    const [loading, setLoading] = useState(false);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-    const [editingGroup, setEditingGroup] = useState<GameGroup | null>(null);
+    const [editingGroup, setEditingGroup] = useState<AdminGameGroupItem | null>(null);
 
     const { t } = useTranslation("game_edit")
     const { t: commonT } = useTranslation()
@@ -83,23 +76,15 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
     });
 
     // 加载分组列表
-    const loadGroups = async () => {
-        setLoading(true);
+    const {
+        data: groups = [],
+        isLoading: loading,
+        mutate: loadGroups
+    } = useSWR<AdminGameGroupItem[]>(
+        `/api/admin/game/${gameId}/groups`,
+        () => api.admin.adminGetGameGroups(gameId).then((res) => res.data.data)
+    )
 
-        api.admin.adminGetGameGroups(gameId).then((response) => {
-            const groups = (response.data.data || []).map((group: any) => ({
-                group_id: group.group_id,
-                group_name: group.group_name,
-                group_description: group.group_description || group.description,
-                display_order: group.display_order || 0,
-                created_at: group.created_at,
-                updated_at: group.updated_at,
-            }));
-            setGroups(groups);
-        }).finally(() => {
-            setLoading(false);
-        })
-    };
 
     // 创建分组
     const handleCreateGroup = async (data: GroupFormData) => {
@@ -140,16 +125,12 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
     };
 
     // 编辑分组
-    const handleEditGroup = (group: GameGroup) => {
+    const handleEditGroup = (group: AdminGameGroupItem) => {
         setEditingGroup(group);
         editForm.setValue('group_name', group.group_name);
         editForm.setValue('description', group.group_description || '');
         setIsEditDialogOpen(true);
     };
-
-    useEffect(() => {
-        loadGroups();
-    }, [gameId]);
 
     return (
         <div className="space-y-4">
@@ -158,7 +139,7 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                     <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
-                            <PlusCircle className="w-4 h-4 mr-2" />
+                            <PlusCircle className="w-4 h-4" />
                             {t("group.add.button")}
                         </Button>
                     </DialogTrigger>
@@ -221,10 +202,13 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
                 <Table>
                     <TableHeader>
                         <TableRow>
+                            <TableHead>{t("group.group_id")}</TableHead>
                             <TableHead>{t("group.add.name.label")}</TableHead>
                             <TableHead>{t("group.add.info.label")}</TableHead>
                             <TableHead>{t("group.time")}</TableHead>
-                            <TableHead className="text-right">{t("group.action")}</TableHead>
+                            <TableHead>{t("group.invite_code")}</TableHead>
+                            <TableHead>{t("group.people_count")}</TableHead>
+                            <TableHead className="text-right">{t("action")}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -243,12 +227,19 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
                         ) : (
                             groups.map((group) => (
                                 <TableRow key={group.group_id}>
+                                    <TableCell className="font-medium">{group.group_id}</TableCell>
                                     <TableCell className="font-medium">{group.group_name}</TableCell>
                                     <TableCell className="max-w-xs truncate">
                                         {group.group_description || '-'}
                                     </TableCell>
                                     <TableCell>
-                                        {new Date(group.created_at).toLocaleDateString()}
+                                        {dayjs(group.created_at).format('YYYY-MM-DD HH:mm:ss')}
+                                    </TableCell>
+                                    <TableCell>
+                                        {group.invite_code || "NULL"}
+                                    </TableCell>
+                                    <TableCell>
+                                        {group.people_count }
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex items-center justify-end gap-2">
@@ -259,6 +250,17 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
                                                 onClick={() => handleEditGroup(group)}
                                             >
                                                 <Pencil className="w-4 h-4" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                type="button"
+                                                onClick={() => {
+                                                    copy(group.invite_code || "");
+                                                    toast.success(t("group.copy_success"));
+                                                }}
+                                            >
+                                                <Clipboard className="w-4 h-4" />
                                             </Button>
                                             <AlertConformer
                                                 title={t("group.timeline.delete.title")}

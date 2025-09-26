@@ -72,6 +72,7 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
             second_blood_reward: game_info.second_blood_reward,
             third_blood_reward: game_info.third_blood_reward,
             team_policy: game_info.team_policy,
+            group_invite_code_enable: game_info.group_invite_code_enable,
             stages: game_info.stages ? game_info.stages.map((stage) => ({
                 stage_name: stage.stage_name,
                 start_time: dayjs(stage.start_time).toDate(),
@@ -141,6 +142,7 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
             visible: values.visible,
             team_policy: values.team_policy,
             challenges: values.challenges,
+            group_invite_code_enable: values.group_invite_code_enable,
             first_blood_reward: values.first_blood_reward,
             second_blood_reward: values.second_blood_reward,
             third_blood_reward: values.third_blood_reward

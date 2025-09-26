@@ -37,7 +37,6 @@ import { setGlobalNavigate } from "utils/ApiHelper";
 import ClientChecker from "components/modules/ClientChecker";
 
 import { SWRConfig } from 'swr'
-import { Loader2 } from "lucide-react";
 
 export const links: Route.LinksFunction = () => [
     // { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -193,7 +192,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                                                 <ClientChecker />
                                                 <div className="bg-background absolute top-0 left-0 w-screen h-screen z-[-1]" />
                                                 {animationPresent && <FancyBackground />}
-                                                <GameSwitchHover animation={true} />
+                                                <GameSwitchHover />
                                                 {screenTooSmall ? (
                                                     <Suspense>{children}</Suspense>
                                                 ) : <ScreenTooSmall />}
@@ -219,12 +218,13 @@ export default function App() {
 
 export function HydrateFallback() {
     return (
-        <div className={`w-screen h-screen select-none flex justify-center items-center z-50 absolute bg-background transition-opacity duration-300 ease-in-out overflow-hidden opacity-100`}>
-            <div className="flex">
-                <Loader2 className="animate-spin" />
-                <span className="font-bold ml-3">Page Loading...</span>
-            </div>
-        </div>
+        // <div className={`w-screen h-screen select-none flex justify-center items-center z-50 absolute bg-background transition-opacity duration-300 ease-in-out overflow-hidden opacity-100`}>
+        //     <div className="flex">
+        //         <Loader2 className="animate-spin" />
+        //         <span className="font-bold ml-3">Page Loading...</span>
+        //     </div>
+        // </div>
+        <></>
     );
 }
 

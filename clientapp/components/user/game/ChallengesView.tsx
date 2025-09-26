@@ -3,7 +3,7 @@ import { CategorySidebar } from "components/user/game/CategorySideBar";
 
 import { toastNewNotice, toastNewHint } from "utils/ToastUtil";
 
-import { Mdx } from "components/MdxCompoents";
+import LazyMdxCompoents from "components/modules/LazyMdxCompoents";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { api, createSkipGlobalErrorConfig } from "utils/ApiHelper"
@@ -360,7 +360,7 @@ export function ChallengesView({
     const memoizedGameDescription = useMemo(() => {
         return gameDescription ? (
             <div className="p-10">
-                <Mdx source={gameDescription || ""} />
+                <LazyMdxCompoents source={gameDescription || ""} />
             </div>
         ) : null;
     }, [gameDescription]); // 只依赖游戏描述

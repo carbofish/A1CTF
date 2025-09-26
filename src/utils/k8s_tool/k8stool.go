@@ -1,6 +1,7 @@
 package k8stool
 
 import (
+	redistool "a1ctf/src/utils/redis_tool"
 	"a1ctf/src/utils/zaphelper"
 	"context"
 	"database/sql/driver"
@@ -36,6 +37,32 @@ func InitNodeAddressMap() {
 
 	for _, nodeIPMap := range nodeIPMaps {
 		NodeAddressMap[nodeIPMap["name"].(string)] = nodeIPMap["address"].(string)
+	}
+}
+
+var NodePortMap map[string]*Allocator = make(map[string]*Allocator)
+
+func InitNodePortRangeMap() {
+
+	var nodePortRangeMaps []map[string]interface{}
+	if err := viper.UnmarshalKey("k8s.manual-port-assignments.port-range-map", &nodePortRangeMaps); err != nil {
+		panic(fmt.Errorf("failed to unmarshal k8s.manual-port-assignments.port-range-map: %v", err))
+	}
+
+	nodePortRanges := make(map[string][]PortRange)
+
+	for _, nodeIPMap := range nodePortRangeMaps {
+		nodePort := PortRange{
+			NodeName: nodeIPMap["name"].(string),
+			Start:    nodeIPMap["start"].(int),
+			End:      nodeIPMap["end"].(int),
+		}
+		nodePortRanges[nodePort.NodeName] = append(nodePortRanges[nodePort.NodeName], nodePort)
+	}
+
+	for nodeName, nodePortRange := range nodePortRanges {
+		ownerName := fmt.Sprintf("node-port-map-%s", nodeName)
+		NodePortMap[nodeName] = NewAllocator(redistool.RedisClient, ownerName, ownerName, nodePortRange)
 	}
 }
 
@@ -224,14 +251,27 @@ func CreatePod(podInfo *PodInfo) error {
 
 		containers = append(containers, container)
 	}
+
+	fastVal := false
+
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   podInfo.Name,
 			Labels: podInfo.Labels,
 		},
 		Spec: corev1.PodSpec{
-			Containers: containers,
+			Containers:         containers,
+			EnableServiceLinks: &fastVal,
 		},
+	}
+
+	secretNames := viper.GetStringSlice("k8s.pull-secret-names")
+	if len(secretNames) > 0 {
+		secrets := make([]corev1.LocalObjectReference, len(secretNames))
+		for i, secretName := range secretNames {
+			secrets[i] = corev1.LocalObjectReference{Name: secretName}
+		}
+		pod.Spec.ImagePullSecrets = secrets
 	}
 
 	// 创建 Pod
@@ -240,36 +280,38 @@ func CreatePod(podInfo *PodInfo) error {
 		return fmt.Errorf("error creating pod: %v", err)
 	}
 
-	// 构造 Service 的端口配置
-	var servicePorts []corev1.ServicePort
-	for c_index, c := range podInfo.Containers {
-		if len(c.ExposePorts) > 0 {
-			for _, port := range c.ExposePorts {
-				servicePort := corev1.ServicePort{
-					Name:       fmt.Sprintf("%d-%s", c_index, port.Name), // 可根据需要自定义 ServicePort 名称
-					Port:       port.Port,
-					TargetPort: intstr.FromInt(int(port.Port)),
+	if !viper.GetBool("k8s.manual-port-assignments.enabled") {
+		// 构造 Service 的端口配置
+		var servicePorts []corev1.ServicePort
+		for c_index, c := range podInfo.Containers {
+			if len(c.ExposePorts) > 0 {
+				for _, port := range c.ExposePorts {
+					servicePort := corev1.ServicePort{
+						Name:       fmt.Sprintf("%d-%s", c_index, port.Name), // 可根据需要自定义 ServicePort 名称
+						Port:       port.Port,
+						TargetPort: intstr.FromInt(int(port.Port)),
+					}
+					servicePorts = append(servicePorts, servicePort)
 				}
-				servicePorts = append(servicePorts, servicePort)
 			}
 		}
-	}
 
-	if len(servicePorts) > 0 {
-		service := &corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: podInfo.Name,
-			},
-			Spec: corev1.ServiceSpec{
-				Type:     corev1.ServiceTypeNodePort,
-				Selector: podInfo.Labels,
-				Ports:    servicePorts,
-			},
-		}
+		if len(servicePorts) > 0 {
+			service := &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: podInfo.Name,
+				},
+				Spec: corev1.ServiceSpec{
+					Type:     corev1.ServiceTypeNodePort,
+					Selector: podInfo.Labels,
+					Ports:    servicePorts,
+				},
+			}
 
-		_, err = clientset.CoreV1().Services(namespace).Create(context.Background(), service, metav1.CreateOptions{})
-		if err != nil {
-			return fmt.Errorf("error creating service: %v", err)
+			_, err = clientset.CoreV1().Services(namespace).Create(context.Background(), service, metav1.CreateOptions{})
+			if err != nil {
+				return fmt.Errorf("error creating service: %v", err)
+			}
 		}
 	}
 
@@ -392,24 +434,87 @@ func GetPodPorts(podInfo *PodInfo) (*PodPorts, error) {
 	nodeName := pod.Spec.NodeName
 
 	// 获取对应 Service 信息
-	service, err := clientset.CoreV1().Services(namespace).Get(context.Background(), podInfo.Name, metav1.GetOptions{})
-	if err != nil {
-		return nil, fmt.Errorf("error getting service: %v", err)
-	}
+	if !viper.GetBool("k8s.manual-port-assignments.enabled") {
+		service, err := clientset.CoreV1().Services(namespace).Get(context.Background(), podInfo.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("error getting service: %v", err)
+		}
 
-	result := make(PodPorts, 0)
-	for _, port := range service.Spec.Ports {
-		result = append(result, PodPort{
-			Name:     port.Name,
-			Port:     port.Port,
-			NodePort: port.NodePort,
-			NodeName: nodeName,
-		})
+		result := make(PodPorts, 0)
+		for _, port := range service.Spec.Ports {
+			result = append(result, PodPort{
+				Name:     port.Name,
+				Port:     port.Port,
+				NodePort: port.NodePort,
+				NodeName: nodeName,
+			})
+		}
+
+		return &result, nil
+	} else {
+		portAlloc, exists := NodePortMap[nodeName]
+		if !exists {
+			return nil, fmt.Errorf("node %s not found in port range map", nodeName)
+		}
+
+		result := make(PodPorts, 0)
+		var servicePorts []corev1.ServicePort
+		for c_index, c := range podInfo.Containers {
+			if len(c.ExposePorts) > 0 {
+				for _, port := range c.ExposePorts {
+
+					availablePort, err := portAlloc.Get()
+					if err != nil {
+						return nil, err
+					}
+
+					servicePort := corev1.ServicePort{
+						Name:       fmt.Sprintf("%d-%s", c_index, port.Name), // 可根据需要自定义 ServicePort 名称
+						Port:       port.Port,
+						TargetPort: intstr.FromInt(int(port.Port)),
+						NodePort:   int32(availablePort),
+					}
+					servicePorts = append(servicePorts, servicePort)
+
+					result = append(result, PodPort{
+						Name:     fmt.Sprintf("%d-%s", c_index, port.Name),
+						Port:     port.Port,
+						NodePort: int32(availablePort),
+						NodeName: nodeName,
+					})
+				}
+			}
+		}
+
+		if len(servicePorts) > 0 {
+			service := &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: podInfo.Name,
+				},
+				Spec: corev1.ServiceSpec{
+					Type:     corev1.ServiceTypeNodePort,
+					Selector: podInfo.Labels,
+					Ports:    servicePorts,
+				},
+			}
+
+			_, err = clientset.CoreV1().Services(namespace).Create(context.Background(), service, metav1.CreateOptions{})
+			if err != nil {
+				return nil, fmt.Errorf("failed creating service with manual port assignment: %v", err)
+			}
+		}
+
+		return &result, nil
 	}
-	return &result, nil
 }
 
-func DeletePod(podInfo *PodInfo) error {
+func DeletePod(podInfo *PodInfo, ports []int32) error {
+	for _, port := range ports {
+		for _, allocator := range NodePortMap {
+			allocator.Release(int(port))
+		}
+	}
+
 	return forceDeletePod(podInfo.Name)
 }
 

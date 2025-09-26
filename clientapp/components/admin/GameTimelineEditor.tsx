@@ -7,7 +7,7 @@ import { Label } from "components/ui/label";
 import { ScrollArea } from "components/ui/scroll-area";
 import { Badge } from "components/ui/badge";
 import { format } from "date-fns";
-import { Clock, Plus, Edit, Trash2, GripVertical } from "lucide-react";
+import { Clock, Edit, Trash2, GripVertical, PlusCircle } from "lucide-react";
 import { challengeCategoryIcons } from "utils/ClientAssets";
 import { EditGameFormSchema } from './game/EditGameSchema';
 import { UseFormReturn, useWatch } from 'react-hook-form';
@@ -345,7 +345,7 @@ export function GameTimelineEditor({
                         <Dialog open={isCreatingTimePoint} onOpenChange={setIsCreatingTimePoint}>
                             <DialogTrigger asChild>
                                 <Button variant="outline" size="sm">
-                                    <Plus className="h-4 w-4 mr-2" />
+                                    <PlusCircle className="h-4 w-4" />
                                     {t("timeline.add.button")}
                                 </Button>
                             </DialogTrigger>

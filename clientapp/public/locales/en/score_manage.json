@@ -1,0 +1,58 @@
+{
+    "title": "Score Adjustment Management",
+    "detail": "Manage game score adjustment records",
+    "error": "Failed to load data",
+    "cheat": "Cheating Penalty",
+    "rewart": "Reward Bonus",
+    "other": "Other Adjustment",
+    "unknow": "Unknown",
+    "create": {
+        "title": "Add Adjustment",
+        "success": "Score adjustment created successfully",
+        "dialog": "Add Score Adjustment",
+        "empty": "Add a record"
+    },
+    "update": {
+        "title": "Update Adjustment",
+        "success": "Score adjustment updated successfully",
+        "dialog": "Edit Score Adjustment"
+    },
+    "delete": {
+        "title": "Confirm Delete Score Adjustment",
+        "dialog": "Are you sure you want to delete this score adjustment record? This action cannot be undone!",
+        "success": "Score adjustment deleted successfully"
+    },
+    "back": "Back to Games",
+    "search": "Search by team name or reason...",
+    "team": {
+        "label": "Team Name",
+        "search": "Search team name...",
+        "searching": "Searching...",
+        "empty": "No matching team found",
+        "selected": "Selected"
+    },
+    "type": "Adjust Type",
+    "change": {
+        "label": "Score Change",
+        "placeholder": "Enter score change (positive for bonus, negative for penalty)"
+    },
+    "reason": {
+        "label": "Adjust Reason",
+        "placeholder": "Enter the reason for adjustment"
+    },
+    "history": {
+        "title": "Adjustment Records",
+        "count": "{{count}} records",
+        "empty": {
+            "1": "No score adjustment records",
+            "2": "No matching records found",
+            "3": "No score adjustments yet"
+        }
+    },
+    "operation": {
+        "label": "Action",
+        "time": "Adjust Time",
+        "operator": "Operator"
+    },
+    "id": "Record ID"
+}

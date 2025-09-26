@@ -113,6 +113,7 @@ func UserCreateGameContainer(c *gin.Context) {
 
 	// 用户操作靶机的 60 秒 CD
 	operationName := fmt.Sprintf("%s:containerOperation", user.UserID)
+	timeLimit = getTimeLimitConfig()
 	locked := redistool.LockForATime(operationName, timeLimit)
 
 	if !locked {
@@ -149,6 +150,13 @@ func UserCreateGameContainer(c *gin.Context) {
 		return
 	}
 
+	// k8s 开启 pod 需要 Challenge的AllowWAN/AllowDNS 和 TeamFlag的FlagContent 的信息
+	newContainer.Challenge = gameChallenge.Challenge
+	newContainer.TeamFlag = flag
+
+	// 异步开启k8s的pod任务
+	tasks.NewContainerStartTask(newContainer)
+
 	// 记录创建容器请求
 	tasks.LogUserOperation(c, models.ActionStartContainer, models.ResourceTypeContainer, &newContainer.ContainerID, map[string]interface{}{
 		"game_id":        game.GameID,
@@ -157,6 +165,7 @@ func UserCreateGameContainer(c *gin.Context) {
 		"challenge_id":   gameChallenge.ChallengeID,
 		"challenge_name": gameChallenge.Challenge.Name,
 		"expire_time":    newContainer.ExpireTime,
+		"flag":           newContainer.TeamFlag.FlagContent,
 	})
 
 	c.JSON(http.StatusOK, gin.H{
@@ -210,6 +219,7 @@ func UserCloseGameContainer(c *gin.Context) {
 
 	// 用户操作靶机的 60 秒 CD
 	operationName := fmt.Sprintf("%s:containerOperation", user.UserID)
+	timeLimit = getTimeLimitConfig()
 	locked := redistool.LockForATime(operationName, timeLimit)
 
 	if !locked {
@@ -262,6 +272,9 @@ func UserCloseGameContainer(c *gin.Context) {
 		"container_id":   curContainer.ContainerID,
 	})
 
+	// 异步调用k8s删除pod任务
+	tasks.NewContainerStopTask(curContainer)
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "OK",
@@ -275,6 +288,7 @@ func UserExtendGameContainer(c *gin.Context) {
 	challengeID := c.MustGet("challenge_id").(int64)
 
 	operationName := fmt.Sprintf("%s:containerOperation", user.UserID)
+	timeLimit = getTimeLimitConfig()
 	locked := redistool.LockForATime(operationName, timeLimit)
 
 	if !locked {
@@ -371,8 +385,10 @@ func UserExtendGameContainer(c *gin.Context) {
 	})
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    200,
-		"message": "OK",
+		"code": 200,
+		"data": gin.H{
+			"new_expire_time": newExpireTime,
+		},
 	})
 }
 

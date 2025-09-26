@@ -3,6 +3,7 @@
         "prev": "Prev",
         "next": "Next"
     },
+    "action": "Actions",
     "events": {
         "title": "Game Events",
         "auto": "Auto Update",
@@ -81,6 +82,10 @@
         "visible": {
             "label": "Visibility",
             "description": "Whether this game is visible"
+        },
+        "group_invite_code_enable": {
+            "label": "Enable Group Invite Code",
+            "description": "If enabled, participants must use a group invite code to register"
         },
         "icon": {
             "label": "Game Icon",
@@ -190,7 +195,11 @@
         },
         "option": "Optional",
         "time": "Created At",
-        "action": "Actions",
+        "invite_code": "InviteCode(Only valid if group invite code is enabled)",
+        "people_count": "Number of Teams",
+        "group_id": "Group ID",
+        "copy": "Copy InviteCode",
+        "copy_success": "InviteCode copied to clipboard",
         "empty": "No groups yet. Click \"Create Group\" to add one"
     },
     "notice": {
@@ -264,6 +273,7 @@
         "list": "Member List",
         "user_id": "User ID",
         "slogan": "Team Slogan",
+        "group_name": "Group Name",
         "menu": {
             "title": "Open Menu",
             "copy": "Copy Team ID"
@@ -272,5 +282,70 @@
         "row": "Columns",
         "select": "{{a}} / {{b}} rows selected",
         "support": "Supports team name, team ID, member username, member user ID, invite code, team hash, team slogan"
+    },
+    "container": {
+        "status": {
+            "running": "Running",
+            "stopped": "Stopped",
+            "starting": "Starting",
+            "error": "Error",
+            "stopping": "Stopping",
+            "queueing": "Queued",
+            "empty": "No Containers",
+            "unknow": "Unknown"
+        },
+        "table": {
+            "select": {
+                "header": "Select All",
+                "cell": "Select Row"
+            },
+            "expire": "Expiration Time",
+            "ports": "Access Endpoints",
+            "no_port": "No Available Links"
+        },
+        "stop": {
+            "stop": "Stop Container",
+            "title": "Confirm Stop",
+            "description": "Are you sure you want to stop this container?",
+            "pending": "Stopping container...",
+            "success": "Container is stopping",
+            "error": "Failed to stop container",
+            "batch": {
+                "title": "Batch Stop ({{count}})",
+                "select": "Please select at least one container",
+                "confirm": "Confirm Batch Stop",
+                "description": "Are you sure you want to stop the selected {{count}} containers?",
+                "pending": "Stopping {{count}} containers...",
+                "success1": "Successfully stopped {{count}} containers",
+                "success2": "Stopped {{s}} containers successfully, failed {{f}}",
+                "error": "Failed to batch stop containers"
+            }
+        },
+        "extend": {
+            "title": "Extend Container Time",
+            "pending": "Extending container time...",
+            "success": "Container time extended",
+            "error": "Failed to extend container time"
+        },
+        "flag": {
+            "title": "Copy Flag",
+            "pending": "Retrieving flag from container...",
+            "success": "Flag copied to clipboard",
+            "error": "Failed to retrieve container flag"
+        },
+        "terminal": {
+            "title": "Container Terminal",
+            "select": "Select One",
+            "copy": {
+                "id": "Copy Container ID",
+                "pod": "Copy Pod ID"
+            }
+        },
+        "search": "Supports team ID, Pod ID, container ID, team name, challenge name, challenge ID, team ID",
+        "show": {
+            "error": "Show Error",
+            "item": "Show Items"
+        },
+        "empty": "No container data"
     }
 }

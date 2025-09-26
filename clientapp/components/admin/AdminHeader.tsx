@@ -7,14 +7,14 @@ import { useGlobalVariableContext } from "contexts/GlobalVariableContext";
 
 export function AdminHeader() {
 
-    const path = useLocation().pathname.split("/").slice(-1)[0];
+    const path = useLocation().pathname;
     const navigate = useNavigate()
 
     const { clientConfig } = useGlobalVariableContext()
     const { t } = useTranslation("admin")
 
-    const get_button_style = function (name: string) {
-        return path == name ? "default" : "ghost";
+    const get_button_style = function (regex: string) {
+        return path.match(regex) ? "default" : "ghost";
     }
 
     const move_to_page = function (name: string) {
@@ -36,13 +36,13 @@ export function AdminHeader() {
                     />
                     <span className="text-lg font-bold">{clientConfig?.systemName ?? "A1CTF"} {t("title")}</span>
                 </div>
-                <Button variant={get_button_style("games")} onClick={() => move_to_page("games")} className="font-bold"><Flag />{t("games")}</Button>
-                <Button variant={get_button_style("challenges")} onClick={() => move_to_page("challenges")} className="font-bold"><Dices />{t("challenges")}</Button>
-                <Button variant={get_button_style("users")} onClick={() => move_to_page("users")} className="font-bold"><ContactRound />{t("users")}</Button>
-                <Button variant={get_button_style("logs")} onClick={() => move_to_page("logs")} className="font-bold"><Cable />{t("logs")}</Button>
+                <Button variant={get_button_style("^/admin/games.*")} onClick={() => move_to_page("games")} className="font-bold"><Flag />{t("games")}</Button>
+                <Button variant={get_button_style("^/admin/challenges.*")} onClick={() => move_to_page("challenges")} className="font-bold"><Dices />{t("challenges")}</Button>
+                <Button variant={get_button_style("^/admin/users.*")} onClick={() => move_to_page("users")} className="font-bold"><ContactRound />{t("users")}</Button>
+                <Button variant={get_button_style("^/admin/logs.*")} onClick={() => move_to_page("logs")} className="font-bold"><Cable />{t("logs")}</Button>
                 <div className="flex-1" />
-                <Button variant={get_button_style("system")} onClick={() => move_to_page("system/basic")} className="font-bold"><Settings />{t("system")}</Button>
-                <Button variant={get_button_style("system")} onClick={() => navigate("/")} className="font-bold"><Home />{t("home")}</Button>
+                <Button variant={get_button_style("^/admin/system/.*")} onClick={() => move_to_page("system/basic")} className="font-bold"><Settings />{t("system")}</Button>
+                <Button variant={get_button_style("^/$")} onClick={() => navigate("/")} className="font-bold"><Home />{t("home")}</Button>
                 <ThemeSwitcher />
             </div>
         </header>

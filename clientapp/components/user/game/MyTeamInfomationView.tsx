@@ -505,7 +505,7 @@ const MyTeamInfomationView = ({
                                                     <div className={`font-medium`}>{getAdjustmentTypeInfo(adjustedScore.adjustment_type).label}</div>
                                                 </div>
                                                 <div className="text-sm text-muted-foreground">
-                                                    {t("adjust_reason")}: {adjustedScore.reason} {t("adjust_time")}: {dayjs(adjustedScore.created_at).format('YYYY-MM-DD HH:mm:ss')}
+                                                    {t("adjust_reason")}: {adjustedScore.reason} | {t("adjust_time")}: {dayjs(adjustedScore.created_at).format('YYYY-MM-DD HH:mm:ss')}
                                                 </div>
                                             </div>
                                             <div className="flex items-center space-x-2">

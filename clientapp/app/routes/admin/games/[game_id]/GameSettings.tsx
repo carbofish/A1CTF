@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router";
 import { AdminFullGameInfo } from "utils/A1API";
 import { api } from "utils/ApiHelper";
 import { LoadingPage } from "components/LoadingPage";
+import useSWR from "swr";
 
 
 export default function GameSettings() {
@@ -16,18 +17,22 @@ export default function GameSettings() {
         return
     }
 
-    const [gameInfo, setGameInfo] = useState<AdminFullGameInfo>();
-    const [gameInfoFetchError, setGameInfoFetchError] = useState(false);
-    const gid = parseInt(game_id);
+    let gid = 0
+    try {
+        gid = parseInt(game_id)
+    } catch {
+        navigate("/404")
+        return
+    }
 
-    useEffect(() => {
-        // Fetch challenge info
-        api.admin.getGameInfo(gid).then((res) => {
-            setGameInfo(res.data.data);
-        }).catch((_) => {
+    const [gameInfoFetchError, setGameInfoFetchError] = useState(false);
+
+    const { data: gameInfo } = useSWR(
+        `/api/admin/game/${gid}`,
+        () => api.admin.getGameInfo(gid).then(res => res.data.data).catch((_) => {
             setGameInfoFetchError(true)
         })
-    }, [game_id])
+    )
 
     if (!gameInfo) {
         if (gameInfoFetchError) {
