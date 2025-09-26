@@ -491,16 +491,6 @@ func DeleteTeam(c *gin.Context) {
 		}
 	}()
 
-	// 删除队伍相关的加入申请
-	if err := tx.Where("team_id = ?", teamID).Delete(&models.TeamJoinRequest{}).Error; err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
-			Code:    500,
-			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToDeleteTeamJoinRequests"}),
-		})
-		return
-	}
-
 	// 删除队伍
 	if err := tx.Delete(&team).Error; err != nil {
 		tx.Rollback()
