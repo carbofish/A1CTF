@@ -48,11 +48,12 @@ func AdminListTeams(c *gin.Context) {
 			OR team_slogan ILIKE ? 
 			OR team_id::text = ? OR team_hash = ? 
 			OR invite_code = ?
+			OR group_id::text = ?
 			OR EXISTS (
 				SELECT 1 FROM users u 
 				WHERE u.user_id = ANY(teams.team_members) 
 				AND u.username ILIKE ?
-			)`, searchPattern, searchPattern, payload.Search, payload.Search, payload.Search, searchPattern)
+			)`, searchPattern, searchPattern, payload.Search, payload.Search, payload.Search, payload.Search, searchPattern)
 		}
 	}
 
