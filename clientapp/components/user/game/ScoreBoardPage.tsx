@@ -273,6 +273,21 @@ export default function ScoreBoardPage(
             }
             row.push({ v: team.team_name || '', t: 's', s: nameStyle });
 
+            // 分组名称列
+            let groupStyle: any = {
+                alignment: { horizontal: "left", vertical: "center" },
+                border: {
+                    top: { style: "thin", color: { rgb: "E5E7EB" } },
+                    bottom: { style: "thin", color: { rgb: "E5E7EB" } },
+                    left: { style: "thin", color: { rgb: "E5E7EB" } },
+                    right: { style: "thin", color: { rgb: "E5E7EB" } }
+                }
+            };
+            if (teamIndex % 2 === 0 && rank > 3) {
+                groupStyle.fill = { patternType: "solid", fgColor: { rgb: "F9FAFB" } };
+            }
+            row.push({ v: team.group_name || '', t: 's', s: groupStyle });
+
             // 总分列
             let scoreStyle: any = {
                 alignment: { horizontal: "center", vertical: "center" },
@@ -328,6 +343,7 @@ export default function ScoreBoardPage(
         const colWidths = [
             { wch: 8 },  // 排名
             { wch: 20 }, // 队伍名称
+            { wch: 15 },  // 分组名称
             { wch: 10 }, // 总分
         ];
 

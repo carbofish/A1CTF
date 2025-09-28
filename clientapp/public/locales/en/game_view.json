@@ -45,6 +45,7 @@
         "excel_headers": [
             "Rank",
             "Team",
+            "Group",
             "Score"
         ],
         "show": "Show Chart",
