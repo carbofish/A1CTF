@@ -393,48 +393,18 @@ func UserGameGetScoreBoard(c *gin.Context) {
 	}
 
 	// 过滤一遍 Top10，过滤掉没得分的
-	filteredTop10TimeLines := make([]webmodels.TimeLineItem, 0)
+	filteredTop10TimeLines := make([]webmodels.TimeLineItemLowCost, 0)
 
-	for _, top10TimeLine := range scoreBoard.Top10TimeLines {
+	for _, top10TimeLine := range scoreBoard.Top10TimeLinesLowCost {
 		if len(top10TimeLine.Scores) > 0 {
 			filteredTop10TimeLines = append(filteredTop10TimeLines, top10TimeLine)
 		}
 	}
 
-	// 转换两种 TimeLineItem 为低开销版本
-	convertLowCost := func(timelines []webmodels.TimeLineItem) []webmodels.TimeLineItemLowCost {
-		lowCostList := make([]webmodels.TimeLineItemLowCost, 0, len(timelines))
-		for _, item := range timelines {
-			// 先找一个最小值
-			timeBase := int64(1 << 62)
-
-			for _, score := range item.Scores {
-				timeBase = min(timeBase, int64(score.RecordTime))
-			}
-
-			lowCostItem := webmodels.TimeLineItemLowCost{
-				TeamID:   item.TeamID,
-				TeamName: item.TeamName,
-				Scores:   make([]int64, 0, len(item.Scores)),
-				Times:    make([]int64, 0, len(item.Scores)),
-				TimeBase: int64(timeBase),
-			}
-
-			for _, score := range item.Scores {
-				lowCostItem.Scores = append(lowCostItem.Scores, int64(score.Score))
-				lowCostItem.Times = append(lowCostItem.Times, score.RecordTime-timeBase)
-				timeBase = score.RecordTime
-			}
-
-			lowCostList = append(lowCostList, lowCostItem)
-		}
-		return lowCostList
-	}
-
 	result := webmodels.GameScoreboardData{
 		GameID:         game.GameID,
 		Name:           game.Name,
-		Top10TimeLines: convertLowCost(filteredTop10TimeLines),
+		Top10TimeLines: filteredTop10TimeLines,
 		TeamScores:     pageTeamScores,
 		// TeamTimeLines:        convertLowCost(pageTimeLines),
 		SimpleGameChallenges: simpleGameChallenges,
@@ -483,37 +453,11 @@ func UserGameGetScoreBoardTimeLine(c *gin.Context) {
 		return
 	}
 
-	// 转换两种 TimeLineItem 为低开销版本
-	convertLowCost := func(timeline webmodels.TimeLineItem) webmodels.TimeLineItemLowCost {
-		// 先找一个最小值
-		timeBase := int64(1 << 62)
-
-		for _, score := range timeline.Scores {
-			timeBase = min(timeBase, int64(score.RecordTime))
-		}
-
-		lowCostItem := webmodels.TimeLineItemLowCost{
-			TeamID:   timeline.TeamID,
-			TeamName: timeline.TeamName,
-			Scores:   make([]int64, 0, len(timeline.Scores)),
-			Times:    make([]int64, 0, len(timeline.Scores)),
-			TimeBase: int64(timeBase),
-		}
-
-		for _, score := range timeline.Scores {
-			lowCostItem.Scores = append(lowCostItem.Scores, int64(score.Score))
-			lowCostItem.Times = append(lowCostItem.Times, score.RecordTime-timeBase)
-			timeBase = score.RecordTime
-		}
-
-		return lowCostItem
-	}
-
 	var resultTimeLine webmodels.TimeLineItemLowCost
 
-	for _, timeline := range scoreBoard.AllTimeLines {
+	for _, timeline := range scoreBoard.AllTimeLinesLowCost {
 		if timeline.TeamID == *teamID {
-			resultTimeLine = convertLowCost(timeline)
+			resultTimeLine = timeline
 		}
 	}
 

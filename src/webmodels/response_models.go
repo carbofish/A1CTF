@@ -209,11 +209,13 @@ type TeamScoreItem struct {
 }
 
 type CachedGameScoreBoardData struct {
-	FinalScoreBoardMap map[int64]TeamScoreItem
-	Top10TimeLines     []TimeLineItem
-	Top10Teams         []TeamScoreItem
-	AllTimeLines       []TimeLineItem
-	TeamRankings       []TeamScoreItem
+	FinalScoreBoardMap    map[int64]TeamScoreItem
+	Top10TimeLines        []TimeLineItem
+	Top10Teams            []TeamScoreItem
+	AllTimeLines          []TimeLineItem
+	TeamRankings          []TeamScoreItem
+	Top10TimeLinesLowCost []TimeLineItemLowCost
+	AllTimeLinesLowCost   []TimeLineItemLowCost
 }
 
 // Team management responses
