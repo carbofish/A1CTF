@@ -14,6 +14,7 @@ type SolveStatus string
 
 const (
 	SolveCorrect SolveStatus = "SolveCorrect"
+	SolveInvalid SolveStatus = "SolveInvalid"
 )
 
 func (e SolveStatus) Value() (driver.Value, error) {

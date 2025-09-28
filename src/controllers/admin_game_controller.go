@@ -16,6 +16,7 @@ import (
 	"gorm.io/gorm"
 
 	"a1ctf/src/db/models"
+	"a1ctf/src/tasks"
 	dbtool "a1ctf/src/utils/db_tool"
 	"a1ctf/src/utils/general"
 	i18ntool "a1ctf/src/utils/i18n_tool"
@@ -1456,6 +1457,8 @@ func AdminDeleteChallengeSolves(c *gin.Context) {
 		})
 		return
 	}
+
+	tasks.NewRecalculateRankForAChallengeTask(gameID, []int64{challengeID})
 
 	// 构建响应消息
 	var message string

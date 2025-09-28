@@ -210,7 +210,12 @@ func CachedSolvedChallengesForGame(gameID int64) (map[int64][]models.Solve, erro
 	obj, err := GetOrCacheSingleFlight(fmt.Sprintf("solved_challenges_for_game_%d", gameID), func() (interface{}, error) {
 		var totalSolves []models.Solve
 
-		if err := dbtool.DB().Where("game_id = ? AND solve_status = ?", gameID, models.SolveCorrect).Preload("Challenge").Find(&totalSolves).Error; err != nil {
+		cachedGame, err := CachedGameInfo(gameID)
+		if err != nil {
+			return nil, err
+		}
+
+		if err := dbtool.DB().Where("game_id = ? AND solve_status = ? AND solve_time >= ? AND solve_time <= ?", gameID, models.SolveCorrect, cachedGame.StartTime, cachedGame.EndTime).Preload("Challenge").Find(&totalSolves).Error; err != nil {
 			return nil, err
 		}
 
