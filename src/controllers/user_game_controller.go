@@ -373,23 +373,23 @@ func UserGameGetScoreBoard(c *gin.Context) {
 	curEndIdx := min(curStartIdx+size, totalCachedTeamsCount)
 
 	var pageTeamScores []webmodels.TeamScoreItem
-	var pageTimeLines []webmodels.TimeLineItem
+	// var pageTimeLines []webmodels.TimeLineItem
 
 	if totalCachedTeamsCount > 0 && curStartIdx < totalCachedTeamsCount {
 		pageTeamScores = filteredData.FilteredTeamRankings[curStartIdx:curEndIdx]
-		pageTimeLines = filteredData.FilteredTimeLines[curStartIdx:min(curEndIdx, int64(len(filteredData.FilteredTimeLines)))]
+		// pageTimeLines = filteredData.FilteredTimeLines[curStartIdx:min(curEndIdx, int64(len(filteredData.FilteredTimeLines)))]
 
 		// 补全 timelines 不足 teamscores 的部分, 出现这种情况的原因是因为积分榜只有在队伍有得分的情况下才会生成一条记录
-		if len(pageTimeLines) < len(pageTeamScores) {
-			pageTimeLines = append(pageTimeLines, webmodels.TimeLineItem{
-				TeamID:   pageTeamScores[len(pageTimeLines)].TeamID,
-				TeamName: pageTeamScores[len(pageTimeLines)].TeamName,
-				Scores:   make([]webmodels.TimeLineScoreItem, 0),
-			})
-		}
+		// if len(pageTimeLines) < len(pageTeamScores) {
+		// 	pageTimeLines = append(pageTimeLines, webmodels.TimeLineItem{
+		// 		TeamID:   pageTeamScores[len(pageTimeLines)].TeamID,
+		// 		TeamName: pageTeamScores[len(pageTimeLines)].TeamName,
+		// 		Scores:   make([]webmodels.TimeLineScoreItem, 0),
+		// 	})
+		// }
 	} else {
 		pageTeamScores = make([]webmodels.TeamScoreItem, 0)
-		pageTimeLines = make([]webmodels.TimeLineItem, 0)
+		// pageTimeLines = make([]webmodels.TimeLineItem, 0)
 	}
 
 	// 过滤一遍 Top10，过滤掉没得分的
@@ -401,12 +401,42 @@ func UserGameGetScoreBoard(c *gin.Context) {
 		}
 	}
 
+	// 转换两种 TimeLineItem 为低开销版本
+	convertLowCost := func(timelines []webmodels.TimeLineItem) []webmodels.TimeLineItemLowCost {
+		lowCostList := make([]webmodels.TimeLineItemLowCost, 0, len(timelines))
+		for _, item := range timelines {
+			// 先找一个最小值
+			timeBase := int64(1 << 62)
+
+			for _, score := range item.Scores {
+				timeBase = min(timeBase, int64(score.RecordTime))
+			}
+
+			lowCostItem := webmodels.TimeLineItemLowCost{
+				TeamID:   item.TeamID,
+				TeamName: item.TeamName,
+				Scores:   make([]int64, 0, len(item.Scores)),
+				Times:    make([]int64, 0, len(item.Scores)),
+				TimeBase: int64(timeBase),
+			}
+
+			for _, score := range item.Scores {
+				lowCostItem.Scores = append(lowCostItem.Scores, int64(score.Score))
+				lowCostItem.Times = append(lowCostItem.Times, score.RecordTime-timeBase)
+				timeBase = score.RecordTime
+			}
+
+			lowCostList = append(lowCostList, lowCostItem)
+		}
+		return lowCostList
+	}
+
 	result := webmodels.GameScoreboardData{
-		GameID:               game.GameID,
-		Name:                 game.Name,
-		Top10TimeLines:       filteredTop10TimeLines,
-		TeamScores:           pageTeamScores,
-		TeamTimeLines:        pageTimeLines,
+		GameID:         game.GameID,
+		Name:           game.Name,
+		Top10TimeLines: convertLowCost(filteredTop10TimeLines),
+		TeamScores:     pageTeamScores,
+		// TeamTimeLines:        convertLowCost(pageTimeLines),
 		SimpleGameChallenges: simpleGameChallenges,
 		Groups:               simpleGameGroups,
 		CurrentGroup:         currentGroup,
@@ -420,5 +450,75 @@ func UserGameGetScoreBoard(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"data": result,
+	})
+}
+
+func UserGameGetScoreBoardTimeLine(c *gin.Context) {
+	game := c.MustGet("game").(models.Game)
+
+	// 解析查询参数
+	teamIDStr := c.Param("team_id")
+
+	var teamID *int64
+	if teamIDStr != "" {
+		if tid, err := strconv.ParseInt(teamIDStr, 10, 64); err == nil {
+			teamID = &tid
+		}
+	}
+
+	if teamID == nil {
+		c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
+			Code:    400,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidTeamID"}),
+		})
+		return
+	}
+
+	scoreBoard, err := ristretto_tool.CachedGameScoreBoard(game.GameID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
+			Code:    500,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadGameScoreboard"}),
+		})
+		return
+	}
+
+	// 转换两种 TimeLineItem 为低开销版本
+	convertLowCost := func(timeline webmodels.TimeLineItem) webmodels.TimeLineItemLowCost {
+		// 先找一个最小值
+		timeBase := int64(1 << 62)
+
+		for _, score := range timeline.Scores {
+			timeBase = min(timeBase, int64(score.RecordTime))
+		}
+
+		lowCostItem := webmodels.TimeLineItemLowCost{
+			TeamID:   timeline.TeamID,
+			TeamName: timeline.TeamName,
+			Scores:   make([]int64, 0, len(timeline.Scores)),
+			Times:    make([]int64, 0, len(timeline.Scores)),
+			TimeBase: int64(timeBase),
+		}
+
+		for _, score := range timeline.Scores {
+			lowCostItem.Scores = append(lowCostItem.Scores, int64(score.Score))
+			lowCostItem.Times = append(lowCostItem.Times, score.RecordTime-timeBase)
+			timeBase = score.RecordTime
+		}
+
+		return lowCostItem
+	}
+
+	var resultTimeLine webmodels.TimeLineItemLowCost
+
+	for _, timeline := range scoreBoard.AllTimeLines {
+		if timeline.TeamID == *teamID {
+			resultTimeLine = convertLowCost(timeline)
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": resultTimeLine,
 	})
 }

@@ -18,7 +18,7 @@ import BetterChart from 'components/BetterChart';
 import { useGlobalVariableContext } from 'contexts/GlobalVariableContext';
 import { api } from 'utils/ApiHelper';
 import { GameScoreboardData, TeamScore, UserFullGameInfo, UserSimpleGameChallenge, GameGroupSimple, PaginationInfo } from 'utils/A1API';
-import { useIsMobile } from 'hooks/use-mobile';
+import { useIsMobile } from 'hooks/UseMobile';
 import { ScoreTableMobile } from 'components/ScoreTableMobile';
 import { toast } from 'react-toastify/unstyled';
 
@@ -442,16 +442,25 @@ export default function ScoreBoardPage(
                     },
                     ...(res.data.data?.top10_timelines?.map((team, index) => {
 
-                        const lastRecordTime = team.scores?.[team.scores?.length - 1]?.record_time;
-                        const lastScore = team.scores?.[team.scores?.length - 1]?.score || 0;
+                        let baseTime = team.time_base ?? 0
+
+                        for (let i = 0; i < team.scores!.length; i++) {
+                            if (team.times) {
+                                team.times[i] += baseTime;
+                                baseTime = team.times[i];
+                            }
+                        }
+
+                        const lastRecordTime = team.times?.[team.times?.length - 1];
+                        const lastScore = team.scores?.[team.scores?.length - 1] || 0;
 
                         const shouldAddEnd = lastRecordTime && dayjs(lastRecordTime).isBefore(end);
 
                         let data = [
                             [+dayjs(gameInfo.start_time).toDate(), 0],
-                            ...(team.scores?.map((item) => [
-                                +(item.record_time ? dayjs(item.record_time).toDate() : 0),
-                                item.score || 0
+                            ...(team.scores?.map((score, idx) => [
+                                +(team.times?.[idx] ? dayjs(team.times?.[idx]).toDate() : 0),
+                                score || 0
                             ]) || []),
                         ];
 
@@ -470,7 +479,7 @@ export default function ScoreBoardPage(
                             },
                             endLabel: {
                                 show: true,
-                                formatter: `${team.team_name} - ${team.scores![team.scores!.length - 1]?.score ?? 0} pts`,
+                                formatter: `${team.team_name} - ${team.scores![team.scores!.length - 1] ?? 0} pts`,
                                 color: theme === 'dark' ? '#f1f5f9' : '#0f172a',
                                 fontWeight: 'bold',
                                 fontSize: 12, // 稍微减小字体避免重叠
@@ -528,7 +537,6 @@ export default function ScoreBoardPage(
             <TeamScoreDetailPage
                 showUserDetail={showUserDetail}
                 setShowUserDetail={setShowUserDetail}
-                scoreBoardModel={scoreBoardModel}
                 gameInfo={gameInfo}
                 challenges={challenges}
             />

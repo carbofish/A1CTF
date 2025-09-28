@@ -237,6 +237,11 @@ func main() {
 			CheckGameStarted:  true,
 		}), controllers.UserGameGetScoreBoard)
 
+		public.GET("/game/:game_id/scoreboard/:team_id/timeline", bestGzipMiddleware, controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{
+			VisibleAfterEnded: true,
+			CheckGameStarted:  true,
+		}), controllers.UserGameGetScoreBoardTimeLine)
+
 		public.GET("/game/:game_id", defaultGzipMiddleware, controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{
 			VisibleAfterEnded: true,
 			CheckGameStarted:  false,

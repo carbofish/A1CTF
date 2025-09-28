@@ -1853,7 +1853,42 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GameScoreboardResponse'
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/GameScoreboardData'
+  /api/game/{game_id}/scoreboard/{team_id}/timeline:
+    get:
+      tags: [user]
+      operationId: userGetGameScoreboardTimeLine
+      summary: Get game scoreboard timeline data for a team
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: team_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    $ref: '#/components/schemas/TeamTimelineLowCost'
   /api/admin/team/list:
     post:
       tags: [admin]
@@ -4379,15 +4414,6 @@ components:
       required:
         - container_name
         - container_ports
-    GameScoreboardResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          example: 200
-        data:
-          $ref: '#/components/schemas/GameScoreboardData'
-
     GameScoreboardData:
       type: object
       properties:
@@ -4406,11 +4432,11 @@ components:
         top10_timelines:
           type: array
           items:
-            $ref: '#/components/schemas/TeamTimeline'
-        team_timelines:
-          type: array
-          items:
-            $ref: '#/components/schemas/TeamTimeline'
+            $ref: '#/components/schemas/TeamTimelineLowCost'
+        # team_timelines:
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/TeamTimelineLowCost'
         challenges:
           type: array
           items:
@@ -4541,6 +4567,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ScoreRecord'
+
+    TeamTimelineLowCost:
+      type: object
+      properties:
+        team_id:
+          type: integer
+          example: 1
+        team_name:
+          type: string
+          example: "test114514"
+        scores:
+          type: array
+          items:
+            type: number
+        times:
+          type: array
+          items:
+            type: number
+        time_base:
+          type: number
 
     ScoreRecord:
       type: object
