@@ -13,15 +13,7 @@
 
 </div>
 
----
-
-## ⚠️ **重要提醒 / Important Notice**
-
-> **🚧 This project is still in the development stage, please do not use it as a production stage. 🚧**
-> 
-> **🚧 该项目仍处于开发阶段，请勿在生产环境中使用。🚧**
-
----
+> **🚧 文档施工中 / The documentation is under construction 🚧**
 
 ## 📖 项目简介 / Project Overview
 
