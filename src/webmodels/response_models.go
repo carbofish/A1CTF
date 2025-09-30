@@ -95,11 +95,11 @@ type GameNotice struct {
 }
 
 type GameScoreboardData struct {
-	GameID               int64                     `json:"game_id"`
-	Name                 string                    `json:"name"`
-	Top10TimeLines       []TimeLineItem            `json:"top10_timelines"`
-	TeamScores           []TeamScoreItem           `json:"teams"`
-	TeamTimeLines        []TimeLineItem            `json:"team_timelines"`
+	GameID         int64                 `json:"game_id"`
+	Name           string                `json:"name"`
+	Top10TimeLines []TimeLineItemLowCost `json:"top10_timelines"`
+	TeamScores     []TeamScoreItem       `json:"teams"`
+	// TeamTimeLines        []TimeLineItemLowCost     `json:"team_timelines"`
 	YourTeam             *TeamScoreItem            `json:"your_team"`
 	SimpleGameChallenges []UserSimpleGameChallenge `json:"challenges"`
 	Groups               []GameGroupSimple         `json:"groups"`
@@ -163,6 +163,16 @@ type TimeLineItem struct {
 	Scores   []TimeLineScoreItem `json:"scores"`
 }
 
+// 减少传输占用的 model
+
+type TimeLineItemLowCost struct {
+	TeamID   int64   `json:"team_id"`
+	TeamName string  `json:"team_name"`
+	Scores   []int64 `json:"scores"`
+	Times    []int64 `json:"times"`
+	TimeBase int64   `json:"time_base"`
+}
+
 type TeamSolveItem struct {
 	ChallengeID   int64     `json:"challenge_id"`
 	Score         float64   `json:"score"`
@@ -199,11 +209,13 @@ type TeamScoreItem struct {
 }
 
 type CachedGameScoreBoardData struct {
-	FinalScoreBoardMap map[int64]TeamScoreItem
-	Top10TimeLines     []TimeLineItem
-	Top10Teams         []TeamScoreItem
-	AllTimeLines       []TimeLineItem
-	TeamRankings       []TeamScoreItem
+	FinalScoreBoardMap    map[int64]TeamScoreItem
+	Top10TimeLines        []TimeLineItem
+	Top10Teams            []TeamScoreItem
+	AllTimeLines          []TimeLineItem
+	TeamRankings          []TeamScoreItem
+	Top10TimeLinesLowCost []TimeLineItemLowCost
+	AllTimeLinesLowCost   []TimeLineItemLowCost
 }
 
 // Team management responses

@@ -526,12 +526,6 @@ export interface ExposePortInfo {
   }[];
 }
 
-export interface GameScoreboardResponse {
-  /** @example 200 */
-  code?: number;
-  data?: GameScoreboardData;
-}
-
 export interface GameScoreboardData {
   /** @example 1 */
   game_id?: number;
@@ -539,8 +533,7 @@ export interface GameScoreboardData {
   name?: string;
   teams?: TeamScore[];
   your_team?: TeamScore;
-  top10_timelines?: TeamTimeline[];
-  team_timelines?: TeamTimeline[];
+  top10_timelines?: TeamTimelineLowCost[];
   challenges?: UserSimpleGameChallenge[];
   groups?: GameGroupSimple[];
   current_group?: GameGroupSimple;
@@ -623,6 +616,16 @@ export interface TeamTimeline {
   /** @example "test114514" */
   team_name?: string;
   scores?: ScoreRecord[];
+}
+
+export interface TeamTimelineLowCost {
+  /** @example 1 */
+  team_id?: number;
+  /** @example "test114514" */
+  team_name?: string;
+  scores?: number[];
+  times?: number[];
+  time_base?: number;
 }
 
 export interface ScoreRecord {
@@ -2334,10 +2337,44 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<GameScoreboardResponse, any>({
+      this.request<
+        {
+          /** @example 200 */
+          code?: number;
+          data?: GameScoreboardData;
+        },
+        any
+      >({
         path: `/api/game/${gameId}/scoreboard`,
         method: "GET",
         query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags user
+     * @name UserGetGameScoreboardTimeLine
+     * @summary Get game scoreboard timeline data for a team
+     * @request GET:/api/game/{game_id}/scoreboard/{team_id}/timeline
+     */
+    userGetGameScoreboardTimeLine: (
+      gameId: number,
+      teamId: number,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** @example 200 */
+          code?: number;
+          data?: TeamTimelineLowCost;
+        },
+        any
+      >({
+        path: `/api/game/${gameId}/scoreboard/${teamId}/timeline`,
+        method: "GET",
         format: "json",
         ...params,
       }),

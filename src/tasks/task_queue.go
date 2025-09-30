@@ -59,6 +59,8 @@ func InitTaskQueue() {
 		mux.HandleFunc(TypeAntiCheat, HandleFlagAntiCheatTask)
 		mux.HandleFunc(TypeSendMail, HandleSendMailTask)
 
+		mux.HandleFunc(TypeRecalculateRankForAChallenge, HandleRecalculateRankForAChallengeTask)
+
 		if err := server.Run(mux); err != nil {
 			log.Fatalf("could not run server: %v", err)
 		}
@@ -71,13 +73,14 @@ func CloseTaskQueue() {
 }
 
 const (
-	TypeNewTeamFlag              = "teamFlag:create"
-	TypeNewSystemLog             = "systemLog:create"
-	TypeJudgeFlag                = "judgeFlag:create"
-	TypeCalculateRanks           = "ranks:calculate"
-	TypeStartContainer           = "container:start"
-	TypeStopContainer            = "container:stop"
-	TypeContainerFailedOperation = "container:failed"
-	TypeAntiCheat                = "flag:anticheat"
-	TypeSendMail                 = "mail:send"
+	TypeNewTeamFlag                  = "teamFlag:create"
+	TypeNewSystemLog                 = "systemLog:create"
+	TypeJudgeFlag                    = "judgeFlag:create"
+	TypeCalculateRanks               = "ranks:calculate"
+	TypeStartContainer               = "container:start"
+	TypeStopContainer                = "container:stop"
+	TypeContainerFailedOperation     = "container:failed"
+	TypeAntiCheat                    = "flag:anticheat"
+	TypeSendMail                     = "mail:send"
+	TypeRecalculateRankForAChallenge = "other:recalculateForAChallenge"
 )

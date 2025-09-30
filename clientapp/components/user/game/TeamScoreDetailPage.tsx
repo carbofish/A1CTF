@@ -27,19 +27,20 @@ import {
     ChartLegendContent,
 } from 'components/ui/chart';
 import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, PieChart, Pie, Cell } from 'recharts';
-import { GameScoreboardData, TeamScore, UserFullGameInfo, UserSimpleGameChallenge } from "utils/A1API";
+import { TeamScore, TeamTimelineLowCost, UserFullGameInfo, UserSimpleGameChallenge } from "utils/A1API";
+import useSWR from "swr";
+import { api } from "utils/ApiHelper";
+import { useScoreboardTimeLine } from "hooks/UseScoreboard";
 
 export default function TeamScoreDetailPage(
     {
         showUserDetail,
         setShowUserDetail,
-        scoreBoardModel,
         gameInfo,
         challenges
     }: {
         showUserDetail: TeamScore,
         setShowUserDetail: Dispatch<SetStateAction<TeamScore>>
-        scoreBoardModel: GameScoreboardData | undefined,
         gameInfo: UserFullGameInfo | undefined,
         challenges: Record<string, UserSimpleGameChallenge[]>
     }
@@ -47,7 +48,8 @@ export default function TeamScoreDetailPage(
 
     const { theme } = useTheme()
     const personalChartRef = useRef<ReactECharts>(null)
-    const lastPersonalTimeLine = useRef<string>()
+
+    const { teamTimeLine, teamTimeLineLoading } = useScoreboardTimeLine(gameInfo?.game_id ?? 0, showUserDetail.team_id ?? 0)
 
     const [personalChartOption, setPersonalChartOption] = useState<echarts.EChartsOption>()
 
@@ -167,144 +169,133 @@ export default function TeamScoreDetailPage(
     }, [showUserDetail.solved_challenges]);
 
     useEffect(() => {
-
+        if (teamTimeLineLoading) return
         if (!gameInfo) return
+
+        if (!showUserDetail.team_id) {
+            setPersonalChartOption((data) => ({
+                ...data,
+                series: []
+            }))
+            return
+        }
+
         const current = dayjs()
         const end = dayjs(gameInfo.end_time).diff(current) > 0 ? current : dayjs(gameInfo.end_time)
 
-        const curTimeLine = JSON.stringify(scoreBoardModel?.team_timelines?.find((e) => e.team_id == showUserDetail.team_id))
+        let timeBase = teamTimeLine?.time_base
 
-        if (curTimeLine != lastPersonalTimeLine.current) {
-            lastPersonalTimeLine.current = curTimeLine
+        for (let i = 0; i < (teamTimeLine?.scores?.length || 0); i++) {
+            if (teamTimeLine?.times) {
+                teamTimeLine.times[i] += timeBase || 0;
+                timeBase = teamTimeLine.times[i];
+            }
+        }
 
-            setPersonalChartOption({
-                backgroundColor: 'transparent',
-                tooltip: {
-                    trigger: 'axis',
-                    borderWidth: 0,
-                    textStyle: {
-                        fontSize: 12,
-                        color: theme == "dark" ? "#121212" : "#FFFFFF",
+        setPersonalChartOption({
+            backgroundColor: 'transparent',
+            tooltip: {
+                trigger: 'axis',
+                borderWidth: 0,
+                textStyle: {
+                    fontSize: 12,
+                    color: theme == "dark" ? "#121212" : "#FFFFFF",
+                },
+                backgroundColor: theme == "dark" ? "#FFFFFF" : "#121212"
+            },
+            title: {
+                left: 'center',
+                text: `${showUserDetail.team_name} - 记分榜`,
+                textStyle: {
+                    color: theme == "dark" ? "#FFFFFF" : "#121212",
+                }
+            },
+            toolbox: {
+                show: false,
+                feature: {
+                    dataZoom: {
+                        yAxisIndex: 'none'
                     },
-                    backgroundColor: theme == "dark" ? "#FFFFFF" : "#121212"
-                },
-                title: {
-                    left: 'center',
-                    text: `${showUserDetail.team_name} - 记分榜`,
-                    textStyle: {
-                        color: theme == "dark" ? "#FFFFFF" : "#121212",
-                    }
-                },
-                toolbox: {
+                    restore: {},
+                    saveAsImage: {}
+                }
+            },
+            xAxis: {
+                type: 'time',
+                min: dayjs(gameInfo?.start_time).toDate(),
+                max: dayjs(gameInfo?.end_time).toDate(),
+                splitLine: {
                     show: false,
-                    feature: {
-                        dataZoom: {
-                            yAxisIndex: 'none'
-                        },
-                        restore: {},
-                        saveAsImage: {}
-                    }
                 },
-                xAxis: {
-                    type: 'time',
-                    min: dayjs(gameInfo?.start_time).toDate(),
-                    max: dayjs(gameInfo?.end_time).toDate(),
-                    splitLine: {
-                        show: false,
-                    },
+            },
+            yAxis: {
+                type: 'value',
+                boundaryGap: [0, '100%'],
+                max: (value: any) => (Math.floor(value.max / 1000) + 1) * 1000,
+                splitLine: {
+                    show: true,
                 },
-                yAxis: {
-                    type: 'value',
-                    boundaryGap: [0, '100%'],
-                    max: (value: any) => (Math.floor(value.max / 1000) + 1) * 1000,
-                    splitLine: {
-                        show: true,
-                    },
+            },
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 0,
+                    end: 100,
+                    xAxisIndex: 0,
+                    filterMode: 'none'
                 },
-                dataZoom: [
-                    {
-                        type: 'inside',
-                        start: 0,
-                        end: 100,
-                        xAxisIndex: 0,
-                        filterMode: 'none'
-                    },
-                    {
-                        start: 0,
-                        end: 100,
-                        xAxisIndex: 0,
-                        showDetail: false,
-                    }
-                ],
-                series: [
-                    {
-                        type: 'line',
-                        step: 'end',
-                        data: [],
-                        markLine:
-                            dayjs(gameInfo.end_time).diff(dayjs(), 's') < 0
-                                ? undefined
-                                : {
-                                    symbol: 'none',
-                                    data: [
-                                        {
-                                            xAxis: +end.toDate(),
-                                            // lineStyle: {
-                                            //     color: colorScheme === 'dark' ? "#FFFFFF" : "#000000",
-                                            //     wight: 2,
-                                            // },
-                                            label: {
-                                                textBorderWidth: 0,
-                                                fontWeight: 500,
-                                                color: theme === 'dark' ? '#94a3b8' : '#64748b',
-                                                formatter: (time: any) => dayjs(time.value).format('YYYY-MM-DD HH:mm'),
-                                            },
+                {
+                    start: 0,
+                    end: 100,
+                    xAxisIndex: 0,
+                    showDetail: false,
+                }
+            ],
+            series: [
+                {
+                    type: 'line',
+                    step: 'end',
+                    data: [],
+                    markLine:
+                        dayjs(gameInfo.end_time).diff(dayjs(), 's') < 0
+                            ? undefined
+                            : {
+                                symbol: 'none',
+                                data: [
+                                    {
+                                        xAxis: +end.toDate(),
+                                        // lineStyle: {
+                                        //     color: colorScheme === 'dark' ? "#FFFFFF" : "#000000",
+                                        //     wight: 2,
+                                        // },
+                                        label: {
+                                            textBorderWidth: 0,
+                                            fontWeight: 500,
+                                            color: theme === 'dark' ? '#94a3b8' : '#64748b',
+                                            formatter: (time: any) => dayjs(time.value).format('YYYY-MM-DD HH:mm'),
                                         },
-                                    ],
-                                },
+                                    },
+                                ],
+                            },
+                },
+                ...([teamTimeLine].map((team) => ({
+                    name: team?.team_name,
+                    type: 'line',
+                    showSymbol: false,
+                    step: 'end',
+                    data: [
+                        [+new Date(dayjs(gameInfo.start_time).toDate()), 0],
+                        ...(team?.scores?.map((score, idx) => [team?.times?.[idx] || 0, score || 0]) || []),
+                        [+end.toDate(), (team?.scores && team.scores[team.scores.length - 1]) || 0]
+                    ],
+                    lineStyle: {
+                        width: 3
                     },
-                    ...(scoreBoardModel?.team_timelines?.filter((e) => e.team_id == showUserDetail.team_id).map((team) => ({
-                        name: team.team_name,
-                        type: 'line',
-                        showSymbol: false,
-                        step: 'end',
-                        data: [
-                            [+new Date(dayjs(gameInfo.start_time).toDate()), 0],
-                            ...(team.scores?.map((item) => [item.record_time || 0, item.score || 0]) || []),
-                            [+end.toDate(), (team.scores && team.scores[team.scores.length - 1]?.score) || 0]
-                        ],
-                        lineStyle: {
-                            width: 3
-                        },
-                        smooth: true,
-                    }) as echarts.SeriesOption) || [])
-                ] as echarts.SeriesOption[]
-            })
-        }
-    }, [showUserDetail])
-
-    // 保存个人图表为图片
-    const handleSavePersonalChart = useCallback(() => {
-        const chartInstance = personalChartRef.current?.getEchartsInstance();
-        if (!chartInstance) return;
-
-        try {
-            const url = chartInstance.getDataURL({
-                type: 'png',
-                pixelRatio: 2,
-                backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff'
-            });
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `${showUserDetail.team_name || '队伍'}_个人积分图表_${new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error('保存个人图表失败:', error);
-        }
-    }, [theme, showUserDetail.team_name]);
+                    smooth: true,
+                }) as echarts.SeriesOption) || [])
+            ] as echarts.SeriesOption[]
+        })
+    }, [teamTimeLine])
 
     return (
         <AnimatePresence>
@@ -376,11 +367,11 @@ export default function TeamScoreDetailPage(
                                                     <div className='flex-1'>
                                                         <div className="flex gap-2 items-center">
                                                             <h2 className='text-2xl font-bold text-foreground mb-1'>{showUserDetail.team_name}</h2>
-                                                            { showUserDetail.group_id && (
+                                                            {showUserDetail.group_id && (
                                                                 <Badge className="text-sm bg-primary/10 hover:bg-primary/10 text-primary font-medium select-none">
                                                                     # {showUserDetail.group_name}
                                                                 </Badge>
-                                                            ) }
+                                                            )}
                                                         </div>
                                                         <p className='text-sm text-muted-foreground italic'>
                                                             "{showUserDetail.team_slogan || "They didn't say anything."}"
@@ -426,7 +417,7 @@ export default function TeamScoreDetailPage(
                                                         </div>
                                                         <div>
                                                             <p className='text-sm text-muted-foreground'>成员数</p>
-                                                            <p className='text-xl font-bold text-foreground'>{ showUserDetail.team_members?.length ?? 0 }</p>
+                                                            <p className='text-xl font-bold text-foreground'>{showUserDetail.team_members?.length ?? 0}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -712,15 +703,6 @@ export default function TeamScoreDetailPage(
                                                         <TrendingUp className='w-5 h-5' />
                                                         积分变化趋势
                                                     </CardTitle>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={handleSavePersonalChart}
-                                                        className='flex items-center gap-2'
-                                                    >
-                                                        <Download className='w-4 h-4' />
-                                                        保存图片
-                                                    </Button>
                                                 </div>
                                             </CardHeader>
                                             <CardContent className="aspect-[16/8]">

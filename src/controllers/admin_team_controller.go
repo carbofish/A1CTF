@@ -8,6 +8,7 @@ import (
 	"a1ctf/src/webmodels"
 	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -237,6 +238,31 @@ func AdminBanTeam(c *gin.Context) {
 		return
 	}
 
+	solveList := []models.Solve{}
+	if err := dbtool.DB().Where("team_id = ?", team.TeamID).Find(&solveList).Error; err != nil {
+		// 记录禁赛队伍失败日志
+		tasks.LogAdminOperationWithError(c, models.ActionBan, models.ResourceTypeTeam, &team.TeamName, map[string]interface{}{
+			"team_id":   team.TeamID,
+			"team_name": team.TeamName,
+			"game_id":   team.GameID,
+			"type":      "FailedToFetchSolvesBeforeBan",
+		}, err)
+
+		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
+			Code:    500,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToBanTeam"}),
+		})
+		return
+	}
+
+	challengeSolvedList := make([]int64, 0)
+	for _, solve := range solveList {
+		if slices.Contains(challengeSolvedList, solve.ChallengeID) {
+			continue
+		}
+		challengeSolvedList = append(challengeSolvedList, solve.ChallengeID)
+	}
+
 	// 更新队伍状态为禁赛
 	oldStatus := team.TeamStatus
 	if err := dbtool.DB().Model(&team).Update("team_status", models.ParticipateBanned).Error; err != nil {
@@ -254,6 +280,8 @@ func AdminBanTeam(c *gin.Context) {
 		})
 		return
 	}
+
+	tasks.NewRecalculateRankForAChallengeTask(payload.GameID, challengeSolvedList)
 
 	// 记录禁赛队伍成功日志
 	tasks.LogAdminOperation(c, models.ActionBan, models.ResourceTypeTeam, &team.TeamName, map[string]interface{}{
@@ -307,6 +335,31 @@ func AdminUnbanTeam(c *gin.Context) {
 		return
 	}
 
+	solveList := []models.Solve{}
+	if err := dbtool.DB().Where("team_id = ?", team.TeamID).Find(&solveList).Error; err != nil {
+		// 记录禁赛队伍失败日志
+		tasks.LogAdminOperationWithError(c, models.ActionBan, models.ResourceTypeTeam, &team.TeamName, map[string]interface{}{
+			"team_id":   team.TeamID,
+			"team_name": team.TeamName,
+			"game_id":   team.GameID,
+			"type":      "FailedToFetchSolvesBeforeBan",
+		}, err)
+
+		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
+			Code:    500,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToBanTeam"}),
+		})
+		return
+	}
+
+	challengeSolvedList := make([]int64, 0)
+	for _, solve := range solveList {
+		if slices.Contains(challengeSolvedList, solve.ChallengeID) {
+			continue
+		}
+		challengeSolvedList = append(challengeSolvedList, solve.ChallengeID)
+	}
+
 	// 更新队伍状态为已批准
 	oldStatus := team.TeamStatus
 	if err := dbtool.DB().Model(&team).Update("team_status", models.ParticipateApproved).Error; err != nil {
@@ -324,6 +377,8 @@ func AdminUnbanTeam(c *gin.Context) {
 		})
 		return
 	}
+
+	tasks.NewRecalculateRankForAChallengeTask(payload.GameID, challengeSolvedList)
 
 	// 记录解禁队伍成功日志
 	tasks.LogAdminOperation(c, models.ActionUnban, models.ResourceTypeTeam, &team.TeamName, map[string]interface{}{

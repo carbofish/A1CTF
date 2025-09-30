@@ -4,6 +4,7 @@ import (
 	"a1ctf/src/db/models"
 	"a1ctf/src/tasks"
 	dbtool "a1ctf/src/utils/db_tool"
+	a1locks "a1ctf/src/utils/locks"
 	noticetool "a1ctf/src/utils/notice_tool"
 	"a1ctf/src/utils/zaphelper"
 	"errors"
@@ -37,9 +38,13 @@ func processQueueingJudge(judge *models.Judge) error {
 				return nil
 			}
 
+			// 获取写锁, 防止与重算题目Rank的任务冲突
+			a1locks.RankRWLock.Lock()
+			defer a1locks.RankRWLock.Unlock()
+
 			// 查询已经解出来的人
 			var solves []models.Solve
-			if err := dbtool.DB().Where("game_id = ? AND challenge_id = ?", judge.GameID, judge.ChallengeID).Find(&solves).Error; err != nil {
+			if err := dbtool.DB().Where("game_id = ? AND challenge_id = ? AND solve_time >= ? AND solve_time <= ? AND solve_status = ?", judge.GameID, judge.ChallengeID, judge.Game.StartTime, judge.Game.EndTime, models.SolveCorrect).Preload("Team").Find(&solves).Error; err != nil {
 				judge.JudgeStatus = models.JudgeError
 				if !errors.Is(err, gorm.ErrRecordNotFound) {
 					// 记录错误
@@ -51,6 +56,9 @@ func processQueueingJudge(judge *models.Judge) error {
 				}
 				return fmt.Errorf("database error: %w data: %+v", err, judge)
 			}
+
+			// 过滤被封禁的队伍
+			solves = filterValidSolves(solves)
 
 			newSolve := models.Solve{
 				IngameID:    judge.IngameID,
@@ -114,7 +122,7 @@ func FlagJudgeJob() {
 	if err := dbtool.DB().Where(
 		"judge_status IN (?)",
 		[]interface{}{models.JudgeQueueing, models.JudgeRunning},
-	).Preload("TeamFlag").Preload("GameChallenge").Preload("Challenge").Preload("Team").Find(&judges).Error; err != nil {
+	).Preload("TeamFlag").Preload("GameChallenge").Preload("Challenge").Preload("Team").Preload("Game").Find(&judges).Error; err != nil {
 		fmt.Printf("database error: %v\n", err)
 		return
 	}
