@@ -42,7 +42,7 @@
     "container_extend": "Extend",
     "submit_flag": "Submit!",
     "solved": "Solved!",
-    "wait_launch": "Waiting to be launched",
+    "wait_launch": "Waiting to be launched or have no public port",
     "flag_error": "Flag error, please check and try again.",
     "judge_error": "Judge error, please contact the administrator",
     "submit_flag_title": "Submit your flag!",

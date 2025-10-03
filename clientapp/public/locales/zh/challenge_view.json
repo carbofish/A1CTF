@@ -42,7 +42,7 @@
     "container_extend": "延长时间",
     "submit_flag": "提交!",
     "solved": "已解决!",
-    "wait_launch": "靶机等待启动",
+    "wait_launch": "靶机等待启动或无公网端口",
     "flag_error": "Flag 错误, 请检查后重新尝试",
     "judge_error": "Flag 校验错误, 请联系管理员",
     "submit_flag_title": "提交你的Flag!",
