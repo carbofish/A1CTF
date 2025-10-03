@@ -63,22 +63,22 @@ export const ChallengeCard: FC<ChallengeInfo & React.HTMLAttributes<HTMLDivEleme
         }
     }, [status])
 
-    const getCurGameStage = () : string | undefined => {
+    const isStageVisiable = (stage_name: string | undefined) : boolean => {
         if (gameInfo?.stages) {
-            for (const stage of gameInfo.stages) {
-                if (dayjs(stage.end_time) >= dayjs() && dayjs(stage.start_time) <= dayjs()) {
-                    return stage.stage_name
-                }
-            }
+            const target_stage = gameInfo.stages.find(e => e.stage_name == stage_name)
+            if (!target_stage) return false
+
+            return dayjs(target_stage.end_time) >= dayjs() && dayjs(target_stage.start_time) <= dayjs()
         }
-        return undefined
+
+        return false
     }
 
     return (
         <div className={
             `w-full h-[100px] ${isAdmin() && (visible ? "" : "opacity-40")} border-2 rounded-xl relative hover:scale-[1.04] pl-4 pt-4 pr-4 pb-3 select-none overflow-hidden transition-all duration-300 will-change-transform 
             ${solveStatus ? "bg-green-200/[0.3] border-green-300/40" : "bg-background/[0.3]"}
-            ${ getCurGameStage() != belongStage && belongStage && !isAdmin() ? "opacity-40" : "" }
+            ${ !isStageVisiable(belongStage) && !isAdmin() ? "opacity-40" : "" }
             `}
             {...props}
         >

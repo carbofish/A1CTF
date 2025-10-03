@@ -1,4 +1,7 @@
 import dayjs from "dayjs"
+import minMax from "dayjs/plugin/minMax";
+dayjs.extend(minMax);
+
 import { useGame } from "hooks/UseGame";
 import { useEffect } from "react"
 import { GameStage } from "utils/A1API";
@@ -17,18 +20,32 @@ export default function GameTimeCounter(
     const { gameInfo, gameStatus } = useGame(gameID)
     const stageMode = gameInfo?.stages != undefined && gameInfo.stages.length > 0
 
-    const getCurGameStage = (): GameStage | undefined => {
+    const getCurGameStages = (): Array<GameStage> => {
         if (gameInfo?.stages) {
-            return gameInfo.stages.find((e) => dayjs(e.start_time) <= dayjs() && dayjs(e.end_time) >= dayjs())
+            const allStages = []
+
+            // 筛选出所有符合当前时间的 stage
+            for (const stage of gameInfo.stages) {
+                if (dayjs().isAfter(dayjs(stage.start_time)) && dayjs().isBefore(dayjs(stage.end_time))) {
+                    allStages.push(stage)
+                }
+            }
+
+            // 升序, 查找最早开始的
+            allStages.sort((a, b) => {
+                return dayjs(a.start_time).isBefore(dayjs(b.start_time)) ? -1 : 1
+            })
+
+            return allStages
         }
-        return undefined
+        return []
     }
 
-    const [curGameStage, setCurGameStage] = useConditionalState<GameStage | undefined>(getCurGameStage())
+    const [curGameStages, setCurGameStages] = useConditionalState<Array<GameStage | undefined>>(getCurGameStages())
 
     const gameStagesModule = () => {
 
-        if (!stageMode || !curGameStage) {
+        if (!stageMode || !curGameStages.length) {
             return (
                 <TimeCounterWithProgressBar
                     start_time={gameInfo?.start_time ?? dayjs()}
@@ -37,18 +54,29 @@ export default function GameTimeCounter(
             )
         }
 
+        // 处理多阶段情况
+        // 选择多个时间段的交集
+        const start_time = dayjs.max(curGameStages.map(e => dayjs(e?.start_time)))
+        const end_time = dayjs.min(curGameStages.map(e => dayjs(e?.end_time)))
+        const combined_stage_name = curGameStages.map(e => e?.stage_name).join(" & ")
+
         return (
             <TimeCounterWithProgressBar
-                start_time={curGameStage?.start_time ?? dayjs()}
-                target_time={curGameStage?.end_time ?? dayjs()}
-                prefix={curGameStage?.stage_name + " - "}
+                start_time={start_time ?? dayjs()}
+                target_time={end_time ?? dayjs()}
+                prefix={combined_stage_name + " - "}
             />
         )
     }
 
+    const checkIfInStages = (stage: GameStage | undefined) => {
+        if (!stage) return false
+        return dayjs().isAfter(dayjs(stage.start_time)) && dayjs().isBefore(dayjs(stage.end_time))
+    }
+
     useEffect(() => {
         const gameStageInter = setInterval(() => {
-            setCurGameStage(getCurGameStage())
+            setCurGameStages(getCurGameStages())
         }, 500)
 
         return () => {
@@ -105,7 +133,7 @@ export default function GameTimeCounter(
                 {stageMode && (
                     <div className="flex flex-col gap-2 mt-1">
                         {gameInfo.stages.map((e, idx) => (
-                            <div className={`flex flex-col gap-1 ${ e.stage_name == curGameStage?.stage_name ? "text-orange-400" : "" }`} key={idx}>
+                            <div className={`flex flex-col gap-1 ${ checkIfInStages(e) ? "text-orange-400" : "" }`} key={idx}>
                                 <span className="text-sm font-bold">Stage{idx + 1} - {e.stage_name}</span>
                                 <div className="flex gap-1 items-center">
                                     <div className="flex gap-2 items-center bg-foreground/10 rounded-full px-2 py-1">
