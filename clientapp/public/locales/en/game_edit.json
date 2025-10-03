@@ -152,7 +152,7 @@
             "title": "Confirm Deletion",
             "description": "This action cannot be undone"
         },
-        "drag": "Drag challenges here to assign them to this timeline",
+        "drag": "Please add a timeline first",
         "edit": "Edit Timeline",
         "global": {
             "title": "Global Challenges",
@@ -163,7 +163,7 @@
             "title": "Timeline Challenges",
             "description": "Challenges assigned to a specific timeline",
             "empty": "Please add a timeline first",
-            "drag": "Drag challenges to the timeline above"
+            "drag": "Drag challenges to here"
         }
     },
     "group": {

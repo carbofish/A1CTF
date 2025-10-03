@@ -271,6 +271,22 @@ export function GameTimelineEditor({
         setIsCreatingTimePoint(false);
     };
 
+    // 丢到某个时间段列表：把题目归属到该 stage
+    const handleStageDrop = (e: React.DragEvent, stageId: string) => {
+        e.preventDefault();
+        if (!draggedChallenge) return;
+        handleChallengeAssignmentChange(draggedChallenge.challenge.id, stageId);
+        setDraggedChallenge(null);
+    };
+
+    // 丢回“全局题目”列表：把题目归属置空
+    const handleGlobalDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        if (!draggedChallenge) return;
+        handleChallengeAssignmentChange(draggedChallenge.challenge.id, null);
+        setDraggedChallenge(null);
+    };
+
     // 开始编辑时间点
     const handleStartEditTimePoint = (id: string) => {
         const timePoint = timePoints.find(tp => tp.id === id);
@@ -543,7 +559,11 @@ export function GameTimelineEditor({
                         </CardHeader>
                         <CardContent>
                             <ScrollArea className="">
-                                <div className="space-y-2 pr-[10px]">
+                                <div 
+                                    className="space-y-2 pr-[10px]"
+                                    onDrop={handleGlobalDrop}
+                                    onDragOver={handleTimelineDragOver}
+                                >
                                     {groupedChallenges.global.map((challenge) => (
                                         <div
                                             key={challenge.id}
@@ -587,7 +607,12 @@ export function GameTimelineEditor({
                                 ) : (
                                     <div className="space-y-4">
                                         {timePoints.map((timePoint) => (
-                                            <div key={timePoint.id} className="border rounded-lg p-3">
+                                            <div 
+                                                key={timePoint.id} 
+                                                className="border rounded-lg p-3"
+                                                onDrop={(e) => handleStageDrop(e, timePoint.id)}
+                                                onDragOver={handleTimelineDragOver}
+                                            >
                                                 <div className="flex items-center justify-between mb-3">
                                                     <h4 className="font-medium">{timePoint.name}</h4>
                                                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
