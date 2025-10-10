@@ -41,6 +41,10 @@ k8s:
   pull-secret-names:
     # You can add multiple pull secret names here, make sure they are created in the a1ctf-challenges namespace as the pods
     # - default-name
+  custom-dns-server:
+    enabled: false
+    nameservers:
+      - 8.8.8.8
 
 postgres:
   host: localhost
