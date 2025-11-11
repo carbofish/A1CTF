@@ -526,6 +526,8 @@ func main() {
 
 			systemGroup.GET("/logs", controllers.GetSystemLogs)
 			systemGroup.GET("/logs/stats", controllers.GetSystemLogStats)
+			// 新增 QQ Bot 测试推送接口
+			systemGroup.POST("/test-qqbot", controllers.TestQQBot)
 		}
 	}
 	// 资源文件

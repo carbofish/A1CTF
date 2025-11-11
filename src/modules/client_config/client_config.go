@@ -81,6 +81,13 @@ type SystemSettings struct {
 
 	// 保存时间
 	UpdatedTime time.Time `json:"updatedTime"`
+	// QQ Bot 设置
+	QQBotEnabled        bool   `json:"qqBotEnabled"`
+	QQBotType           string `json:"qqBotType"`           // 例如: "go-cqhttp"
+	QQBotApiBase        string `json:"qqBotApiBase"`        // 例如: "http://127.0.0.1:5700"
+	QQBotAccessToken    string `json:"qqBotAccessToken"`    // go-cqhttp access_token（如启用）
+	QQBotGroupID        string `json:"qqBotGroupId"`        // QQ 群号（字符串）
+	QQBotPushAllSubmits bool   `json:"qqBotPushAllSubmits"` // 开启则WA也推送
 }
 
 // 默认系统设置

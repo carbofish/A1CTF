@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import dayjs from 'dayjs';
-import { CalendarIcon, CircleArrowLeft, Save, Settings, Users, PackageSearch, MessageSquareLock, Activity, Info, Plane } from 'lucide-react';
+import { CalendarIcon, CircleArrowLeft, Save, Settings, Users, PackageSearch, MessageSquareLock, Activity, Info, Plane, Bot } from 'lucide-react';
 import { EditGameFormSchema } from './game/EditGameSchema';
 import { api } from 'utils/ApiHelper';
 import { GameTimelineEditor } from './GameTimelineEditor';
@@ -25,6 +25,7 @@ import { ContainerManageView } from './game/ContainerManageView';
 import { useTheme } from 'next-themes';
 import { GameEventModule } from './game/GameEventModule';
 import { useTranslation } from 'react-i18next';
+import QQBotManager from './game/QQBotManager';
 
 export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
 
@@ -218,6 +219,11 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
         //     icon: <Trophy className="h-4 w-4" />
         // },
         {
+            id: 'qqbot',
+            name: 'QQ机器人',
+            icon: <Bot className="h-4 w-4" />
+        },
+        {
             id: "teams",
             name: t("teams"),
             icon: <Users className="h-4 w-4" />
@@ -377,7 +383,18 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
                                     <GameNoticeManager gameId={game_info.game_id} />
                                 </div>
                             )}
-
+                            {activeModule === 'qqbot' && (
+                                <div>
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500/20 to-indigo-600/10 flex items-center justify-center">
+                                            <Bot className="h-4 w-4 text-indigo-600" />
+                                        </div>
+                                        <h2 className="text-xl font-semibold">QQ机器人</h2>
+                                    </div>
+                                    <QQBotManager />
+                                </div>
+                            )}
+                            
                             {/* 题目设置 */}
                             {/* {activeModule === 'challenges' && (
                                 <div>

@@ -90,6 +90,13 @@ const systemSettingsSchema = z.object({
     defaultLanguage: z.string().optional(),
     timeZone: z.string().optional(),
     maxUploadSize: z.number().int().positive(),
+
+    // QQ Bot 设置
+    qqBotEnabled: z.boolean().optional(),
+    qqBotApiBase: z.string().optional(),
+    qqBotAccessToken: z.string().optional(),
+    qqBotGroupId: z.string().optional(),
+    qqBotPushAllSubmits: z.boolean().optional(),
 });
 
 export type SystemSettingsValues = z.infer<typeof systemSettingsSchema>;
@@ -172,6 +179,13 @@ export const AdminSettingsPage = () => {
             defaultLanguage: "zh-CN",
             timeZone: "Asia/Shanghai",
             maxUploadSize: 10,
+
+            // QQ Bot 默认值
+            qqBotEnabled: false,
+            qqBotApiBase: "",
+            qqBotAccessToken: "",
+            qqBotGroupId: "",
+            qqBotPushAllSubmits: false,
         }
     });
 

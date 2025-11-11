@@ -6,6 +6,7 @@ import (
 	dbtool "a1ctf/src/utils/db_tool"
 	a1locks "a1ctf/src/utils/locks"
 	noticetool "a1ctf/src/utils/notice_tool"
+	qqbottool "a1ctf/src/utils/qq_bot_tool"
 	"a1ctf/src/utils/zaphelper"
 	"errors"
 	"fmt"
@@ -103,9 +104,13 @@ func processQueueingJudge(judge *models.Judge) error {
 			}
 
 			judge.JudgeStatus = models.JudgeAC
+			// QQ机器人推送 AC（含名次/血）
+			qqbottool.NotifyFlagSubmit(judge, &newSolve.Rank)
 			return nil
 		} else {
 			judge.JudgeStatus = models.JudgeWA
+			// QQ机器人推送 WA（仅在配置开启时）
+			qqbottool.NotifyFlagSubmit(judge, nil)
 			return nil
 		}
 	case models.JudgeTypeScript:

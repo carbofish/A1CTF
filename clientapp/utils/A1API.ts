@@ -1550,6 +1550,16 @@ export interface SystemSettingsPartialUpdate {
    * @max 1024
    */
   maxUploadSize?: number;
+  /** QQ Bot 是否启用 */
+  qqBotEnabled?: boolean;
+  /** QQ Bot API 地址 */
+  qqBotApiBase?: string;
+  /** QQ Bot Access Token */
+  qqBotAccessToken?: string;
+  /** QQ Bot Group ID */
+  qqBotGroupId?: string;
+  /** 是否推送所有提交 */
+  qqBotPushAllSubmits?: boolean;
 }
 
 /** 错误响应格式 */

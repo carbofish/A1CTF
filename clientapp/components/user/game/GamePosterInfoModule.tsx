@@ -13,7 +13,7 @@ export default function GamePosterInfoModule(
     {
         gameInfo,
         gameStatus,
-        teamStatus
+        teamStatus: _teamStatus
     }: {
         gameInfo: UserFullGameInfo | undefined,
         gameStatus: A1GameStatus,

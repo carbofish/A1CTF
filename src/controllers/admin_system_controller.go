@@ -7,6 +7,7 @@ import (
 	dbtool "a1ctf/src/utils/db_tool"
 	"a1ctf/src/utils/general"
 	i18ntool "a1ctf/src/utils/i18n_tool"
+	qqbottool "a1ctf/src/utils/qq_bot_tool"
 	"a1ctf/src/webmodels"
 	"fmt"
 	"io"
@@ -203,6 +204,38 @@ func UpdateSystemSettings(c *gin.Context) {
 	if value, exists := updateData["gameActivityMode"]; exists {
 		if str, ok := value.(string); ok {
 			existingSettings.GameActivityMode = str
+		}
+	}
+
+	// QQ Bot 设置
+	if value, exists := updateData["qqBotEnabled"]; exists {
+		if b, ok := value.(bool); ok {
+			existingSettings.QQBotEnabled = b
+		}
+	}
+	if value, exists := updateData["qqBotType"]; exists {
+		if str, ok := value.(string); ok {
+			existingSettings.QQBotType = str
+		}
+	}
+	if value, exists := updateData["qqBotApiBase"]; exists {
+		if str, ok := value.(string); ok {
+			existingSettings.QQBotApiBase = str
+		}
+	}
+	if value, exists := updateData["qqBotAccessToken"]; exists {
+		if str, ok := value.(string); ok {
+			existingSettings.QQBotAccessToken = str
+		}
+	}
+	if value, exists := updateData["qqBotGroupId"]; exists {
+		if str, ok := value.(string); ok {
+			existingSettings.QQBotGroupID = str
+		}
+	}
+	if value, exists := updateData["qqBotPushAllSubmits"]; exists {
+		if b, ok := value.(bool); ok {
+			existingSettings.QQBotPushAllSubmits = b
 		}
 	}
 	if value, exists := updateData["aboutus"]; exists {
@@ -642,4 +675,41 @@ func saveUploadedFile(file *multipart.FileHeader, dst string) error {
 
 	_, err = io.Copy(out, src)
 	return err
+}
+
+// TestQQBot 测试QQ Bot推送
+func TestQQBot(c *gin.Context) {
+	var payload struct {
+		Message     string `json:"message"`
+		BaseURL     string `json:"base_url"`
+		AccessToken string `json:"access_token"`
+		GroupID     string `json:"group_id"`
+	}
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		payload.Message = "QQ Bot 测试消息"
+	}
+	if payload.Message == "" {
+		payload.Message = "QQ Bot 测试消息"
+	}
+
+	// 未传入时使用系统配置
+	if payload.BaseURL == "" || payload.GroupID == "" || payload.AccessToken == "" {
+		cfg := clientconfig.ClientConfig
+		if payload.BaseURL == "" {
+			payload.BaseURL = cfg.QQBotApiBase
+		}
+		if payload.GroupID == "" {
+			payload.GroupID = cfg.QQBotGroupID
+		}
+		if payload.AccessToken == "" {
+			payload.AccessToken = cfg.QQBotAccessToken
+		}
+	}
+
+	go qqbottool.SendGroupMessageWithConfig(payload.BaseURL, payload.AccessToken, payload.GroupID, payload.Message)
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "QQ Bot 测试消息已发送（请检查群消息）",
+	})
 }
