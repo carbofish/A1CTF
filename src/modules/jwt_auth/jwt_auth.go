@@ -224,6 +224,11 @@ var PermissionMap = map[string]PermissionSetting{
 	"/api/admin/game/:game_id/submits":                 {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
 	"/api/admin/game/:game_id/cheats":                  {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
 
+	// QQBot 管理路由（新增）
+	"/api/admin/game/:game_id/qqbot":        {RequestMethod: []string{"GET", "PUT"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
+	"/api/admin/game/:game_id/qqbot/config": {RequestMethod: []string{"GET", "PUT"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
+	"/api/admin/game/:game_id/qqbot/test":   {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
+
 	// 分组管理相关权限
 	"/api/admin/game/:game_id/groups":           {RequestMethod: []string{"GET", "POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
 	"/api/admin/game/:game_id/groups/:group_id": {RequestMethod: []string{"PUT", "DELETE"}, Permissions: []models.UserRole{models.UserRoleAdmin}},

@@ -1562,6 +1562,14 @@ export interface SystemSettingsPartialUpdate {
   qqBotPushAllSubmits?: boolean;
 }
 
+export interface GameQQBotConfig {
+  qq_bot_enabled?: boolean;
+  qq_bot_api_base?: string | null;
+  qq_bot_access_token?: string | null;
+  qq_bot_group_id?: string | null;
+  qq_bot_push_all_submits?: boolean;
+}
+
 /** 错误响应格式 */
 export interface Error {
   /** 错误代码 */
@@ -3789,6 +3797,51 @@ export class Api<
         format: "json",
         ...params,
       }),
+
+    getGameQQBotConfig: (gameId: number, params: RequestParams = {}) =>
+      this.request<
+        { code: number; data: GameQQBotConfig },
+        ErrorMessage | void
+      >({
+        path: `/api/admin/game/${gameId}/qqbot`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    updateGameQQBotConfig: (
+      gameId: number,
+      data: GameQQBotConfig,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { code: number },
+        ErrorMessage | void
+      >({
+        path: `/api/admin/game/${gameId}/qqbot`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    testGameQQBot: (
+      gameId: number,
+      data: { message: string },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        { code?: number; message?: string },
+        Error
+      >({
+        path: `/api/admin/game/${gameId}/qqbot/test`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
   };
   file = {
     /**
@@ -3978,6 +4031,29 @@ export class Api<
         Error
       >({
         path: `/api/admin/system/settings`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+      testQQBot: (
+        data: {
+          /** 要测试的消息内容 */
+          message: string;
+        },
+        params: RequestParams = {},
+      ) =>
+        this.request<
+          {
+            /** @example 200 */
+            code?: number;
+            /** @example "Test message sent to QQ bot" */
+            message?: string;
+          },
+          Error
+        >({
+          path: `/api/admin/system/test-qqbot`,
         method: "POST",
         body: data,
         type: ContentType.Json,

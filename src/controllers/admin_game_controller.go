@@ -21,6 +21,7 @@ import (
 	"a1ctf/src/utils/general"
 	i18ntool "a1ctf/src/utils/i18n_tool"
 	noticetool "a1ctf/src/utils/notice_tool"
+	qqbottool "a1ctf/src/utils/qq_bot_tool"
 	"a1ctf/src/webmodels"
 	"mime"
 
@@ -192,6 +193,13 @@ func AdminGetGame(c *gin.Context) {
 		"team_policy":              game.TeamPolicy,
 		"group_invite_code_enable": game.GroupInviteCodeEnabled,
 		"challenges":               make([]gin.H, 0),
+
+		// Per-game QQBot settings
+		"qq_bot_enabled":          game.QQBotEnabled,
+		"qq_bot_api_base":         game.QQBotApiBase,
+		"qq_bot_access_token":     game.QQBotAccessToken,
+		"qq_bot_group_id":         game.QQBotGroupID,
+		"qq_bot_push_all_submits": game.QQBotPushAllSubmits,
 	}
 
 	// 查询所有 challenges
@@ -1704,6 +1712,162 @@ func AdminGetSubmits(c *gin.Context) {
 		"code":  200,
 		"data":  data,
 		"total": total,
+	})
+}
+
+// 获取比赛级 QQBot 配置
+func AdminGetGameQQBotConfig(c *gin.Context) {
+	gameIDStr := c.Param("game_id")
+	gameID, err := strconv.ParseInt(gameIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidGameID"}),
+		})
+		return
+	}
+
+	var game models.Game
+	if err := dbtool.DB().Where("game_id = ?", gameID).First(&game).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{
+				"code":    404,
+				"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "GameNotFound"}),
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    500,
+				"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToVerifyGame"}),
+			})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": gin.H{
+			"qq_bot_enabled":          game.QQBotEnabled,
+			"qq_bot_api_base":         game.QQBotApiBase,
+			"qq_bot_access_token":     game.QQBotAccessToken,
+			"qq_bot_group_id":         game.QQBotGroupID,
+			"qq_bot_push_all_submits": game.QQBotPushAllSubmits,
+		},
+	})
+}
+
+// 更新比赛级 QQBot 配置
+func AdminUpdateGameQQBotConfig(c *gin.Context) {
+	gameIDStr := c.Param("game_id")
+	gameID, err := strconv.ParseInt(gameIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidGameID"}),
+		})
+		return
+	}
+
+	var payload struct {
+		QQBotEnabled        *bool   `json:"qq_bot_enabled"`
+		QQBotApiBase        *string `json:"qq_bot_api_base"`
+		QQBotAccessToken    *string `json:"qq_bot_access_token"`
+		QQBotGroupID        *string `json:"qq_bot_group_id"`
+		QQBotPushAllSubmits *bool   `json:"qq_bot_push_all_submits"`
+	}
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidRequestPayload"}),
+		})
+		return
+	}
+
+	updates := map[string]interface{}{}
+	if payload.QQBotEnabled != nil {
+		updates["qq_bot_enabled"] = *payload.QQBotEnabled
+	}
+	if payload.QQBotApiBase != nil {
+		updates["qq_bot_api_base"] = payload.QQBotApiBase
+	}
+	if payload.QQBotAccessToken != nil {
+		updates["qq_bot_access_token"] = payload.QQBotAccessToken
+	}
+	if payload.QQBotGroupID != nil {
+		updates["qq_bot_group_id"] = payload.QQBotGroupID
+	}
+	if payload.QQBotPushAllSubmits != nil {
+		updates["qq_bot_push_all_submits"] = *payload.QQBotPushAllSubmits
+	}
+
+	if len(updates) == 0 {
+		c.JSON(http.StatusOK, gin.H{"code": 200})
+		return
+	}
+
+	if err := dbtool.DB().Model(&models.Game{}).Where("game_id = ?", gameID).Updates(updates).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToSaveGame"}),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"code": 200})
+}
+
+// 测试比赛级 QQBot 推送
+func AdminTestGameQQBot(c *gin.Context) {
+	gameIDStr := c.Param("game_id")
+	gameID, err := strconv.ParseInt(gameIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidGameID"})})
+		return
+	}
+
+	var payload struct {
+		Message     string  `json:"message"`
+		BaseURL     *string `json:"base_url"`
+		AccessToken *string `json:"access_token"`
+		GroupID     *string `json:"group_id"`
+	}
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		payload.Message = "QQ Bot 测试消息"
+	}
+	if payload.Message == "" {
+		payload.Message = "QQ Bot 测试消息"
+	}
+
+	var game models.Game
+	if err := dbtool.DB().Where("game_id = ?", gameID).First(&game).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "GameNotFound"})})
+		return
+	}
+
+	// 优先使用请求中的配置，其次用比赛配置，最后用系统配置（工具里会再做一次回退）
+	base := ""
+	token := ""
+	gid := ""
+	if payload.BaseURL != nil && *payload.BaseURL != "" {
+		base = *payload.BaseURL
+	} else if game.QQBotApiBase != nil {
+		base = *game.QQBotApiBase
+	}
+	if payload.AccessToken != nil && *payload.AccessToken != "" {
+		token = *payload.AccessToken
+	} else if game.QQBotAccessToken != nil {
+		token = *game.QQBotAccessToken
+	}
+	if payload.GroupID != nil && *payload.GroupID != "" {
+		gid = *payload.GroupID
+	} else if game.QQBotGroupID != nil {
+		gid = *game.QQBotGroupID
+	}
+
+	go qqbottool.SendGroupMessageWithConfig(base, token, gid, payload.Message)
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "QQ Bot 测试消息已发送（请检查群消息）",
 	})
 }
 

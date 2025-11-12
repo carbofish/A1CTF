@@ -391,7 +391,7 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
                                         </div>
                                         <h2 className="text-xl font-semibold">QQ机器人</h2>
                                     </div>
-                                    <QQBotManager />
+                                    <QQBotManager gameId={game_info.game_id} />
                                 </div>
                             )}
                             

@@ -343,6 +343,7 @@ func main() {
 			teamManageGroup.DELETE("/:team_id", controllers.OperationNotAllowedAfterGameStartMiddleWare(), controllers.DeleteTeam)
 		}
 
+		// 管理员挑战管理接口
 		challengeGroup := auth.Group("/admin/challenge")
 		challengeGroup.Use(controllers.EmailVerifiedMiddleware())
 		{
@@ -416,6 +417,13 @@ func main() {
 
 			// 题目解题记录管理路由
 			gameGroup.POST("/:game_id/challenge/:challenge_id/solves/delete", controllers.AdminDeleteChallengeSolves)
+
+			// QQBot 管理路由（新增）
+			gameGroup.GET("/:game_id/qqbot", controllers.AdminGetGameQQBotConfig)
+			gameGroup.PUT("/:game_id/qqbot", controllers.AdminUpdateGameQQBotConfig)
+			gameGroup.GET("/:game_id/qqbot/config", controllers.AdminGetGameQQBotConfig)
+			gameGroup.PUT("/:game_id/qqbot/config", controllers.AdminUpdateGameQQBotConfig)
+			gameGroup.POST("/:game_id/qqbot/test", controllers.AdminTestGameQQBot)
 		}
 
 		// 用户比赛访问相关接口
