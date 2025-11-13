@@ -10,7 +10,7 @@ export function VersionView() {
                 <div className="flex items-center justify-center pt-1 pb-1 pl-4 pr-4 gap-6 mb-10">
                     <img
                         className="dark:invert"
-                        src="/images/A1natas.svg"
+                        src="http://assets.carbo.ink/A1natas.svg"
                         alt="A1natas"
                         width={70}
                         height={70}

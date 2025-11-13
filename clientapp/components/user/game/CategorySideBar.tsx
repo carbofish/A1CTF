@@ -301,7 +301,7 @@ export function CategorySidebar({
                                         width={40}
                                         height={40}
                                     />
-                                    <span className="font-bold text-xl transition-colors duration-300">{clientConfig.systemName} Platform</span>
+                                    <span className="font-bold text-xl transition-colors duration-300">A1CTF Platform</span>
                                 </div>
                                 <div className="flex-1" />
                             </div>

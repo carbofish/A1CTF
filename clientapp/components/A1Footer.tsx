@@ -71,10 +71,11 @@ const A1Footer = () => {
                                 }}
                             >
                                 <img
-                                    src={getSystemLogo()}
-                                    alt={clientConfig.SVGAltData}
+                                    src="http://assets.carbo.ink/A1natas.svg"
+                                    alt="A1CTF"
                                     width={34}
                                     height={34}
+                                    className='dark:invert'
                                 />
                                 <div className="flex flex-col">
                                     <span className="text-lg font-bold">{A1CTF_NAME}</span>
