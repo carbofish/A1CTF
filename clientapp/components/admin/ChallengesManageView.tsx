@@ -46,7 +46,7 @@ export function ChallengesManageView() {
     })
 
     return (
-        <div className="w-full h-full flex flex-col bg-gradient-to-br from-background to-muted/30">
+        <div className="w-full h-full flex flex-col">
             <ConfirmDialog settings={dialogOption} setSettings={setDialogOption} />
 
             {/* Header Section */}
@@ -54,7 +54,7 @@ export function ChallengesManageView() {
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-1">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-xl flex items-center justify-center">
                                 <GalleryVerticalEnd className="h-5 w-5 text-primary" />
                             </div>
                             <div>
@@ -90,7 +90,7 @@ export function ChallengesManageView() {
                 <div className="flex-none overflow-hidden">
                     <MacScrollbar className="h-full" skin={theme == "light" ? "light" : "dark"}
                     >
-                        <div className="w-56 flex-none bg-card/50 backdrop-blur-sm border-r p-4">
+                        <div className="w-56 flex-none backdrop-blur-sm border-r p-4">
                             <div className="sticky top-0">
                                 <h3 className="font-semibold text-lg mb-4 text-foreground/90 text-center">{t("dashboard.filter")}</h3>
                                 <div className="space-y-1">

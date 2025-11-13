@@ -214,13 +214,13 @@ export function GameGroupManager({ gameId }: GameGroupManagerProps) {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-8">
+                                <TableCell colSpan={7} className="text-center py-8">
                                     {commonT("loading")}
                                 </TableCell>
                             </TableRow>
                         ) : groups.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                                     {t("group.empty")}
                                 </TableCell>
                             </TableRow>
