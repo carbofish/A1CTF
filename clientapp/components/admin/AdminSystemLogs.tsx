@@ -6,7 +6,6 @@ import {
     flexRender,
     getCoreRowModel,
     getFilteredRowModel,
-    getPaginationRowModel,
     getSortedRowModel,
     useReactTable,
 } from "@tanstack/react-table"
@@ -79,7 +78,7 @@ export function AdminSystemLogs() {
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
 
-    const [pageSize, _setPageSize] = React.useState(20);
+    const [pageSize, setPageSize] = React.useState(10);
     const [curPage, setCurPage] = React.useState(0);
     const [searchKeyword, setSearchKeyword] = React.useState("");
     const [debouncedSearchKeyword, setDebouncedSearchKeyword] = React.useState("");
@@ -377,9 +376,8 @@ export function AdminSystemLogs() {
         columns,
         onSortingChange: setSorting,
         onColumnFiltersChange: setColumnFilters,
-        getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        getSortedRowModel: getSortedRowModel(),
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
         onColumnVisibilityChange: setColumnVisibility,
         onRowSelectionChange: setRowSelection,
@@ -388,6 +386,11 @@ export function AdminSystemLogs() {
             columnFilters,
             columnVisibility,
             rowSelection,
+            // 把分页状态传给 react-table，确保表格的 pageSize 与后端请求使用的一致
+            pagination: {
+                pageIndex: curPage,
+                pageSize: pageSize,
+            },
         },
     });
 
@@ -525,6 +528,21 @@ export function AdminSystemLogs() {
                         <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                         {t("refresh")}
                     </Button>
+
+                    <Select value={String(pageSize)} onValueChange={(value) => {
+                        setPageSize(Number(value));
+                        setCurPage(0);
+                    }}>
+                        <SelectTrigger className="w-28">
+                            <SelectValue placeholder={t("row")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="20">20</SelectItem>
+                            <SelectItem value="50">50</SelectItem>
+                            <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                    </Select>
 
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
