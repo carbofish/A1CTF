@@ -297,11 +297,11 @@ export default function ChallengeMainContent(
                                     <div key={i} className="flex flex-col gap-[2px]">
                                         <span className="font-bold text-xl mb-2">{container.container_name}</span>
                                         <div className="flex gap-2 items-center">
-                                            <Network />
                                             {container.container_ports?.length ? (
-                                                <div className="flex gap-2">
+                                                <div className="flex gap-6">
                                                     {container.container_ports.map((port, j) => (
                                                         <div key={j} className="flex gap-2 items-center">
+                                                            <Network />
                                                             <span className="text-sm font-bold">{port.port_name}:</span>
                                                             <div className="border-2 border-foreground px-2 rounded-md flex items-center justify-center hover:bg-foreground/30 transition-colors duration-300"
                                                                 onClick={() => {
