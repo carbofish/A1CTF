@@ -88,6 +88,10 @@ export function AdminSystemLogs() {
     const [categoryFilter, setCategoryFilter] = React.useState<LogCategory | "">("");
     const [statusFilter, setStatusFilter] = React.useState<string>("");
 
+    React.useEffect(() => {
+        table.setPageSize(pageSize)
+    }, [pageSize])
+
     // 使用SWR获取日志数据
     const { data: logsData, isLoading, mutate: fetchLogs } = useSWR(
         `/api/admin/system/logs?offset=${curPage * pageSize}&size=${pageSize}&keyword=${debouncedSearchKeyword}&category=${categoryFilter}&status=${statusFilter}`,
