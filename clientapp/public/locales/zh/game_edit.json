@@ -110,6 +110,14 @@
             "title": "WriteUp提交截至时间",
             "description": "请选择WriteUp提交截至时间"
         },
+        "wp_start": {
+            "title": "WriteUp开始时间",
+            "description": "留空表示立即开放提交"
+        },
+        "wp_formats": {
+            "title": "WriteUp格式",
+            "description": "请选择允许提交的文件格式"
+        },
         "limit": {
             "member": {
                 "title": "队伍人数限制",

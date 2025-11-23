@@ -5,6 +5,7 @@
   "timeline": "Stages",
   "groups": "Group",
   "notices": "Notice",
+  "writeups": "WriteUps",
   "teams": "Team",
   "containers": "Container",
   "update_success": "Game info updated successfully",
@@ -38,5 +39,13 @@
   "adjust": "Score Adjustment",
   "remove": "Delete Game",
   "delete_description": "Are you sure you want to delete the game \"{{name}}\"? This action cannot be undone. All submission records and team information will be permanently deleted.",
-  "alert_title": "Confirm Deletion"
+  "alert_title": "Confirm Deletion",
+  "writeups_title": "Team WriteUps",
+  "writeups_description": "Review and download the latest submissions from teams.",
+  "writeups_refresh": "Refresh",
+  "writeups_download_all": "Download all",
+  "writeups_empty": "No writeups submitted yet.",
+  "writeups_submitted_at": "Submitted at {{time}}",
+  "writeups_view": "Open in new tab",
+  "writeups_preview_placeholder": "Select a writeup to preview."
 }

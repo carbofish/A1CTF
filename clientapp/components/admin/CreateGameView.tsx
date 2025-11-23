@@ -145,6 +145,8 @@ export function CreateGameView() {
         "OSINT": <Github size={21} />
     };
 
+    const writeupFormatOptions = ["pdf", "zip", "doc", "docx", "md", "txt"]
+
     const formSchema = z.object({
         name: z.string().min(2, { message: "名字最短要两个字符" }),
         summary: z.string().optional(),
@@ -157,7 +159,9 @@ export function CreateGameView() {
         team_number_limit: z.number(),
         container_number_limit: z.number(),
         require_wp: z.boolean(),
+        wp_start_time: z.date().optional(),
         wp_expire_time: z.date().optional(),
+        wp_formats: z.array(z.string()).min(1),
         stages: z.array(
             z.object({
                 stage_name: z.string().nonempty(),
@@ -200,7 +204,9 @@ export function CreateGameView() {
             team_number_limit: 3,
             container_number_limit: 3,
             require_wp: false,
+            wp_start_time: undefined,
             wp_expire_time: new Date(),
+            wp_formats: ["pdf"],
             visible: false,
             stages: [],
             challenges: []
@@ -225,7 +231,9 @@ export function CreateGameView() {
             team_number_limit: values.team_number_limit,
             container_number_limit: values.container_number_limit,
             require_wp: values.require_wp,
+            wp_start_time: values.wp_start_time ? format_date(values.wp_start_time) : undefined,
             wp_expire_time: format_date(values.wp_expire_time ?? new Date()),
+            wp_formats: values.wp_formats && values.wp_formats.length ? values.wp_formats : ["pdf"],
             stages: [],
             visible: values.visible,
             challenges: [],
@@ -494,17 +502,67 @@ export function CreateGameView() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name={`wp_expire_time`}
+                                    name="wp_start_time"
                                     render={({ field }) => (
                                         <FormItem className="flex flex-col">
-                                            <FormLabel>WriteUP截至时间</FormLabel>
+                                            <FormLabel>WriteUp开始时间</FormLabel>
                                             <DateTimePicker24h
                                                 date={field.value}
                                                 setDate={field.onChange}
                                             />
                                             <FormDescription>
-                                                请选择WP截止时间
+                                                设置允许提交 WriteUp 的开始时间
                                             </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name={`wp_expire_time`}
+                                    render={({ field }) => (
+                                        <FormItem className="flex flex-col">
+                                            <FormLabel>WriteUp截至时间</FormLabel>
+                                            <DateTimePicker24h
+                                                date={field.value}
+                                                setDate={field.onChange}
+                                            />
+                                            <FormDescription>
+                                                请选择 WriteUp 截止时间
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="wp_formats"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>WriteUp格式</FormLabel>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {writeupFormatOptions.map((fmt) => {
+                                                    const selected = field.value?.includes(fmt)
+                                                    return (
+                                                        <Button
+                                                            key={fmt}
+                                                            type="button"
+                                                            size="sm"
+                                                            variant={selected ? "default" : "outline"}
+                                                            className="rounded-full text-xs"
+                                                            onClick={() => {
+                                                                const current = field.value ?? []
+                                                                if (selected && current.length === 1) return
+                                                                const next = selected ? current.filter((val) => val !== fmt) : [...current, fmt]
+                                                                field.onChange(next)
+                                                            }}
+                                                        >
+                                                            {fmt.toUpperCase()}
+                                                        </Button>
+                                                    )
+                                                })}
+                                            </div>
+                                            <FormDescription>选择允许提交的文件格式</FormDescription>
                                             <FormMessage />
                                         </FormItem>
                                     )}

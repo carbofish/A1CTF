@@ -47,6 +47,18 @@ func keysInt64(m map[int64]struct{}) []int64 {
 	return res
 }
 
+func normalizeWriteupFormats(formats pq.StringArray) pq.StringArray {
+	if len(formats) == 0 {
+		return pq.StringArray{"pdf"}
+	}
+	return formats
+}
+
+func writeupFormatsToSlice(formats pq.StringArray) []string {
+	n := normalizeWriteupFormats(formats)
+	return append(make([]string, 0, len(n)), n...)
+}
+
 func AdminListGames(c *gin.Context) {
 	var payload webmodels.AdminListGamePayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -101,6 +113,8 @@ func AdminCreateGame(c *gin.Context) {
 		return
 	}
 
+	payload.WpFormats = normalizeWriteupFormats(payload.WpFormats)
+
 	game := models.Game{
 		Name:                 payload.Name,
 		Summary:              payload.Summary,
@@ -109,6 +123,8 @@ func AdminCreateGame(c *gin.Context) {
 		Visible:              payload.Visible,
 		Poster:               payload.Poster,
 		WpExpireTime:         payload.WpExpireTime,
+		WpStartTime:          payload.WpStartTime,
+		WpFormats:            payload.WpFormats,
 		Stages:               payload.Stages,
 		RequireWp:            payload.RequireWp,
 		ContainerNumberLimit: payload.ContainerNumberLimit,
@@ -182,6 +198,8 @@ func AdminGetGame(c *gin.Context) {
 		"container_number_limit":   game.ContainerNumberLimit,
 		"require_wp":               game.RequireWp,
 		"wp_expire_time":           game.WpExpireTime,
+		"wp_start_time":            game.WpStartTime,
+		"wp_formats":               writeupFormatsToSlice(game.WpFormats),
 		"stages":                   game.Stages,
 		"visible":                  game.Visible,
 		"game_icon_light":          game.GameIconLight,
@@ -470,6 +488,8 @@ func AdminUpdateGame(c *gin.Context) {
 	game.ContainerNumberLimit = payload.ContainerNumberLimit
 	game.RequireWp = payload.RequireWp
 	game.WpExpireTime = payload.WpExpireTime
+	game.WpStartTime = payload.WpStartTime
+	game.WpFormats = normalizeWriteupFormats(payload.WpFormats)
 	game.Stages = payload.Stages
 	game.Visible = payload.Visible
 	game.TeamPolicy = payload.TeamPolicy

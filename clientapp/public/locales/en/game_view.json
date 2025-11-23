@@ -65,5 +65,22 @@
         "floating": "Floating Window",
         "quit_full": "Exit Full Screen",
         "enter_full": "Full Screen"
+    },
+    "writeup_card": {
+        "title": "WriteUp Submission",
+        "deadline": "Deadline: {{time}}",
+        "deadline_unknown": "Deadline not announced",
+        "last_submitted": "Last submitted: {{time}}",
+        "view": "Open",
+        "preview_title": "WriteUp Preview",
+        "not_submitted": "No writeup submitted yet.",
+        "upload": "Upload WriteUp",
+        "replace": "Replace WriteUp",
+        "uploading": "Uploading...",
+        "allowed_formats": "Allowed formats: {{formats}}",
+        "allowed_formats_with_size": "Allowed formats: {{formats}} · Max size 50MB",
+        "start_not_ready": "WriteUp collection opens at {{time}}",
+        "helper": "Maximum size 50MB.",
+        "submit_success": "WriteUp submitted successfully."
     }
 }

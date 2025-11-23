@@ -110,6 +110,14 @@
             "title": "WriteUp Submission Deadline",
             "description": "Please select the deadline for WriteUp submissions"
         },
+        "wp_start": {
+            "title": "WriteUp Collection Start",
+            "description": "Leave empty to allow submissions immediately"
+        },
+        "wp_formats": {
+            "title": "Allowed WriteUp Formats",
+            "description": "Select the file formats that teams can submit"
+        },
         "limit": {
             "member": {
                 "title": "Team Member Limit",

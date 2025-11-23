@@ -254,6 +254,13 @@ var PermissionMap = map[string]PermissionSetting{
 	// 分组邀请码相关权限
 	"/api/game/:game_id/group/invite-code": {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{}},
 
+	// Writeup 相关权限
+	"/api/game/:game_id/writeup":        {RequestMethod: []string{"GET", "POST"}, Permissions: []models.UserRole{}},
+	"/api/game/:game_id/writeup/upload": {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{}},
+	"/api/admin/writeups/:game_id":      {RequestMethod: []string{"GET"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
+	"/api/admin/writeups/:game_id/all":  {RequestMethod: []string{"GET"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
+	"/api/admin/writeups/:game_id/:writeup_id": {RequestMethod: []string{"GET"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
+
 	"/api/admin/container/list":   {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
 	"/api/admin/container/delete": {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},
 	"/api/admin/container/extend": {RequestMethod: []string{"POST"}, Permissions: []models.UserRole{models.UserRoleAdmin}},

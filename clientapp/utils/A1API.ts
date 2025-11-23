@@ -305,6 +305,9 @@ export interface AdminFullGameInfo {
   require_wp: boolean;
   /** @format date-time */
   wp_expire_time: string;
+  /** @format date-time */
+  wp_start_time?: string | null;
+  wp_formats?: string[];
   visible: boolean;
   stages: GameStage[];
   first_blood_reward?: number;
@@ -352,6 +355,33 @@ export interface UserSimpleGameChallenge {
   visible?: boolean;
   category?: ChallengeCategory;
   belong_stage?: string;
+}
+
+export interface TeamWriteupInfo {
+  writeup_id: number;
+  file_id: string;
+  file_name: string;
+  file_size: number;
+  file_type: string;
+  /** @format date-time */
+  submitted_at: string;
+  url: string;
+}
+
+export interface AdminTeamWriteupInfo {
+  writeup_id: number;
+  game_id: number;
+  team_id: number;
+  team_name: string;
+  team_avatar?: string;
+  file_id: string;
+  file_name: string;
+  file_size: number;
+  file_type: string;
+  /** @format date-time */
+  submitted_at: string;
+  display_name: string;
+  url: string;
 }
 
 export interface UserSimpleGameSolvedChallenge {
@@ -483,6 +513,9 @@ export interface UserFullGameInfo {
   require_wp: boolean;
   /** @format date-time */
   wp_expire_time: string;
+  /** @format date-time */
+  wp_start_time?: string | null;
+  wp_formats?: string[];
   visible: boolean;
   game_icon_light?: string | null;
   game_icon_dark?: string | null;
@@ -833,6 +866,11 @@ export interface TeamJoinPayload {
 export interface TransferCaptainPayload {
   /** 新队长的用户ID */
   new_captain_id: string;
+}
+
+export interface SubmitWriteupPayload {
+  /** @format uuid */
+  file_id: string;
 }
 
 export interface UpdateTeamInfoPayload {
@@ -2131,6 +2169,94 @@ export class Api<
         method: "POST",
         body: data,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get current team's writeup info
+     *
+     * @tags user
+     * @name UserGetGameWriteup
+     * @summary Get writeup info
+     * @request GET:/api/game/{game_id}/writeup
+     */
+    userGetGameWriteup: (gameId: number, params: RequestParams = {}) =>
+      this.request<
+        {
+          code: number;
+          data: {
+            writeup?: TeamWriteupInfo | null;
+            require_wp: boolean;
+            wp_expire_time: string;
+            wp_start_time?: string | null;
+            wp_formats?: string[];
+          };
+        },
+        void | ErrorMessage
+      >({
+        path: `/api/game/${gameId}/writeup`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Submit writeup for the current team
+     *
+     * @tags user
+     * @name UserSubmitGameWriteup
+     * @summary Submit writeup
+     * @request POST:/api/game/{game_id}/writeup
+     */
+    userSubmitGameWriteup: (
+      gameId: number,
+      data: SubmitWriteupPayload,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          code: number;
+          message: string;
+        },
+        void | ErrorMessage
+      >({
+        path: `/api/game/${gameId}/writeup`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Upload writeup file
+     *
+     * @tags user
+     * @name UserUploadGameWriteupFile
+     * @summary Upload writeup file
+     * @request POST:/api/game/{game_id}/writeup/upload
+     */
+    userUploadGameWriteupFile: (
+      gameId: number,
+      data: {
+        /** @format binary */
+        file: File;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          code: number;
+          file_id: string;
+          url: string;
+        },
+        ErrorMessage | void
+      >({
+        path: `/api/game/${gameId}/writeup/upload`,
+        method: "POST",
+        body: data,
+        type: ContentType.FormData,
         format: "json",
         ...params,
       }),
@@ -3971,6 +4097,28 @@ export class Api<
         method: "POST",
         body: data,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get writeups of a game
+     *
+     * @tags admin
+     * @name AdminGetGameWriteups
+     * @summary List game writeups
+     * @request GET:/api/admin/writeups/{game_id}
+     */
+    adminGetGameWriteups: (gameId: number, params: RequestParams = {}) =>
+      this.request<
+        {
+          code: number;
+          data: AdminTeamWriteupInfo[];
+        },
+        ErrorMessage | void
+      >({
+        path: `/api/admin/writeups/${gameId}`,
+        method: "GET",
         format: "json",
         ...params,
       }),

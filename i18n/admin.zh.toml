@@ -555,3 +555,46 @@ other = "删除比赛失败"
 [GameDeletedSuccessfully]
 description = "比赛删除成功"
 other = "比赛删除成功"
+[FailedToLoadWriteup]
+description = "加载 WriteUp 失败"
+other = "加载 WriteUp 数据失败"
+
+[WriteupNotRequired]
+description = "无需提交 WriteUp"
+other = "本场比赛无需提交 WriteUp。"
+
+[WriteupDeadlinePassed]
+description = "提交已截止"
+other = "WriteUp 提交已截止。"
+
+[UploadedFileNotFound]
+description = "上传文件不存在"
+other = "上传的文件不存在。"
+
+[FailedToLoadUpload]
+description = "读取上传失败"
+other = "读取上传文件失败。"
+
+[WriteupUploadOwnerMismatch]
+description = "上传者不匹配"
+other = "只能提交由你账号上传的文件。"
+
+[FailedToSaveWriteup]
+description = "保存 WriteUp 失败"
+other = "保存 WriteUp 失败。"
+
+[WriteupSubmittedSuccessfully]
+description = "WriteUp 提交成功"
+other = "WriteUp 提交成功。"
+
+[InvalidWriteupID]
+description = "无效的 WriteUp ID"
+other = "无效的 WriteUp ID。"
+
+[WriteupNotFound]
+description = "未找到 WriteUp"
+other = "未找到 WriteUp。"
+
+[FailedToOpenWriteup]
+description = "打开 WriteUp 失败"
+other = "打开 WriteUp 文件失败。"

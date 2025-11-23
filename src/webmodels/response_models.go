@@ -40,6 +40,8 @@ type UserFullGameInfo struct {
 	ContainerNumberLimit int32                      `json:"container_number_limit"`
 	RequireWP            bool                       `json:"require_wp"`
 	WPExpireTime         time.Time                  `json:"wp_expire_time"`
+	WPStartTime          *time.Time                 `json:"wp_start_time"`
+	WPFormats            []string                   `json:"wp_formats"`
 	Stages               *models.GameStages         `json:"stages"`
 	Visible              bool                       `json:"visible"`
 	TeamStatus           models.ParticipationStatus `json:"team_status"`
@@ -85,6 +87,31 @@ type UserDetailGameChallenge struct {
 	ContainerExpireTime *time.Time                    `json:"container_expiretime"`
 	Containers          []ExposePortInfo              `json:"containers"`
 	Visible             bool                          `json:"visible"`
+}
+
+type TeamWriteupInfo struct {
+	WriteupID   int64     `json:"writeup_id"`
+	FileID      string    `json:"file_id"`
+	FileName    string    `json:"file_name"`
+	FileSize    int64     `json:"file_size"`
+	FileType    string    `json:"file_type"`
+	SubmittedAt time.Time `json:"submitted_at"`
+	Url         string    `json:"url"`
+}
+
+type AdminTeamWriteupInfo struct {
+	WriteupID   int64     `json:"writeup_id"`
+	GameID      int64     `json:"game_id"`
+	TeamID      int64     `json:"team_id"`
+	TeamName    string    `json:"team_name"`
+	TeamAvatar  *string   `json:"team_avatar"`
+	FileID      string    `json:"file_id"`
+	FileName    string    `json:"file_name"`
+	FileSize    int64     `json:"file_size"`
+	FileType    string    `json:"file_type"`
+	SubmittedAt time.Time `json:"submitted_at"`
+	DisplayName string    `json:"display_name"`
+	Url         string    `json:"url"`
 }
 
 type GameNotice struct {

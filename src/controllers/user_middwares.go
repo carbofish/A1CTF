@@ -123,7 +123,6 @@ func TeamStatusMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		game := c.MustGet("game").(models.Game)
 
-		// TODO: 目前看来 这个队伍状态中间件都是在鉴权接口后的，所以应该能直接用鉴权接口设置的 user，避免直接从 jwt 里 extract
 		claims := jwt.ExtractClaims(c)
 		user_id := claims["UserID"].(string)
 
@@ -147,20 +146,19 @@ func TeamStatusMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		if team.TeamStatus == models.ParticipateParticipated || team.TeamStatus == models.ParticipatePending || team.TeamStatus == models.ParticipateRejected {
-			c.JSON(http.StatusForbidden, webmodels.ErrorMessage{
-				Code:    403,
-				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "YouMustJoinTeamInThisGame"}),
-			})
-			c.Abort()
-			return
-		}
-
-		if team.TeamStatus == models.ParticipateBanned {
-			c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
-				Code:    400,
-				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "YouAreBannedFromThisGame"}),
-			})
+		// 只允许 Approved（审核通过）和 Participated（已参加）状态的队伍访问
+		if team.TeamStatus != models.ParticipateApproved && team.TeamStatus != models.ParticipateParticipated {
+			if team.TeamStatus == models.ParticipateBanned {
+				c.JSON(http.StatusForbidden, webmodels.ErrorMessage{
+					Code:    403,
+					Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "YouAreBannedFromThisGame"}),
+				})
+			} else {
+				c.JSON(http.StatusForbidden, webmodels.ErrorMessage{
+					Code:    403,
+					Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "YouMustJoinTeamInThisGame"}),
+				})
+			}
 			c.Abort()
 			return
 		}
@@ -174,6 +172,12 @@ func TeamStatusMiddleware() gin.HandlerFunc {
 func EmailVerifiedMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := c.MustGet("user").(models.User)
+
+		// Allow privileged roles to bypass email verification for admin tooling
+		if user.Role == models.UserRoleAdmin || user.Role == models.UserRoleMonitor {
+			c.Next()
+			return
+		}
 
 		// 检查邮箱验证状态
 		if !user.EmailVerified && clientconfig.ClientConfig.AccountActivationMethod == "email" {
