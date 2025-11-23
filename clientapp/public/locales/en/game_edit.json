@@ -208,7 +208,13 @@
         "group_id": "Group ID",
         "copy": "Copy InviteCode",
         "copy_success": "InviteCode copied to clipboard",
-        "empty": "No groups yet. Click \"Create Group\" to add one"
+        "empty": "No groups yet. Click \"Create Group\" to add one",
+        "timeline": {
+            "delete": {
+                "title": "Delete Group",
+                "description": "Are you sure you want to delete this group? This action cannot be undone."
+            }
+        }
     },
     "notice": {
         "empty": "Notice can't be empty",
