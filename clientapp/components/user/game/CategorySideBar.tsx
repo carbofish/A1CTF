@@ -252,6 +252,7 @@ export function CategorySidebar({
     };
 
     const { clientConfig, isAdmin, getSystemLogoDefault } = useGlobalVariableContext()
+    const systemDisplayName = clientConfig?.systemName ? `${clientConfig.systemName} Platform` : "A1CTF Platform"
     const [addChallengeOpen, setAddChallengeOpen] = useState(false)
     const showWriteupCard = !isAdmin()
     const writeupCard = showWriteupCard ? (
@@ -320,7 +321,7 @@ export function CategorySidebar({
                                             width={40}
                                             height={40}
                                         />
-                                        <span className="font-bold text-xl transition-colors duration-300">A1CTF Platform</span>
+                                        <span className="font-bold text-xl transition-colors duration-300">{systemDisplayName}</span>
                                     </div>
                                     <div className="flex-1" />
                                 </div>
