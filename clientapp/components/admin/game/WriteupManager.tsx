@@ -23,25 +23,16 @@ export const WriteupManager: React.FC<WriteupManagerProps> = ({ gameID }) => {
             data: AdminTeamWriteupInfo[]
         }>(`/api/admin/writeups/${gameID}`)
             .then((res) => {
-                console.log('[DEBUG] WriteupManager raw response:', res)
-                console.log('[DEBUG] WriteupManager res.data:', res?.data)
-                console.log('[DEBUG] WriteupManager res.data.data:', res?.data?.data)
-                
                 const raw = res?.data?.data ?? res?.data ?? []
-                console.log('[DEBUG] WriteupManager raw:', raw)
                 
                 const items = Array.isArray(raw)
                     ? raw
                     : Array.isArray(raw?.data)
                         ? raw.data
                         : []
-                console.log('[DEBUG] WriteupManager items:', items)
                 
                 setWriteups(items)
                 setSelected(items[0] ?? null)
-            })
-            .catch((err) => {
-                console.error('[ERROR] WriteupManager fetch failed:', err)
             })
             .finally(() => setLoading(false))
     }, [gameID])
