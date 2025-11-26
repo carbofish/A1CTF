@@ -1,5 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
+
+--- 创建队伍 WriteUp 提交记录表
 CREATE TABLE "team_writeups" (
     "writeup_id" BIGSERIAL NOT NULL,
     "game_id" BIGINT NOT NULL,
@@ -18,11 +20,15 @@ CREATE TABLE "team_writeups" (
     CONSTRAINT team_writeups_submitted_by_fkey FOREIGN KEY (submitted_by) REFERENCES users(user_id) ON DELETE SET NULL
 );
 
+--- 创建唯一索引，确保队伍只能保留一个WriteUp
 CREATE UNIQUE INDEX idx_team_writeups_game_team ON team_writeups(game_id, team_id);
 CREATE INDEX idx_team_writeups_game ON team_writeups(game_id);
+
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
+
 DROP TABLE IF EXISTS "team_writeups" CASCADE;
+
 -- +goose StatementEnd
