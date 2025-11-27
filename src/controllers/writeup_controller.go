@@ -1,4 +1,4 @@
-﻿package controllers
+package controllers
 
 import (
 	"archive/zip"
@@ -55,7 +55,7 @@ func UserGetGameWriteup(c *gin.Context) {
 
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    500,
-			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadWriteup"}), 
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadWriteup"}),
 		})
 		return
 	}
@@ -114,7 +114,7 @@ func UserSubmitGameWriteup(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"code":    500,
-				"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadUpload"}), 
+				"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadUpload"}),
 			})
 		}
 		return
@@ -129,15 +129,13 @@ func UserSubmitGameWriteup(c *gin.Context) {
 	}
 
 	formats := resolveWriteupFormats(game)
-	if len(formats) > 0 {
-		ext := normalizedExtension(upload.FileName)
-		if ext == "" || !writeupFormatAllowed(formats, ext) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"code":    400,
-				"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "WriteupFormatNotAllowed"}),
-			})
-			return
-		}
+	ext := normalizedExtension(upload.FileName)
+	if ext == "" || !writeupFormatAllowed(formats, ext) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "WriteupFormatNotAllowed"}),
+		})
+		return
 	}
 
 	var oldUploadID *string
@@ -237,17 +235,6 @@ func UserUploadGameWriteupFile(c *gin.Context) {
 		return
 	}
 
-	dangerousExts := []string{"exe", "sh", "bat", "cmd", "com", "ps1", "vbs", "js", "jar", "py", "rb", "pl", "php", "asp", "aspx", "jsp", "dll", "so", "dylib"}
-	for _, dangerousExt := range dangerousExts {
-		if ext == dangerousExt {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"code":    400,
-				"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FileTypeNotAllowed"}),
-			})
-			return
-		}
-	}
-
 	storeDir := filepath.Join("data", "uploads", "writeups", fmt.Sprintf("%d", game.GameID), fmt.Sprintf("%d", team.TeamID))
 	if err := os.MkdirAll(storeDir, 0755); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -258,9 +245,6 @@ func UserUploadGameWriteupFile(c *gin.Context) {
 	}
 
 	storedName := uuid.New().String()
-	if ext != "" {
-		storedName = fmt.Sprintf("%s.%s", storedName, ext)
-	}
 	savedPath := filepath.Join(storeDir, storedName)
 
 	absStoreDir, err := filepath.Abs(storeDir)
@@ -337,7 +321,7 @@ func AdminListGameWriteups(c *gin.Context) {
 	}
 
 	var writeups []models.TeamWriteup
-	if err := dbtool.DB().Debug().
+	if err := dbtool.DB().
 		Preload("Team").
 		Where("game_id = ?", gameID).
 		Order("created_at DESC").
@@ -641,18 +625,18 @@ func sanitizeContentType(contentType string, ext string) string {
 	}
 
 	contentType = strings.ToLower(strings.TrimSpace(contentType))
-	
+
 	if idx := strings.Index(contentType, ";"); idx != -1 {
 		contentType = contentType[:idx]
 	}
 
 	safeTypes := map[string]bool{
-		"application/pdf":        true,
-		"application/msword":     true,
+		"application/pdf":    true,
+		"application/msword": true,
 		"application/vnd.openxmlformats-officedocument.wordprocessingml.document": true,
-		"text/plain":             true,
-		"text/markdown":          true,
-		"application/zip":        true,
+		"text/plain":                   true,
+		"text/markdown":                true,
+		"application/zip":              true,
 		"application/x-rar-compressed": true,
 		"application/x-7z-compressed":  true,
 	}
