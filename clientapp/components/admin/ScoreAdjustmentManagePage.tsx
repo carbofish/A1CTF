@@ -298,7 +298,7 @@ export function ScoreAdjustmentManagePage() {
     };
 
     return (
-        <div className="w-full h-full flex flex-col bg-gradient-to-br from-background to-muted/30">
+        <div className="w-full h-full flex flex-col">
             {/* Header */}
             <div className="backdrop-blur-sm bg-background/80 border-b p-5 lg:p-8 sticky top-0 z-10">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

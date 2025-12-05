@@ -483,6 +483,13 @@ export interface UserFullGameInfo {
   require_wp: boolean;
   /** @format date-time */
   wp_expire_time: string;
+  /**
+   * WriteUp开始提交时间
+   * @format date-time
+   */
+  wp_start_time?: string;
+  /** 允许的WriteUp文件格式列表 */
+  wp_formats?: string[];
   visible: boolean;
   game_icon_light?: string | null;
   game_icon_dark?: string | null;

@@ -21,7 +21,7 @@ RUN GIT_HASH=$(git rev-parse --short HEAD) && \
 RUN npm install
 RUN npm run build
 
-FROM golang:1.25.3-alpine AS backend-builder
+FROM golang:1.25.4-alpine AS backend-builder
 
 WORKDIR /app
 
