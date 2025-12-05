@@ -65,5 +65,22 @@
         "floating": "悬浮窗",
         "quit_full": "退出全屏",
         "enter_full": "全屏显示"
+    },
+    "writeup_card": {
+        "title": "WriteUp 提交",
+        "deadline": "提交截止：{{time}}",
+        "deadline_unknown": "提交截止时间未公布",
+        "last_submitted": "最近提交：{{time}}",
+        "view": "查看",
+        "preview_title": "WriteUp 预览",
+        "not_submitted": "暂未提交 WriteUp。",
+        "upload": "上传 WriteUp",
+        "replace": "重新上传",
+        "uploading": "上传中...",
+        "allowed_formats": "允许格式：{{formats}}",
+        "allowed_formats_with_size": "允许格式：{{formats}} · 最大 50MB",
+        "start_not_ready": "WriteUp 收集将于 {{time}} 开始",
+        "helper": "单个文件最大 50MB。",
+        "submit_success": "WriteUp 提交成功。"
     }
 }

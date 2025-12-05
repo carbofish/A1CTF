@@ -110,6 +110,14 @@
             "title": "WriteUp提交截至时间",
             "description": "请选择WriteUp提交截至时间"
         },
+        "wp_start": {
+            "title": "WriteUp开始时间",
+            "description": "留空表示立即开放提交"
+        },
+        "wp_formats": {
+            "title": "WriteUp格式",
+            "description": "请选择允许提交的文件格式"
+        },
         "limit": {
             "member": {
                 "title": "队伍人数限制",
@@ -200,7 +208,13 @@
         "group_id": "分组ID",
         "copy": "复制邀请码",
         "copy_success": "邀请码已复制到剪贴板",
-        "empty": "暂无分组，点击\"创建分组\"开始添加"
+        "empty": "暂无分组，点击\"创建分组\"开始添加",
+        "timeline": {
+            "delete": {
+                "title": "删除分组",
+                "description": "确定要删除该分组吗？此操作无法撤销。"
+            }
+        }
     },
     "notice": {
         "empty": "请填写完整的公告信息",

@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import dayjs from 'dayjs';
-import { CalendarIcon, CircleArrowLeft, Save, Settings, Users, PackageSearch, MessageSquareLock, Activity, Info, Plane } from 'lucide-react';
+import { CalendarIcon, CircleArrowLeft, Save, Settings, Users, PackageSearch, MessageSquareLock, Activity, Info, Plane, FileText } from 'lucide-react';
 import { EditGameFormSchema } from './game/EditGameSchema';
 import { api } from 'utils/ApiHelper';
 import { GameTimelineEditor } from './GameTimelineEditor';
@@ -25,6 +25,7 @@ import { ContainerManageView } from './game/ContainerManageView';
 import { useTheme } from 'next-themes';
 import { GameEventModule } from './game/GameEventModule';
 import { useTranslation } from 'react-i18next';
+import { WriteupManager } from './game/WriteupManager';
 
 export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
 
@@ -64,9 +65,11 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
             team_number_limit: game_info.team_number_limit,
             container_number_limit: game_info.container_number_limit,
             require_wp: game_info.require_wp,
+            wp_start_time: game_info.wp_start_time ? dayjs(game_info.wp_start_time).toDate() : undefined,
             game_icon_light: game_info.game_icon_light || "",
             game_icon_dark: game_info.game_icon_dark || "",
             wp_expire_time: game_info.wp_expire_time ? dayjs(game_info.wp_expire_time).toDate() : new Date(),
+            wp_formats: game_info.wp_formats && game_info.wp_formats.length ? game_info.wp_formats : ["pdf"],
             visible: game_info.visible,
             first_blood_reward: game_info.first_blood_reward,
             second_blood_reward: game_info.second_blood_reward,
@@ -136,8 +139,10 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
             practice_mode: values.practice_mode,
             team_number_limit: values.team_number_limit,
             container_number_limit: values.container_number_limit,
-            require_wp: values.require_wp,
-            wp_expire_time: format_date(values.wp_expire_time ?? new Date()),
+		require_wp: values.require_wp,
+		wp_start_time: values.wp_start_time ? format_date(values.wp_start_time) : undefined,
+		wp_expire_time: format_date(values.wp_expire_time ?? new Date()),
+		wp_formats: values.wp_formats && values.wp_formats.length ? values.wp_formats : ["pdf"],
             stages: values.stages,
             visible: values.visible,
             team_policy: values.team_policy,
@@ -159,13 +164,13 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
 
     const router = useNavigate()
 
-    function handleDateSelect(date: Date | undefined, tm_type: "start_time" | "end_time" | "wp_expire_time") {
+    function handleDateSelect(date: Date | undefined, tm_type: "start_time" | "end_time" | "wp_start_time" | "wp_expire_time") {
         if (date) {
             form.setValue(tm_type, date);
         }
     }
 
-    function handleTimeChange(type: "hour" | "minute", value: string, tm_type: "start_time" | "end_time" | "wp_expire_time") {
+    function handleTimeChange(type: "hour" | "minute", value: string, tm_type: "start_time" | "end_time" | "wp_start_time" | "wp_expire_time") {
         const field_name = tm_type;
         const currentDate = form.getValues(field_name) || new Date();
         const newDate = new Date(currentDate);
@@ -211,6 +216,11 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
             id: 'notices',
             name: t("notices"),
             icon: <MessageSquareLock className="h-4 w-4" />
+        },
+        {
+            id: 'writeups',
+            name: t("writeups"),
+            icon: <FileText className="h-4 w-4" />
         },
         // {
         //     id: 'challenges',
@@ -407,6 +417,10 @@ export function EditGameView({ game_info }: { game_info: AdminFullGameInfo }) {
                                         gameId={game_info.game_id}
                                     />
                                 </div>
+                            )}
+
+                            {activeModule === 'writeups' && (
+                                <WriteupManager gameID={game_info.game_id} />
                             )}
 
                             {/* 容器管理 */}

@@ -21,6 +21,7 @@ import { Slider } from 'components/ui/slider';
 import { DateTimePicker24h } from 'components/ui/data-time-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'components/ui/select';
 import { useTranslation } from 'react-i18next';
+import { Button } from 'components/ui/button';
 
 interface DetailedSettingsModuleProps {
     form: UseFormReturn<z.infer<typeof EditGameFormSchema>>;
@@ -33,6 +34,8 @@ interface DetailedSettingsModuleProps {
     ) => void;
     clientConfig: any;
 }
+
+const writeupFormatOptions = ["pdf", "zip", "doc", "docx", "md", "txt"]
 
 export function DetailedSettingsModule({
     form,
@@ -145,6 +148,22 @@ export function DetailedSettingsModule({
                     {/* WP 截止时间 */}
                     <FormField
                         control={form.control}
+                        name={`wp_start_time`}
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel>{t("detail.wp_start.title")}</FormLabel>
+                                <DateTimePicker24h
+                                    date={field.value}
+                                    setDate={field.onChange}
+                                />
+                                <FormDescription>{t("detail.wp_start.description")}</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
                         name={`wp_expire_time`}
                         render={({ field }) => (
                             <FormItem className="flex flex-col">
@@ -154,6 +173,46 @@ export function DetailedSettingsModule({
                                     setDate={field.onChange}
                                 />
                                 <FormDescription>{t("detail.wp_time.description")}</FormDescription>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="wp_formats"
+                        render={({ field }) => (
+                            <FormItem>
+                                <div className="flex items-center h-[20px]">
+                                    <FormLabel>{t("detail.wp_formats.title")}</FormLabel>
+                                    <div className="flex-1" />
+                                    <FormMessage />
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {writeupFormatOptions.map((fmt) => {
+                                        const selected = field.value?.includes(fmt)
+                                        return (
+                                            <Button
+                                                key={fmt}
+                                                type="button"
+                                                size="sm"
+                                                variant={selected ? "default" : "outline"}
+                                                className="rounded-full text-xs"
+                                                onClick={() => {
+                                                    const current = field.value ?? []
+                                                    if (selected && current.length === 1) {
+                                                        return
+                                                    }
+                                                    const next = selected ? current.filter((val) => val !== fmt) : [...current, fmt]
+                                                    field.onChange(next)
+                                                }}
+                                            >
+                                                {fmt.toUpperCase()}
+                                            </Button>
+                                        )
+                                    })}
+                                </div>
+                                <FormDescription>{t("detail.wp_formats.description")}</FormDescription>
                                 <FormMessage />
                             </FormItem>
                         )}

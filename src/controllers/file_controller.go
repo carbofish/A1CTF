@@ -194,15 +194,26 @@ func DownloadFile(c *gin.Context) {
 		return
 	}
 
-	// 使用 c.DataFromReader 方法，它会正确设置 Content-Length
+	// 内联显示预览PDF
+	disposition := "attachment"
+	if c.Query("inline") == "true" {
+		safeTypes := map[string]bool{
+			"application/pdf":    true,
+		}
+		if safeTypes[uploadRecord.FileType] {
+			disposition = "inline"
+		}
+	}
+
 	c.DataFromReader(
 		http.StatusOK,
 		fileState.Size(),
 		uploadRecord.FileType,
 		file,
 		map[string]string{
-			"Content-Disposition": fmt.Sprintf("attachment; filename=%s", uploadRecord.FileName),
+			"Content-Disposition": fmt.Sprintf("%s; filename=%s", disposition, uploadRecord.FileName),
 			"Cache-Control":       "public, max-age=36000",
+			"X-Content-Type-Options": "nosniff",
 		},
 	)
 }

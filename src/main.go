@@ -418,6 +418,14 @@ func main() {
 			gameGroup.POST("/:game_id/challenge/:challenge_id/solves/delete", controllers.AdminDeleteChallengeSolves)
 		}
 
+		writeupGroup := auth.Group("/admin/writeups")
+		writeupGroup.Use(controllers.EmailVerifiedMiddleware())
+		{
+			writeupGroup.GET("/:game_id", controllers.AdminListGameWriteups)
+			writeupGroup.GET("/:game_id/all", controllers.AdminDownloadAllWriteups)
+			writeupGroup.GET("/:game_id/:writeup_id", controllers.AdminDownloadGameWriteup)
+		}
+
 		// 用户比赛访问相关接口
 		userGameGroup := auth.Group("/game")
 		userGameGroup.Use(defaultGzipMiddleware)
@@ -458,6 +466,21 @@ func main() {
 				VisibleAfterEnded: false,
 				CheckGameStarted:  false,
 			}), controllers.UserCreateGameTeam)
+
+			userGameGroup.GET("/:game_id/writeup", controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{
+				VisibleAfterEnded: true,
+				CheckGameStarted:  false,
+			}), controllers.TeamStatusMiddleware(), controllers.UserGetGameWriteup)
+			userGameGroup.POST("/:game_id/writeup", controllers.PayloadValidator(
+				webmodels.SubmitWriteupPayload{},
+			), controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{
+				VisibleAfterEnded: true,
+				CheckGameStarted:  false,
+			}), controllers.TeamStatusMiddleware(), controllers.UserSubmitGameWriteup)
+			userGameGroup.POST("/:game_id/writeup/upload", controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{
+				VisibleAfterEnded: true,
+				CheckGameStarted:  false,
+			}), controllers.TeamStatusMiddleware(), controllers.UserUploadGameWriteupFile)
 
 			// 题目容器
 			userGameGroup.POST("/:game_id/container/:challenge_id", RateLimiter(100, 100*time.Millisecond), controllers.GameStatusMiddleware(controllers.GameStatusMiddlewareProps{

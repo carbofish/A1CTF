@@ -5,6 +5,7 @@
     "timeline": "阶段设置",
     "groups": "分组管理",
     "notices": "公告管理",
+    "writeups": "WriteUp 管理",
     "teams": "队伍管理",
     "containers": "容器管理",
     "update_success": "比赛信息更新成功",
@@ -38,5 +39,13 @@
     "adjust": "分数修正",
     "remove": "删除比赛",
     "delete_description": "你确定要删除比赛 \"{{name}}\" 吗？此操作无法撤销。所有的提交记录和队伍信息都会被永久删除。",
-    "alert_title": "确认删除"
+    "alert_title": "确认删除",
+    "writeups_title": "队伍 WriteUp",
+    "writeups_description": "查看并下载队伍最新提交的 WriteUp。",
+    "writeups_refresh": "刷新",
+    "writeups_download_all": "打包下载",
+    "writeups_empty": "暂无队伍提交 WriteUp。",
+    "writeups_submitted_at": "提交时间：{{time}}",
+    "writeups_view": "新窗口打开",
+    "writeups_preview_placeholder": "请选择左侧的 WriteUp 进行预览。"
 }

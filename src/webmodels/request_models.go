@@ -26,6 +26,10 @@ type UserSubmitFlagPayload struct {
 	FlagContent string `json:"flag" binding:"required,printascii"`
 }
 
+type SubmitWriteupPayload struct {
+	FileID string `json:"file_id" binding:"required,uuid4"`
+}
+
 // Authorization payloads
 
 type RegisterPayload struct {

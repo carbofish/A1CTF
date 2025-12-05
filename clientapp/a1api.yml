@@ -3644,6 +3644,200 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '500':
           $ref: '#/components/responses/InternalServerError'
+  /api/admin/writeups/{game_id}:
+    get:
+      tags: [admin]
+      operationId: adminGetGameWriteups
+      summary: 获取比赛WriteUp列表
+      description: 获取给定比赛的所有队伍提交的WriteUp列表
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          description: 比赛ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功获取WriteUp列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminTeamWriteupInfo'
+                required:
+                  - code
+                  - data
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/game/{game_id}/writeup:
+    get:
+      tags: [user]
+      operationId: userGetGameWriteup
+      summary: 获取队伍WriteUp信息
+      description: 获取当前队伍的WriteUp提交信息
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          description: 比赛ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功获取WriteUp信息
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      writeup:
+                        allOf:
+                          - $ref: '#/components/schemas/TeamWriteupInfo'
+                          - nullable: true
+                        description: WriteUp信息
+                      require_wp:
+                        type: boolean
+                        description: 是否需要提交WriteUp
+                      wp_expire_time:
+                        type: string
+                        format: date-time
+                        description: WriteUp提交截止时间
+                      wp_start_time:
+                        type: string
+                        format: date-time
+                        nullable: true
+                        description: WriteUp开始提交时间
+                      wp_formats:
+                        type: array
+                        items:
+                          type: string
+                        description: 允许的WriteUp文件格式列表
+                required:
+                  - code
+                  - data
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags: [user]
+      operationId: userSubmitGameWriteup
+      summary: 提交WriteUp
+      description: 提交当前队伍的WriteUp
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          description: 比赛ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitWriteupPayload'
+      responses:
+        '200':
+          description: WriteUp提交成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: "WriteUp提交成功"
+                required:
+                  - code
+                  - message
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /api/game/{game_id}/writeup/upload:
+    post:
+      tags: [user]
+      operationId: userUploadGameWriteupFile
+      summary: 上传WriteUp文件
+      description: 上传WriteUp文件到服务器并返回file_id用于提交
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          description: 比赛ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 上传的WriteUp文件
+              required:
+                - file
+      responses:
+        '200':
+          description: WriteUp文件上传成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  file_id:
+                    type: string
+                    format: uuid
+                    description: 文件UUID标识符
+                  url:
+                    type: string
+                    description: 文件访问URL
+                required:
+                  - code
+                  - file_id
+                  - url
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 components:
   securitySchemes:
     cookieAuth:
@@ -5016,6 +5210,103 @@ components:
           description: 战队口号
       required:
         - team_slogan
+    TeamWriteupInfo:
+      type: object
+      properties:
+        writeup_id:
+          type: integer
+          description: WriteUp ID
+        file_id:
+          type: string
+          format: uuid
+          description: 文件ID
+        file_name:
+          type: string
+          description: 文件名
+        file_size:
+          type: integer
+          description: 文件大小（字节）
+        file_type:
+          type: string
+          description: 文件MIME类型
+        submitted_at:
+          type: string
+          format: date-time
+          description: 提交时间
+        url:
+          type: string
+          description: 文件访问URL
+      required:
+        - writeup_id
+        - file_id
+        - file_name
+        - file_size
+        - file_type
+        - submitted_at
+        - url
+    AdminTeamWriteupInfo:
+      type: object
+      properties:
+        writeup_id:
+          type: integer
+          description: WriteUp ID
+        game_id:
+          type: integer
+          description: 比赛ID
+        team_id:
+          type: integer
+          description: 队伍ID
+        team_name:
+          type: string
+          description: 队伍名称
+        team_avatar:
+          type: string
+          nullable: true
+          description: 队伍头像URL
+        file_id:
+          type: string
+          format: uuid
+          description: 文件ID
+        file_name:
+          type: string
+          description: 文件名
+        file_size:
+          type: integer
+          description: 文件大小（字节）
+        file_type:
+          type: string
+          description: 文件MIME类型
+        submitted_at:
+          type: string
+          format: date-time
+          description: 提交时间
+        display_name:
+          type: string
+          description: 显示名称
+        url:
+          type: string
+          description: 文件访问URL
+      required:
+        - writeup_id
+        - game_id
+        - team_id
+        - team_name
+        - file_id
+        - file_name
+        - file_size
+        - file_type
+        - submitted_at
+        - display_name
+        - url
+    SubmitWriteupPayload:
+      type: object
+      properties:
+        file_id:
+          type: string
+          format: uuid
+          description: 已上传的WriteUp文件ID
+      required:
+        - file_id
     GameGroup:
       type: object
       properties:

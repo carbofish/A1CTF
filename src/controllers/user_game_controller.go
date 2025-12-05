@@ -11,8 +11,16 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
+
+func sanitizeWriteupFormats(formats pq.StringArray) []string {
+	if len(formats) == 0 {
+		return []string{"pdf"}
+	}
+	return append(make([]string, 0, len(formats)), formats...)
+}
 
 func UserListGames(c *gin.Context) {
 
@@ -105,6 +113,8 @@ func UserGetGameDetailWithTeamInfo(c *gin.Context) {
 		"container_number_limit":    game.ContainerNumberLimit,
 		"require_wp":                game.RequireWp,
 		"wp_expire_time":            game.WpExpireTime,
+		"wp_start_time":             game.WpStartTime,
+		"wp_formats":                sanitizeWriteupFormats(game.WpFormats),
 		"stages":                    game.Stages,
 		"visible":                   game.Visible,
 		"team_status":               team_status,

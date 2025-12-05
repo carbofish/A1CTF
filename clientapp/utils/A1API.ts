@@ -840,6 +840,70 @@ export interface UpdateTeamInfoPayload {
   team_slogan: string | null;
 }
 
+export interface TeamWriteupInfo {
+  /** WriteUp ID */
+  writeup_id: number;
+  /**
+   * 文件ID
+   * @format uuid
+   */
+  file_id: string;
+  /** 文件名 */
+  file_name: string;
+  /** 文件大小（字节） */
+  file_size: number;
+  /** 文件MIME类型 */
+  file_type: string;
+  /**
+   * 提交时间
+   * @format date-time
+   */
+  submitted_at: string;
+  /** 文件访问URL */
+  url: string;
+}
+
+export interface AdminTeamWriteupInfo {
+  /** WriteUp ID */
+  writeup_id: number;
+  /** 比赛ID */
+  game_id: number;
+  /** 队伍ID */
+  team_id: number;
+  /** 队伍名称 */
+  team_name: string;
+  /** 队伍头像URL */
+  team_avatar?: string | null;
+  /**
+   * 文件ID
+   * @format uuid
+   */
+  file_id: string;
+  /** 文件名 */
+  file_name: string;
+  /** 文件大小（字节） */
+  file_size: number;
+  /** 文件MIME类型 */
+  file_type: string;
+  /**
+   * 提交时间
+   * @format date-time
+   */
+  submitted_at: string;
+  /** 显示名称 */
+  display_name: string;
+  /** 文件访问URL */
+  url: string;
+}
+
+export interface SubmitWriteupPayload {
+  /**
+   * 已上传的WriteUp文件ID
+   * @format uuid
+   */
+  file_id: string;
+}
+
 export interface GameGroup {
   /** 分组ID */
   group_id: number;
@@ -2470,6 +2534,117 @@ export class Api<
         format: "json",
         ...params,
       }),
+
+    /**
+     * @description 获取当前队伍的WriteUp提交信息
+     *
+     * @tags user
+     * @name UserGetGameWriteup
+     * @summary 获取队伍WriteUp信息
+     * @request GET:/api/game/{game_id}/writeup
+     */
+    userGetGameWriteup: (gameId: number, params: RequestParams = {}) =>
+      this.request<
+        {
+          /** @example 200 */
+          code: number;
+          data: {
+            /** WriteUp信息 */
+            writeup?: TeamWriteupInfo;
+            /** 是否需要提交WriteUp */
+            require_wp?: boolean;
+            /**
+             * WriteUp提交截止时间
+             * @format date-time
+             */
+            wp_expire_time?: string;
+            /**
+             * WriteUp开始提交时间
+             * @format date-time
+             */
+            wp_start_time?: string | null;
+            /** 允许的WriteUp文件格式列表 */
+            wp_formats?: string[];
+          };
+        },
+        Error
+      >({
+        path: `/api/game/${gameId}/writeup`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description 提交当前队伍的WriteUp
+     *
+     * @tags user
+     * @name UserSubmitGameWriteup
+     * @summary 提交WriteUp
+     * @request POST:/api/game/{game_id}/writeup
+     */
+    userSubmitGameWriteup: (
+      gameId: number,
+      data: SubmitWriteupPayload,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** @example 200 */
+          code: number;
+          /** @example "WriteUp提交成功" */
+          message: string;
+        },
+        Error
+      >({
+        path: `/api/game/${gameId}/writeup`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description 上传WriteUp文件到服务器并返回file_id用于提交
+     *
+     * @tags user
+     * @name UserUploadGameWriteupFile
+     * @summary 上传WriteUp文件
+     * @request POST:/api/game/{game_id}/writeup/upload
+     */
+    userUploadGameWriteupFile: (
+      gameId: number,
+      data: {
+        /**
+         * 上传的WriteUp文件
+         * @format binary
+         */
+        file: File;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        {
+          /** @example 200 */
+          code: number;
+          /**
+           * 文件UUID标识符
+           * @format uuid
+           */
+          file_id: string;
+          /** 文件访问URL */
+          url: string;
+        },
+        Error
+      >({
+        path: `/api/game/${gameId}/writeup/upload`,
+        method: "POST",
+        body: data,
+        type: ContentType.FormData,
+        format: "json",
+        ...params,
+      }),
   };
   admin = {
     /**
@@ -3776,6 +3951,29 @@ export class Api<
         method: "POST",
         body: data,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description 获取给定比赛的所有队伍提交的WriteUp列表
+     *
+     * @tags admin
+     * @name AdminGetGameWriteups
+     * @summary 获取比赛WriteUp列表
+     * @request GET:/api/admin/writeups/{game_id}
+     */
+    adminGetGameWriteups: (gameId: number, params: RequestParams = {}) =>
+      this.request<
+        {
+          /** @example 200 */
+          code: number;
+          data: AdminTeamWriteupInfo[];
+        },
+        Error
+      >({
+        path: `/api/admin/writeups/${gameId}`,
+        method: "GET",
         format: "json",
         ...params,
       }),

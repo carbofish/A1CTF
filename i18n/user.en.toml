@@ -515,3 +515,54 @@ other = "Invalid group invite code"
 [GroupInviteCodeNotEnabled]
 description = "Group invite code is not enabled for this game"
 other = "Group invite code is not enabled for this game"
+[FailedToLoadWriteup]
+description = "Failed to load writeup"
+other = "Failed to load writeup data."
+
+[WriteupNotRequired]
+description = "Writeup not required"
+other = "This game does not require writeups."
+
+[WriteupCollectionNotStarted]
+description = "Writeup collection not started"
+other = "Writeup submissions are not open yet."
+
+[WriteupFormatNotAllowed]
+description = "Writeup format not allowed"
+other = "This file format is not allowed."
+
+[WriteupDeadlinePassed]
+description = "Writeup deadline passed"
+other = "Writeup submission has closed."
+
+[UploadedFileNotFound]
+description = "Uploaded file missing"
+other = "The uploaded file could not be found."
+
+[FailedToLoadUpload]
+description = "Failed to load upload"
+other = "Failed to load uploaded file."
+
+[WriteupUploadOwnerMismatch]
+description = "Upload owner mismatch"
+other = "You can only submit files uploaded by your account."
+
+[FailedToSaveWriteup]
+description = "Failed to save writeup"
+other = "Failed to save writeup."
+
+[WriteupSubmittedSuccessfully]
+description = "Writeup submitted"
+other = "Writeup submitted successfully."
+
+[InvalidWriteupID]
+description = "Invalid writeup ID"
+other = "Invalid writeup ID."
+
+[WriteupNotFound]
+description = "Writeup not found"
+other = "Writeup not found."
+
+[FailedToOpenWriteup]
+description = "Failed to open writeup"
+other = "Failed to open writeup file."
