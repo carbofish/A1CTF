@@ -117,6 +117,7 @@ func UserGetGameDetailWithTeamInfo(c *gin.Context) {
 		"wp_formats":                sanitizeWriteupFormats(game.WpFormats),
 		"stages":                    game.Stages,
 		"visible":                   game.Visible,
+		"scoreboard_enabled":        game.ScoreboardEnabled,
 		"team_status":               team_status,
 		"group_invite_code_enabled": game.GroupInviteCodeEnabled,
 		"team_info":                 nil,
@@ -281,6 +282,7 @@ func UserGameGetScoreBoard(c *gin.Context) {
 	var logined bool = false
 	var curTeamScoreItem *webmodels.TeamScoreItem = nil
 	var curTeam models.Team
+	var curUser models.User
 
 	// 先获取所有队伍的信息
 	teamDataMap, err := ristretto_tool.CachedMemberSearchTeamMap(game.GameID)
@@ -296,8 +298,30 @@ func UserGameGetScoreBoard(c *gin.Context) {
 	if ok {
 		user_id = tmpUserID.(string)
 		curTeam, ok = teamDataMap[user_id]
-		if ok {
-			logined = true
+
+		all_users, err := ristretto_tool.CachedMemberMap()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
+				Code:    500,
+				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadUserData"}),
+			})
+			return
+		}
+
+		tmpUser, userExists := all_users[user_id]
+		if userExists {
+			curUser = tmpUser
+			logined = ok
+		}
+	}
+
+	if !game.ScoreboardEnabled {
+		if !logined || curUser.Role != models.UserRoleAdmin {
+			c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
+				Code:    400,
+				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "ScoreboardDisabled"}),
+			})
+			return
 		}
 	}
 
@@ -435,6 +459,44 @@ func UserGameGetScoreBoard(c *gin.Context) {
 
 func UserGameGetScoreBoardTimeLine(c *gin.Context) {
 	game := c.MustGet("game").(models.Game)
+
+	// 获取当前用户的队伍信息（如果已登录）
+	claims, _ := jwtauth.GetJwtMiddleWare().GetClaimsFromJWT(c)
+
+	var user_id string
+	var logined bool = false
+	var curUser models.User
+
+	tmpUserID, ok := claims["UserID"]
+	if ok {
+		user_id = tmpUserID.(string)
+
+		all_users, err := ristretto_tool.CachedMemberMap()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
+				Code:    500,
+				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadUserData"}),
+			})
+			return
+		}
+
+		tmpUser, userExists := all_users[user_id]
+		if userExists {
+			curUser = tmpUser
+			logined = true
+		}
+	}
+
+	// 检查是否允许查看排行榜时间线
+	if !game.ScoreboardEnabled {
+		if !logined || curUser.Role != models.UserRoleAdmin {
+			c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
+				Code:    400,
+				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "ScoreboardDisabled"}),
+			})
+			return
+		}
+	}
 
 	// 解析查询参数
 	teamIDStr := c.Param("team_id")

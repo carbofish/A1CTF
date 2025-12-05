@@ -7,10 +7,11 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import GameInfoView from "components/user/game/GameInfoView";
 import { useGameSwitchContext } from "contexts/GameSwitchContext";
-import { Panda } from "lucide-react";
+import { Ban, Panda } from "lucide-react";
 import { A1GameStatus } from "components/modules/game/GameStatusEnum";
 import { useGame } from "hooks/UseGame";
 import { useTranslation } from 'react-i18next';
+import { useGlobalVariableContext } from 'contexts/GlobalVariableContext';
 
 export default function Games() {
 
@@ -26,7 +27,8 @@ export default function Games() {
 
     const gameID = parseInt(id, 10)
 
-    const { gameStatus, isLoading } = useGame(gameID)
+    const { gameInfo, gameStatus, isLoading } = useGame(gameID)
+    const { isAdmin } = useGlobalVariableContext()
 
     useEffect(() => {
         if (!module) navigate(`/games/${id}/info`)
@@ -78,7 +80,14 @@ export default function Games() {
 
                     {curChoicedModule == "scoreboard" ? (
                         <div className="relative w-full h-full">
-                            <ScoreBoardPage gmid={parseInt(id)} />
+                            { !gameInfo?.scoreboard_enabled && !isAdmin() ? (
+                                <div className="w-screen h-screen flex items-center justify-center gap-6 select-none">
+                                    <Panda size={64} />
+                                    <span className="text-4xl font-bold">{t("scoreboard_disabled")}</span>
+                                </div>
+                            ) : (
+                                <ScoreBoardPage gmid={parseInt(id)} />
+                            ) }
                         </div>
                     ) : <></>}
 

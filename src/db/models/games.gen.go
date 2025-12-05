@@ -69,6 +69,7 @@ type Game struct {
 	WpFormats              pq.StringArray `gorm:"column:wp_formats;type:text[]" json:"wp_formats"`
 	Stages                 *GameStages    `gorm:"column:stages;not null" json:"stages"`
 	Visible                bool           `gorm:"column:visible;not null" json:"visible"`
+	ScoreboardEnabled      bool           `gorm:"column:scoreboard_enabled;not null" json:"scoreboard_enabled"`
 	GameIconLight          *string        `gorm:"column:game_icon_light" json:"game_icon_light"`
 	GameIconDark           *string        `gorm:"column:game_icon_dark" json:"game_icon_dark"`
 	TeamPolicy             TeamPolicy     `gorm:"column:team_policy;not null" json:"team_policy"`

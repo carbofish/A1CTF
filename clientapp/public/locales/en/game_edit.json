@@ -83,6 +83,10 @@
             "label": "Visibility",
             "description": "Whether this game is visible"
         },
+        "scoreboard_enabled": {
+            "label": "Scoreboard Visible",
+            "description": "Whether the scoreboard is visible for players"
+        },
         "group_invite_code_enable": {
             "label": "Enable Group Invite Code",
             "description": "If enabled, participants must use a group invite code to register"

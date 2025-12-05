@@ -202,6 +202,7 @@ func AdminGetGame(c *gin.Context) {
 		"wp_formats":               writeupFormatsToSlice(game.WpFormats),
 		"stages":                   game.Stages,
 		"visible":                  game.Visible,
+		"scoreboard_enabled":       game.ScoreboardEnabled,
 		"game_icon_light":          game.GameIconLight,
 		"game_icon_dark":           game.GameIconDark,
 		"first_blood_reward":       game.FirstBloodReward,
@@ -492,6 +493,7 @@ func AdminUpdateGame(c *gin.Context) {
 	game.WpFormats = normalizeWriteupFormats(payload.WpFormats)
 	game.Stages = payload.Stages
 	game.Visible = payload.Visible
+	game.ScoreboardEnabled = payload.ScoreboardEnabled
 	game.TeamPolicy = payload.TeamPolicy
 	// 三血比例
 	game.FirstBloodReward = payload.FirstBloodReward

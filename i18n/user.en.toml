@@ -566,3 +566,11 @@ other = "Writeup not found."
 [FailedToOpenWriteup]
 description = "Failed to open writeup"
 other = "Failed to open writeup file."
+
+[ScoreboardDisabled]
+description = "Scoreboard is disabled"
+other = "The scoreboard is currently disabled."
+
+[FailedToLoadUserData]
+description = "Failed to load user data"
+other = "Failed to load user data."

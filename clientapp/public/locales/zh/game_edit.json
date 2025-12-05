@@ -83,6 +83,10 @@
             "label": "是否可见",
             "description": "比赛是否可见"
         },
+        "scoreboard_enabled": {
+            "label": "记分板可见",
+            "description": "记分板是否对选手可见"
+        },
         "group_invite_code_enable": {
             "label": "启用组邀请码",
             "description": "启动组邀请码后必须使用分组邀请码才能报名"

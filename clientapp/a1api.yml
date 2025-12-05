@@ -4177,7 +4177,18 @@ components:
         wp_expire_time:
           type: string
           format: date-time
+        wp_start_time:
+          type: string
+          format: date-time
+          description: WriteUp开始提交时间
+        wp_formats:
+          type: array
+          items:
+            type: string
+          description: 允许的WriteUp文件格式列表
         visible:
+          type: boolean
+        scoreboard_enabled:
           type: boolean
         stages:
           type: array
@@ -4536,6 +4547,8 @@ components:
             type: string
           description: 允许的WriteUp文件格式列表
         visible:
+          type: boolean
+        scoreboard_enabled:
           type: boolean
         game_icon_light:
           type: string

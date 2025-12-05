@@ -3,7 +3,7 @@ import ImageLoader from "components/modules/ImageLoader";
 import TimerDisplay from "components/modules/TimerDisplay";
 import { useGlobalVariableContext } from "contexts/GlobalVariableContext";
 import dayjs from "dayjs";
-import { CalendarArrowDown, CalendarArrowUp, CirclePlay, ClockAlert, Dumbbell, Hourglass, Package, UsersRound } from "lucide-react";
+import { Ban, CalendarArrowDown, CalendarArrowUp, CirclePlay, ClockAlert, Dumbbell, Hourglass, Package, UsersRound } from "lucide-react";
 import { useState } from "react";
 import { FastAverageColor } from "fast-average-color";
 import { ParticipationStatus, UserFullGameInfo } from "utils/A1API";
@@ -148,6 +148,14 @@ export default function GamePosterInfoModule(
                     <CalendarArrowDown size={20} />
                     <span>{dayjs(gameInfo?.end_time).format("YYYY-MM-DD HH:mm:ss")}</span>
                 </div>
+                { !gameInfo?.scoreboard_enabled && (
+                    <div className="flex gap-4 items-center">
+                        <div className="flex gap-2 rounded-full border-1 items-center bg-red-400/60 border-red-400 px-4 py-1 text-black/70">
+                            <Ban size={20} />
+                            <span>{t("no_scoreboard")}</span>
+                        </div>
+                    </div>
+                ) }
             </div>
         </div>
     )

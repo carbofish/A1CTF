@@ -559,3 +559,11 @@ other = "未找到 WriteUp。"
 [FailedToOpenWriteup]
 description = "打开 WriteUp 失败"
 other = "打开 WriteUp 文件失败。"
+
+[ScoreboardDisabled]
+description = "排行榜已禁用"
+other = "当前排行榜已被禁用。"
+
+[FailedToLoadUserData]
+description = "加载用户数据失败"
+other = "加载用户数据失败。"

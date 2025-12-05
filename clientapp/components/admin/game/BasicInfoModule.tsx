@@ -217,6 +217,22 @@ export function BasicInfoModule({ form, gameID }: BasicInfoModuleProps) {
 
                 <FormField
                     control={form.control}
+                    name="scoreboard_enabled"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4">
+                            <div className="space-y-0.5">
+                                <FormLabel>{t("basic.scoreboard_enabled.label")}</FormLabel>
+                                <FormDescription>{t("basic.scoreboard_enabled.description")}</FormDescription>
+                            </div>
+                            <FormControl>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
                     name="group_invite_code_enable"
                     render={({ field }) => (
                         <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4">
