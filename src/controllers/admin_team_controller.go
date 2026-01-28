@@ -142,8 +142,8 @@ func AdminListTeams(c *gin.Context) {
 }
 
 
-// AdminVerifyTeamByHash 管理员通过 team_hash 查询并验证队伍信息
-func AdminVerifyTeamByHash(c *gin.Context) {
+// AdminGetTeamByHash 管理员通过 team_hash 查询队伍信息
+func AdminGetTeamByHash(c *gin.Context) {
 	teamHash := c.Param("team_hash")
 	if strings.TrimSpace(teamHash) == "" {
 		c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{

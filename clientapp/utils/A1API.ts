@@ -2664,14 +2664,14 @@ export class Api<
   };
   admin = {
     /**
-     * @description Get and verify user information by user_id
+     * @description Get user information by user_id
      *
      * @tags admin
-     * @name AdminVerifyUserByUserId
-     * @summary Verify user by user_id (admin)
-     * @request GET:/api/admin/user/verify/{user_id}
+     * @name AdminGetUserByUserId
+     * @summary Get user by user_id (admin)
+     * @request GET:/api/admin/user/{user_id}
      */
-    adminVerifyUserByUserId: (userId: string, params: RequestParams = {}) =>
+    adminGetUserByUserId: (userId: string, params: RequestParams = {}) =>
       this.request<
         {
           /** @example 200 */
@@ -2698,21 +2698,21 @@ export class Api<
         },
         ErrorMessage
       >({
-        path: `/api/admin/user/verify/${userId}`,
+        path: `/api/admin/user/${userId}`,
         method: "GET",
         format: "json",
         ...params,
       }),
 
     /**
-     * @description Get and verify team information by team_hash
+     * @description Get team information by team_hash
      *
      * @tags admin
-     * @name AdminVerifyTeamByTeamHash
-     * @summary Verify team by team_hash (admin)
-     * @request GET:/api/admin/team/verify/{team_hash}
+     * @name AdminGetTeamByTeamHash
+     * @summary Get team by team_hash (admin)
+     * @request GET:/api/admin/team/hash/{team_hash}
      */
-    adminVerifyTeamByTeamHash: (teamHash: string, params: RequestParams = {}) =>
+    adminGetTeamByTeamHash: (teamHash: string, params: RequestParams = {}) =>
       this.request<
         {
           /** @example 200 */
@@ -2752,7 +2752,7 @@ export class Api<
         },
         ErrorMessage
       >({
-        path: `/api/admin/team/verify/${teamHash}`,
+        path: `/api/admin/team/hash/${teamHash}`,
         method: "GET",
         format: "json",
         ...params,

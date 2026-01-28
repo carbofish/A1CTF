@@ -264,12 +264,12 @@ paths:
           description: Unauthorized
         '500':
           description: Server Error
-  /api/admin/user/verify/{user_id}:
+  /api/admin/user/{user_id}:
     get:
       tags: [admin]
-      operationId: adminVerifyUserByUserId
-      summary: Verify user by user_id (admin)
-      description: Get and verify user information by user_id
+      operationId: adminGetUserByUserId
+      summary: Get user by user_id (admin)
+      description: Get user information by user_id
       parameters:
         - name: user_id
           in: path
@@ -279,7 +279,7 @@ paths:
             type: string
       responses:
         '200':
-          description: User verified successfully
+          description: User retrieved successfully
           content:
             application/json:
               schema:
@@ -327,12 +327,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorMessage'
-  /api/admin/team/verify/{team_hash}:
+  /api/admin/team/hash/{team_hash}:
     get:
       tags: [admin]
-      operationId: adminVerifyTeamByTeamHash
-      summary: Verify team by team_hash (admin)
-      description: Get and verify team information by team_hash
+      operationId: adminGetTeamByTeamHash
+      summary: Get team by team_hash (admin)
+      description: Get team information by team_hash
       parameters:
         - name: team_hash
           in: path
@@ -342,7 +342,7 @@ paths:
             type: string
       responses:
         '200':
-          description: Team verified successfully
+          description: Team retrieved successfully
           content:
             application/json:
               schema:

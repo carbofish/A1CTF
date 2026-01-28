@@ -91,8 +91,8 @@ func AdminListUsers(c *gin.Context) {
 	})
 }
 
-// VerifyUserByID 通过 user_id 查询并验证用户信息
-func VerifyUserByID(c *gin.Context) {
+// AdminGetUserByID 通过 user_id 查询用户信息
+func AdminGetUserByID(c *gin.Context) {
 	userID := c.Param("user_id")
 	if strings.TrimSpace(userID) == "" {
 		c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
