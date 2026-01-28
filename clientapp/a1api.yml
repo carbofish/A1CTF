@@ -264,6 +264,142 @@ paths:
           description: Unauthorized
         '500':
           description: Server Error
+  /api/admin/user/verify/{user_id}:
+    get:
+      tags: [admin]
+      operationId: adminVerifyUserByUserId
+      summary: Verify user by user_id (admin)
+      description: Get and verify user information by user_id
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The unique identifier of the user
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      user_id:
+                        type: string
+                        description: The unique identifier of the user
+                      username:
+                        type: string
+                        description: The username of the user
+                      email:
+                        type: string
+                        description: The email address of the user
+                      avatar:
+                        type: string
+                        description: URL to the user's avatar image
+                      role:
+                        $ref: '#/components/schemas/UserRole'
+                      verified:
+                        type: boolean
+                        description: Whether the user is verified
+                    required:
+                      - user_id
+                      - username
+                      - verified
+                required:
+                  - code
+                  - data
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+  /api/admin/team/verify/{team_hash}:
+    get:
+      tags: [admin]
+      operationId: adminVerifyTeamByTeamHash
+      summary: Verify team by team_hash (admin)
+      description: Get and verify team information by team_hash
+      parameters:
+        - name: team_hash
+          in: path
+          required: true
+          description: The unique hash of the team
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Team verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    example: 200
+                  data:
+                    type: object
+                    properties:
+                      team_id:
+                        type: integer
+                        format: int64
+                        description: The unique identifier of the team
+                      team_name:
+                        type: string
+                        description: The name of the team
+                      team_hash:
+                        type: string
+                        description: The unique hash of the team
+                      team_avatar:
+                        type: string
+                        description: URL to the team's avatar image
+                      team_slogan:
+                        type: string
+                        description: The slogan of the team
+                      game_id:
+                        type: integer
+                        format: int64
+                        description: The game ID the team belongs to
+                      team_status:
+                        $ref: '#/components/schemas/ParticipationStatus'
+                      verified:
+                        type: boolean
+                        description: Whether the team is verified
+                    required:
+                      - team_id
+                      - team_name
+                      - team_hash
+                      - game_id
+                      - verified
+                required:
+                  - code
+                  - data
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
   /api/auth/register:
     post:
       tags: [auth]

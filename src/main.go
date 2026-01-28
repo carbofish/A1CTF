@@ -363,6 +363,7 @@ func main() {
 			userGroup.POST("/update", controllers.AdminUpdateUser)
 			userGroup.POST("/reset-password", controllers.AdminResetUserPassword)
 			userGroup.POST("/delete", controllers.AdminDeleteUser)
+			userGroup.GET("/verify/:user_id", controllers.VerifyUserByID)
 		}
 
 		// 管理员队伍管理接口
@@ -373,6 +374,7 @@ func main() {
 			teamGroup.POST("/ban", controllers.AdminBanTeam)
 			teamGroup.POST("/unban", controllers.AdminUnbanTeam)
 			teamGroup.POST("/delete", controllers.AdminDeleteTeam)
+			teamGroup.GET("/verify/:team_hash", controllers.AdminVerifyTeamByHash)
 		}
 
 		// 管理员游戏管理接口

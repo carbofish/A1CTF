@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -137,6 +138,49 @@ func AdminListTeams(c *gin.Context) {
 		"code":  200,
 		"data":  teamItems,
 		"total": count,
+	})
+}
+
+
+// AdminVerifyTeamByHash 管理员通过 team_hash 查询并验证队伍信息
+func AdminVerifyTeamByHash(c *gin.Context) {
+	teamHash := c.Param("team_hash")
+	if strings.TrimSpace(teamHash) == "" {
+		c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
+			Code:    400,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidRequestPayload"}),
+		})
+		return
+	}
+
+	var team models.Team
+	if err := dbtool.DB().Where("team_hash = ?", teamHash).First(&team).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, webmodels.ErrorMessage{
+				Code:    404,
+				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "TeamNotFound"}),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
+			Code:    500,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "SystemError"}),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": gin.H{
+			"team_id":    team.TeamID,
+			"team_name":  team.TeamName,
+			"team_hash":  team.TeamHash,
+			"team_avatar": team.TeamAvatar,
+			"team_slogan": team.TeamSlogan,
+			"game_id":    team.GameID,
+			"team_status": team.TeamStatus,
+			"verified":   true,
+		},
 	})
 }
 

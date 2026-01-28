@@ -9,6 +9,7 @@ import (
 	"a1ctf/src/webmodels"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -87,6 +88,46 @@ func AdminListUsers(c *gin.Context) {
 		"code":  200,
 		"data":  userItems,
 		"total": count,
+	})
+}
+
+// VerifyUserByID 通过 user_id 查询并验证用户信息
+func VerifyUserByID(c *gin.Context) {
+	userID := c.Param("user_id")
+	if strings.TrimSpace(userID) == "" {
+		c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
+			Code:    400,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidRequestPayload"}),
+		})
+		return
+	}
+
+	var user models.User
+	if err := dbtool.DB().Where("user_id = ?", userID).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, webmodels.ErrorMessage{
+				Code:    404,
+				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "UserNotFound"}),
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
+			Code:    500,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "SystemError"}),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"data": gin.H{
+			"user_id":  user.UserID,
+			"username": user.Username,
+			"email":    user.Email,
+			"avatar":   user.Avatar,
+			"role":     user.Role,
+			"verified": user.EmailVerified,
+		},
 	})
 }
 
