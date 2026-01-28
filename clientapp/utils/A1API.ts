@@ -2746,8 +2746,6 @@ export class Api<
              * - Banned: 已被禁赛
              */
             team_status?: ParticipationStatus;
-            /** Whether the team is verified */
-            verified: boolean;
           };
         },
         ErrorMessage

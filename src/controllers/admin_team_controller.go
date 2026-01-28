@@ -179,7 +179,6 @@ func AdminGetTeamByHash(c *gin.Context) {
 			"team_slogan": team.TeamSlogan,
 			"game_id":    team.GameID,
 			"team_status": team.TeamStatus,
-			"verified":   true,
 		},
 	})
 }

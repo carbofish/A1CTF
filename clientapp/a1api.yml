@@ -376,15 +376,11 @@ paths:
                         description: The game ID the team belongs to
                       team_status:
                         $ref: '#/components/schemas/ParticipationStatus'
-                      verified:
-                        type: boolean
-                        description: Whether the team is verified
                     required:
                       - team_id
                       - team_name
                       - team_hash
                       - game_id
-                      - verified
                 required:
                   - code
                   - data
