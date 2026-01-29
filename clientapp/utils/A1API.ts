@@ -2664,6 +2664,99 @@ export class Api<
   };
   admin = {
     /**
+     * @description Get user information by user_id
+     *
+     * @tags admin
+     * @name AdminGetUserByUserId
+     * @summary Get user by user_id (admin)
+     * @request GET:/api/admin/user/{user_id}
+     */
+    adminGetUserByUserId: (userId: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          /** @example 200 */
+          code: number;
+          data: {
+            /** The unique identifier of the user */
+            user_id: string;
+            /** The username of the user */
+            username: string;
+            /** The email address of the user */
+            email?: string;
+            /** URL to the user's avatar image */
+            avatar?: string;
+            /**
+             * User role enumeration:
+             * - ADMIN - Administrator
+             * - USER - Regular user
+             * - MONITOR - Monitor
+             */
+            role?: UserRole;
+            /** Whether the user is verified */
+            verified: boolean;
+          };
+        },
+        ErrorMessage
+      >({
+        path: `/api/admin/user/${userId}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get team information by team_hash
+     *
+     * @tags admin
+     * @name AdminGetTeamByTeamHash
+     * @summary Get team by team_hash (admin)
+     * @request GET:/api/admin/team/hash/{team_hash}
+     */
+    adminGetTeamByTeamHash: (teamHash: string, params: RequestParams = {}) =>
+      this.request<
+        {
+          /** @example 200 */
+          code: number;
+          data: {
+            /**
+             * The unique identifier of the team
+             * @format int64
+             */
+            team_id: number;
+            /** The name of the team */
+            team_name: string;
+            /** The unique hash of the team */
+            team_hash: string;
+            /** URL to the team's avatar image */
+            team_avatar?: string;
+            /** The slogan of the team */
+            team_slogan?: string;
+            /**
+             * The game ID the team belongs to
+             * @format int64
+             */
+            game_id: number;
+            /**
+             * Team participation status:
+             * - UnRegistered: 未报名
+             * - Pending: 已报名，等待审核
+             * - Approved: 已报名，审核通过
+             * - Rejected: 已报名，审核不通过
+             * - Participated: 已报名，已参加
+             * - Banned: 已被禁赛
+             */
+            team_status?: ParticipationStatus;
+          };
+        },
+        ErrorMessage
+      >({
+        path: `/api/admin/team/hash/${teamHash}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Create a new challenge with attachments, container configurations and judge configuration.
      *
      * @tags admin
