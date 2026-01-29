@@ -120,6 +120,26 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
             </div>
             <FormField
                 control={control}
+                name={`container_config.${index}.privileged`}
+                render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30 text-red-400">
+                        <div className="space-y-0.5">
+                            <FormLabel>{t("container.privileged.label")}</FormLabel>
+                            <FormDescription className="text-red-400">
+                                {t("container.privileged.description")}
+                            </FormDescription>
+                        </div>
+                        <FormControl>
+                            <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                            />
+                        </FormControl>
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={control}
                 name={`container_config.${index}.env`}
                 render={({ field }) => (
                     <FormItem>
@@ -515,7 +535,8 @@ export function EditChallengeView({ challenge_info, isCreate = false }: { challe
                 ),
                 cpu_limit: z.coerce.number({ invalid_type_error: t("container.error.cpu") }),
                 memory_limit: z.coerce.number({ invalid_type_error: t("container.error.mem") }),
-                storage_limit: z.coerce.number({ invalid_type_error: t("container.error.store") })
+                storage_limit: z.coerce.number({ invalid_type_error: t("container.error.store") }),
+                privileged: z.boolean().optional(),
             })
         ),
         attachments: z.array(
@@ -580,7 +601,8 @@ export function EditChallengeView({ challenge_info, isCreate = false }: { challe
                 )),
                 cpu_limit: e.cpu_limit,
                 memory_limit: e.memory_limit,
-                storage_limit: e.storage_limit
+                storage_limit: e.storage_limit,
+                privileged: e.privileged || false,
             })) || [],
             attachments: challenge_info.attachments?.map((e) => ({
                 attach_hash: e.attach_hash || "",
@@ -628,7 +650,8 @@ export function EditChallengeView({ challenge_info, isCreate = false }: { challe
                 expose_ports: e.expose_ports,
                 cpu_limit: e.cpu_limit,
                 memory_limit: e.memory_limit,
-                storage_limit: e.storage_limit
+                storage_limit: e.storage_limit,
+                privileged: e.privileged || false,
             })),
             create_time: challenge_info.create_time,
             description: values.description,
@@ -937,7 +960,7 @@ export function EditChallengeView({ challenge_info, isCreate = false }: { challe
                                 control={form.control}
                                 name="allow_wan"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
+                                    <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
                                         <div className="space-y-0.5">
                                             <FormLabel>{t("container.wan.label")}</FormLabel>
                                             <FormDescription>
@@ -957,7 +980,7 @@ export function EditChallengeView({ challenge_info, isCreate = false }: { challe
                                 control={form.control}
                                 name="allow_dns"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
+                                    <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
                                         <div className="space-y-0.5">
                                             <FormLabel>{t("container.dns.label")}</FormLabel>
                                             <FormDescription>

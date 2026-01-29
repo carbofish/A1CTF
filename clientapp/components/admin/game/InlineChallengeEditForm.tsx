@@ -36,6 +36,7 @@ import { UploadFileDialog } from "components/dialogs/UploadFileDialog";
 import { Switch } from "components/ui/switch";
 import LazyThemedEditor from "components/modules/LazyThemedEditor";
 import useSWR from "swr";
+import { useTranslation } from "react-i18next";
 
 interface ContainerFormProps {
     control: any;
@@ -69,6 +70,8 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
         control,
         name: `container_config.${index}.command`,
     });
+
+    const { t } = useTranslation("challenge_edit")
 
     return (
         <div className="border p-6 mb-4 rounded-lg hover:shadow-lg transition-shadow duration-300 flex flex-col gap-4">
@@ -112,6 +115,26 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                     )}
                 />
             </div>
+            <FormField
+                control={control}
+                name={`container_config.${index}.privileged`}
+                render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30 text-red-400">
+                        <div className="space-y-0.5">
+                            <FormLabel>{t("container.privileged.label")}</FormLabel>
+                            <FormDescription className="text-red-400">
+                                {t("container.privileged.description")}
+                            </FormDescription>
+                        </div>
+                        <FormControl>
+                            <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                            />
+                        </FormControl>
+                    </FormItem>
+                )}
+            />
             <FormField
                 control={control}
                 name={`container_config.${index}.env`}
@@ -446,7 +469,7 @@ function AttachmentForm({ control, index, form, removeAttachment, onFormSubmit }
     );
 }
 
-export function ChallengeManageFormWrapper({ challenge_id }: { challenge_id: number }) {
+export function InlineChallengeEditFormWrapper({ challenge_id }: { challenge_id: number }) {
     const { data: challengeInfo = null } = useSWR<AdminChallengeConfig>(
         `/api/admin/challenge/${challenge_id}`,
         () => api.admin.getChallengeInfo(challenge_id).then((res => res.data.data))
@@ -456,10 +479,10 @@ export function ChallengeManageFormWrapper({ challenge_id }: { challenge_id: num
         return <></>
     }
 
-    return <ChallengeManageForm challengeInfo={challengeInfo} />
+    return <InlineChallengeEditForm challengeInfo={challengeInfo} />
 }
 
-export function ChallengeManageForm({ challengeInfo }: { challengeInfo: AdminChallengeConfig }) {
+export function InlineChallengeEditForm({ challengeInfo }: { challengeInfo: AdminChallengeConfig }) {
 
     const categories: { [key: string]: any } = {
         "MISC": <Radar size={21} />,
@@ -514,7 +537,8 @@ export function ChallengeManageForm({ challengeInfo }: { challengeInfo: AdminCha
                 ),
                 cpu_limit: z.coerce.number({ invalid_type_error: "请输入 CPU 限制" }),
                 memory_limit: z.coerce.number({ invalid_type_error: "请输入内存限制" }),
-                storage_limit: z.coerce.number({ invalid_type_error: "请输入存储空间限制" })
+                storage_limit: z.coerce.number({ invalid_type_error: "请输入存储空间限制" }),
+                privileged: z.boolean().optional(),
             })
         ),
         attachments: z.array(
@@ -579,7 +603,8 @@ export function ChallengeManageForm({ challengeInfo }: { challengeInfo: AdminCha
                 )),
                 cpu_limit: e.cpu_limit,
                 memory_limit: e.memory_limit,
-                storage_limit: e.storage_limit
+                storage_limit: e.storage_limit,
+                privileged: e.privileged || false,
             })) || [],
             attachments: challengeInfo?.attachments?.map((e) => ({
                 attach_hash: e.attach_hash || "",
@@ -627,7 +652,8 @@ export function ChallengeManageForm({ challengeInfo }: { challengeInfo: AdminCha
                 expose_ports: e.expose_ports,
                 cpu_limit: e.cpu_limit,
                 memory_limit: e.memory_limit,
-                storage_limit: e.storage_limit
+                storage_limit: e.storage_limit,
+                privileged: e.privileged || false,
             })),
             create_time: challengeInfo?.create_time,
             description: values.description,
@@ -813,7 +839,7 @@ export function ChallengeManageForm({ challengeInfo }: { challengeInfo: AdminCha
                         control={form.control}
                         name="allow_wan"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
+                            <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
                                 <div className="space-y-0.5">
                                     <FormLabel>允许外网</FormLabel>
                                     <FormDescription>
@@ -833,7 +859,7 @@ export function ChallengeManageForm({ challengeInfo }: { challengeInfo: AdminCha
                         control={form.control}
                         name="allow_dns"
                         render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
+                            <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4 shadow-sm bg-background/30">
                                 <div className="space-y-0.5">
                                     <FormLabel>DNS出网</FormLabel>
                                     <FormDescription>

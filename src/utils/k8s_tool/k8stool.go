@@ -81,6 +81,7 @@ type A1Container struct {
 	CPULimit     int64           `json:"cpu_limit" validate:"min=0" label:"CPULimit" message:"CPU limit must be greater than 0"`
 	MemoryLimit  int64           `json:"memory_limit" validate:"min=0" label:"MemoryLimit" message:"Memory limit must be greater than 0"`
 	StorageLimit int64           `json:"storage_limit" validate:"min=0" label:"StorageLimit" message:"Storage limit must be greater than 0"`
+	Privileged   bool            `json:"privileged" validate:"-"`
 }
 
 // 自定义验证函数 - 验证DNS标签格式
@@ -256,6 +257,13 @@ func CreatePod(podInfo *PodInfo) error {
 		container.Resources = corev1.ResourceRequirements{
 			Limits:   limits,
 			Requests: requests,
+		}
+
+		// 特权容器
+		if c.Privileged {
+			container.SecurityContext = &corev1.SecurityContext{
+				Privileged: func(b bool) *bool { return &b }(true),
+			}
 		}
 
 		containers = append(containers, container)

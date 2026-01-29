@@ -171,7 +171,7 @@ export function BasicInfoModule({ form, gameID }: BasicInfoModuleProps) {
                     control={form.control}
                     name="practice_mode"
                     render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4">
+                        <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4">
                             <div className="space-y-0.5">
                                 <FormLabel>{t("basic.practice.label")}</FormLabel>
                                 <FormDescription>{t("basic.practice.description")}</FormDescription>
@@ -187,7 +187,7 @@ export function BasicInfoModule({ form, gameID }: BasicInfoModuleProps) {
                     control={form.control}
                     name="require_wp"
                     render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4">
+                        <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4">
                             <div className="space-y-0.5">
                                 <FormLabel>{t("basic.wp.label")}</FormLabel>
                                 <FormDescription>{t("basic.wp.description")}</FormDescription>
@@ -203,7 +203,7 @@ export function BasicInfoModule({ form, gameID }: BasicInfoModuleProps) {
                     control={form.control}
                     name="visible"
                     render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4">
+                        <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4">
                             <div className="space-y-0.5">
                                 <FormLabel>{t("basic.visible.label")}</FormLabel>
                                 <FormDescription>{t("basic.visible.description")}</FormDescription>
@@ -219,7 +219,7 @@ export function BasicInfoModule({ form, gameID }: BasicInfoModuleProps) {
                     control={form.control}
                     name="scoreboard_enabled"
                     render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4">
+                        <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4">
                             <div className="space-y-0.5">
                                 <FormLabel>{t("basic.scoreboard_enabled.label")}</FormLabel>
                                 <FormDescription>{t("basic.scoreboard_enabled.description")}</FormDescription>
@@ -235,7 +235,7 @@ export function BasicInfoModule({ form, gameID }: BasicInfoModuleProps) {
                     control={form.control}
                     name="group_invite_code_enable"
                     render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4">
+                        <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4">
                             <div className="space-y-0.5">
                                 <FormLabel>{t("basic.group_invite_code_enable.label")}</FormLabel>
                                 <FormDescription>{t("basic.group_invite_code_enable.description")}</FormDescription>

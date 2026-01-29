@@ -26,10 +26,10 @@ import ChallengeSettingsSidebar from "./ChallengeSettingsSidebar"
 import { ContainerManageView } from "./ContainerManageView"
 import { GameEventModule } from "./GameEventModule"
 import ChallengeTools from "./ChallengeTools"
-import { ChallengeManageFormWrapper } from "./ChallengeManageForm"
+import { InlineChallengeEditFormWrapper } from "./InlineChallengeEditForm"
 import { useTranslation } from "react-i18next"
 
-export default function ChallengeManageSheet(
+export default function InGameChallengeManageSheet(
     {
         children,
         gameID,
@@ -114,7 +114,7 @@ export default function ChallengeManageSheet(
                                             {t("setting_description")}
                                         </SheetDescription>
                                     </SheetHeader>
-                                    <ChallengeManageFormWrapper
+                                    <InlineChallengeEditFormWrapper
                                         challenge_id={challengeDetail?.challenge_id}
                                     />
                                 </div>

@@ -416,7 +416,7 @@ export function CreateGameView() {
                                     control={form.control}
                                     name="practice_mode"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-lg border p-3 shadow-sm">
                                             <div className="space-y-0.5 mb-[-1px]">
                                                 <FormLabel>练习模式</FormLabel>
                                                 <FormDescription>
@@ -438,7 +438,7 @@ export function CreateGameView() {
                                     control={form.control}
                                     name="require_wp"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-lg border p-3 shadow-sm">
                                             <div className="space-y-0.5 mb-[-1px]">
                                                 <FormLabel>WriteUP</FormLabel>
                                                 <FormDescription>
@@ -460,7 +460,7 @@ export function CreateGameView() {
                                     control={form.control}
                                     name="visible"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                                        <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-lg border p-3 shadow-sm">
                                             <div className="space-y-0.5 mb-[-1px]">
                                                 <FormLabel>是否可见</FormLabel>
                                                 <FormDescription>

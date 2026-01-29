@@ -23,7 +23,7 @@ export const UserPolicySettings = (
                 control={form.control}
                 name="registrationEnabled"
                 render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                    <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-lg border p-3 shadow-sm">
                         <div className="space-y-0.5 mb-[-1px]">
                             <FormLabel>{t("register_enable")}</FormLabel>
                             <FormDescription>{t("register_enable_description")}</FormDescription>

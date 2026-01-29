@@ -4073,6 +4073,8 @@ components:
           type: integer
         storage_limit:
           type: integer
+        privileged:
+          type: boolean
       required:
         - expose_ports
         - image
@@ -4367,6 +4369,12 @@ components:
           nullable: true
         group_invite_code_enabled:
           type: boolean
+        team_count:
+          type: integer
+          format: int64
+        player_count:
+          type: integer
+          format: int64
         start_time:
           type: string
           format: date-time
@@ -4386,6 +4394,8 @@ components:
         - end_time
         - summary
         - visible
+        - team_count
+        - player_count
     SolveRecord:
       type: object
       properties:
@@ -4664,6 +4674,12 @@ components:
           type: integer
         group_invite_code_enabled:
           type: boolean
+        team_count:
+          type: integer
+          format: int64
+        player_count:
+          type: integer
+          format: int64
         require_wp:
           type: boolean
         wp_expire_time:
@@ -4709,6 +4725,8 @@ components:
         - stages
         - visible
         - team_status
+        - team_count
+        - player_count
     NoticeCategory:
       type: string
       enum:

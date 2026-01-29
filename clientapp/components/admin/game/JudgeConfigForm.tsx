@@ -103,7 +103,7 @@ export function JudgeConfigForm({ control, form }: JudgeConfigFormProps) {
                 control={form.control}
                 name={`enable_blood_reward`}
                 render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 p-4">
+                    <FormItem className="flex flex-row items-center space-y-0 justify-between rounded-xl border border-border/50 p-4">
                         <div className="space-y-0.5">
                             <FormLabel>三血加分</FormLabel>
                             <FormDescription>是否开启三血加分</FormDescription>
@@ -295,7 +295,7 @@ export function JudgeConfigForm({ control, form }: JudgeConfigFormProps) {
                 <div className="flex flex-col gap-3">
                     {hintFields.map((e, hintIndex) => (
                         <div className="w-full flex flex-col" key={e.id}>
-                            <div className="flex gap-2 items-center select-none bg-foreground/5 rounded-2xl px-5 py-2">
+                            <div className="flex gap-2 items-center space-y-0 select-none bg-foreground/5 rounded-2xl px-5 py-2">
                                 <div className='flex gap-4'>
                                     <AppWindowMac />
                                     <span>提示{hintIndex + 1}</span>

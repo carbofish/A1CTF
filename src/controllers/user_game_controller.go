@@ -41,6 +41,17 @@ func UserListGames(c *gin.Context) {
 			continue
 		}
 
+		teamDataMap, errFromJwt := ristretto_tool.CachedMemberSearchTeamMap(game.GameID)
+		if errFromJwt != nil {
+			c.JSON(http.StatusInternalServerError, webmodels.ErrorMessage{
+				Code:    500,
+				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadTeamData"}),
+			})
+			return
+		}
+
+		teamCount, playerCount := calcTeamCountAndPlayerCount(teamDataMap)
+
 		data = append(data, webmodels.UserGameSimpleInfo{
 			GameID:                 game.GameID,
 			Name:                   game.Name,
@@ -52,6 +63,8 @@ func UserListGames(c *gin.Context) {
 			Poster:                 game.Poster,
 			LightIcon:              game.GameIconLight,
 			DarkIcon:               game.GameIconDark,
+			TeamCount:              teamCount,
+			PlayerCount:            playerCount,
 		})
 	}
 
@@ -59,6 +72,23 @@ func UserListGames(c *gin.Context) {
 		"code": 200,
 		"data": data,
 	})
+}
+
+func calcTeamCountAndPlayerCount(teams map[string]models.Team) (int64, int64) {
+	var teamCount int64 = 0
+	var playerCount int64 = 0
+	var seenTeamIDs = make(map[int64]bool)
+	for _, team := range teams {
+		if team.TeamType != models.TeamTypeAdmin {
+			playerCount++
+
+			if _, seen := seenTeamIDs[team.TeamID]; !seen {
+				teamCount++
+				seenTeamIDs[team.TeamID] = true
+			}
+		}
+	}
+	return teamCount, playerCount
 }
 
 func UserGetGameDetailWithTeamInfo(c *gin.Context) {
@@ -98,6 +128,8 @@ func UserGetGameDetailWithTeamInfo(c *gin.Context) {
 		team_status = models.ParticipateUnLogin
 	}
 
+	teamCount, playerCount := calcTeamCountAndPlayerCount(teamDataMap)
+
 	// 基本游戏信息
 	gameInfo := gin.H{
 		"game_id":                   game.GameID,
@@ -120,6 +152,8 @@ func UserGetGameDetailWithTeamInfo(c *gin.Context) {
 		"scoreboard_enabled":        game.ScoreboardEnabled,
 		"team_status":               team_status,
 		"group_invite_code_enabled": game.GroupInviteCodeEnabled,
+		"team_count":                teamCount,
+		"player_count":              playerCount,
 		"team_info":                 nil,
 	}
 
@@ -315,15 +349,24 @@ func UserGameGetScoreBoard(c *gin.Context) {
 		}
 	}
 
+	showAllTeam := true
+
 	if !game.ScoreboardEnabled {
 		if !logined || curUser.Role != models.UserRoleAdmin {
-			c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
-				Code:    400,
-				Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "ScoreboardDisabled"}),
-			})
-			return
+			showAllTeam = false
 		}
 	}
+
+	// 换一种方式，不返回其他队伍的信息，而不是什么都不返回
+	// if !game.ScoreboardEnabled {
+	// 	if !logined || curUser.Role != models.UserRoleAdmin {
+	// 		c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
+	// 			Code:    400,
+	// 			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "ScoreboardDisabled"}),
+	// 		})
+	// 		return
+	// 	}
+	// }
 
 	// 获取题目信息
 	simpleGameChallenges, err := ristretto_tool.CachedGameSimpleChallenges(game.GameID)
@@ -445,6 +488,17 @@ func UserGameGetScoreBoard(c *gin.Context) {
 		Groups:               simpleGameGroups,
 		CurrentGroup:         currentGroup,
 		Pagination:           &pagination,
+	}
+
+	if !showAllTeam {
+		result.TeamScores = make([]webmodels.TeamScoreItem, 0)
+		result.Top10TimeLines = make([]webmodels.TimeLineItemLowCost, 0)
+		result.Pagination = &webmodels.PaginationInfo{
+			CurrentPage: page,
+			PageSize:    size,
+			TotalCount:  1,
+			TotalPages:  1,
+		}
 	}
 
 	if logined {

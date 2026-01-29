@@ -9,6 +9,10 @@
             "label": "环境变量",
             "description": "键值对的形式, 用逗号隔开, 如: KEY=VALUE,KEY2=VALUE2, 支持<a>模板变量</a>"
         },
+        "privileged": {
+            "label": "特权容器",
+            "description": "启用后容器将拥有更高的权限, 可以执行一些特权操作, 例如挂载设备等, 请务必控制好权限!"
+        },
         "cmd": {
             "label": "启动命令",
             "add": "添加启动命令",

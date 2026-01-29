@@ -25,6 +25,8 @@ type UserGameSimpleInfo struct {
 	Poster                 *string   `json:"poster"`
 	LightIcon              *string   `json:"light_icon"`
 	DarkIcon               *string   `json:"dark_icon"`
+	TeamCount              int64     `json:"team_count"`
+	PlayerCount            int64     `json:"player_count"`
 }
 
 type UserFullGameInfo struct {

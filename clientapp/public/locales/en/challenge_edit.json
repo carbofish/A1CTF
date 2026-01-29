@@ -9,6 +9,10 @@
             "label": "Environment Variables",
             "description": "In key-value pairs, separated by commas, e.g. KEY=VALUE,KEY2=VALUE2. Supports <a>template variables</a>"
         },
+        "privileged": {
+            "label": "Privileged Container",
+            "description": "Enabling this will grant the container higher privileges, allowing it to perform privileged operations such as mounting devices. Please control permissions carefully!"
+        },
         "cmd": {
             "label": "Startup Command",
             "add": "Add Startup Command",

@@ -205,6 +205,7 @@ export interface Container {
   cpu_limit?: number;
   memory_limit?: number;
   storage_limit?: number;
+  privileged?: boolean;
 }
 
 export interface JudgeConfig {
@@ -329,6 +330,10 @@ export interface UserGameSimpleInfo {
   summary: string | null;
   poster?: string | null;
   group_invite_code_enabled?: boolean;
+  /** @format int64 */
+  team_count: number;
+  /** @format int64 */
+  player_count: number;
   /** @format date-time */
   start_time: string;
   /** @format date-time */
@@ -488,6 +493,10 @@ export interface UserFullGameInfo {
   team_number_limit: number;
   container_number_limit: number;
   group_invite_code_enabled?: boolean;
+  /** @format int64 */
+  team_count: number;
+  /** @format int64 */
+  player_count: number;
   require_wp: boolean;
   /** @format date-time */
   wp_expire_time: string;

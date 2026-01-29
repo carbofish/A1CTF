@@ -32,7 +32,7 @@ export function AdminGameManagePage() {
     })
 
     return (
-        <div className="w-full h-full flex flex-col bg-gradient-to-br from-background to-muted/30">
+        <div className="w-full h-full flex flex-col">
             {/* Header Section */}
             <div className="backdrop-blur-sm bg-background/80 border-b p-5 lg:p-8 sticky top-0 z-10">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -84,7 +84,7 @@ export function AdminGameManagePage() {
                     </MacScrollbar>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-muted/40 to-muted/20 flex items-center justify-center mb-4">
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-4">
                             {searchContent ? (
                                 <Search className="h-8 w-8 text-muted-foreground" />
                             ) : (

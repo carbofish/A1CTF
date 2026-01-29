@@ -1,5 +1,5 @@
 import { Button } from "components/ui/button";
-import ChallengeManageSheet from "./ChallengeManageSheet";
+import InGameChallengeManageSheet from "./InGameChallengeManageSheet";
 import { Loader2, PanelTopClose, PanelTopOpen, Trash2, Wrench } from "lucide-react";
 import { api } from "utils/ApiHelper";
 import { UserDetailGameChallenge, UserSimpleGameChallenge } from "utils/A1API";
@@ -9,7 +9,7 @@ import { toast } from "react-toastify/unstyled";
 import { useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
 
-export default function InChallengeViewManager(
+export default function InGameManageButtons(
     { gameID, curChallenge, setCurChallenge, setChallenges }: {
         gameID: number,
         curChallenge: UserDetailGameChallenge | undefined,
@@ -121,7 +121,7 @@ export default function InChallengeViewManager(
                     ) : curChallenge?.visible ? <PanelTopOpen /> : <PanelTopClose />}
                 </Button>
             </AlertConformer>
-            <ChallengeManageSheet
+            <InGameChallengeManageSheet
                 gameID={gameID}
                 challengeID={curChallenge?.challenge_id ?? 0}
             >
@@ -132,7 +132,7 @@ export default function InChallengeViewManager(
                 >
                     <Wrench />
                 </Button>
-            </ChallengeManageSheet>
+            </InGameChallengeManageSheet>
         </div>
     )
 }

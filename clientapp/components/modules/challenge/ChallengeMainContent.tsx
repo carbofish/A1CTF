@@ -14,7 +14,7 @@ import ChallengeNameTitle from "./ChallengeNameTitle"
 import { useTheme } from "next-themes"
 import FileDownloader from "./FileDownloader"
 import copy from "copy-to-clipboard"
-import InChallengeViewManager from "components/admin/game/InChallengeViewManager"
+import InGameManageButtons from "components/admin/game/InGameManageButtons"
 import { useGlobalVariableContext } from "contexts/GlobalVariableContext"
 import { AxiosError } from "axios"
 import { useTranslation } from "react-i18next"
@@ -224,7 +224,7 @@ export default function ChallengeMainContent(
 
             {/* 管理员管理菜单按钮 */}
             {curProfile.role == UserRole.ADMIN && (
-                <InChallengeViewManager
+                <InGameManageButtons
                     gameID={gameID}
                     curChallenge={curChallenge}
                     setChallenges={setChallenges}
