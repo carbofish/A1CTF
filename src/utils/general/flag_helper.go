@@ -31,7 +31,7 @@ var leetMap = map[string]string{
 	"P": "Pp",
 	"Q": "Qq9",
 	"R": "Rr",
-	"S": "Ss5$",
+	"S": "Ss5",
 	"T": "Tt7",
 	"U": "Uu",
 	"V": "Vv",
