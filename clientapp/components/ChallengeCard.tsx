@@ -64,6 +64,9 @@ export const ChallengeCard: FC<ChallengeInfo & React.HTMLAttributes<HTMLDivEleme
     }, [status])
 
     const isStageVisiable = (stage_name: string | undefined) : boolean => {
+        // 全局题目的 stage_name 为 null
+        if (!stage_name) return true;
+
         if (gameInfo?.stages) {
             const target_stage = gameInfo.stages.find(e => e.stage_name == stage_name)
             if (!target_stage) return false
