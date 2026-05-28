@@ -230,7 +230,7 @@ function ContainerForm({ control, index, removeContainer }: ContainerFormProps) 
                     render={({ field }) => (
                         <FormItem>
                             <div className="flex items-center h-[20px]">
-                                <FormLabel>{t("container.limit.cpu.label")}</FormLabel>
+                                <FormLabel>{t("container.limit.mem.label")}</FormLabel>
                                 <div className="flex-1" />
                                 <FormMessage className="text-[14px]" />
                             </div>
