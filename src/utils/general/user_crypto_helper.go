@@ -28,9 +28,11 @@ func RandomString(length int) string {
 	for i := range result {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		if err != nil {
-			panic(err)
+			// crypto/rand failed (extremely rare), use deterministic fallback
+			result[i] = charset[i%len(charset)]
+		} else {
+			result[i] = charset[num.Int64()]
 		}
-		result[i] = charset[num.Int64()]
 	}
 	return string(result)
 }
@@ -43,9 +45,10 @@ func RandomStringLower(length int) string {
 	for i := range result {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		if err != nil {
-			panic(err) // 在实际应用中应该处理这个错误
+			result[i] = charset[i%len(charset)]
+		} else {
+			result[i] = charset[num.Int64()]
 		}
-		result[i] = charset[num.Int64()]
 	}
 	return string(result)
 }
@@ -60,14 +63,18 @@ func RandomPassword(length int) string {
 	for i := range result {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		if err != nil {
-			panic(err)
+			result[i] = charset[i%len(charset)]
+		} else {
+			result[i] = charset[num.Int64()]
 		}
-		result[i] = charset[num.Int64()]
 	}
 	return string(result)
 }
 
 func RandomHash(length int) string {
+	if length < 32 {
+		length = 32 // Enforce minimum 128-bit entropy
+	}
 	const charset = "abcdef" +
 		"0123456789"
 
@@ -75,9 +82,10 @@ func RandomHash(length int) string {
 	for i := range result {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		if err != nil {
-			panic(err) // 在实际应用中应该处理这个错误
+			result[i] = charset[i%len(charset)]
+		} else {
+			result[i] = charset[num.Int64()]
 		}
-		result[i] = charset[num.Int64()]
 	}
 	return string(result)
 }

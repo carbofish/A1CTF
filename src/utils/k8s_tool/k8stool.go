@@ -258,10 +258,28 @@ func CreatePod(podInfo *PodInfo) error {
 			Requests: requests,
 		}
 
+		// Security: Set security context to prevent container escalation
+		allowPrivilegeEscalation := false
+		runAsNonRoot := true
+		runAsUser := int64(1000)
+		container.SecurityContext = &corev1.SecurityContext{
+			AllowPrivilegeEscalation: &allowPrivilegeEscalation,
+			RunAsNonRoot:            &runAsNonRoot,
+			RunAsUser:               &runAsUser,
+			Capabilities: &corev1.Capabilities{
+				Drop: []corev1.Capability{"ALL"},
+			},
+		}
+
 		containers = append(containers, container)
 	}
 
 	fastVal := false
+	hostNetwork := false
+	hostPID := false
+	hostIPC := false
+	podRunAsNonRoot := true
+	podRunAsUser := int64(1000)
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -271,6 +289,13 @@ func CreatePod(podInfo *PodInfo) error {
 		Spec: corev1.PodSpec{
 			Containers:         containers,
 			EnableServiceLinks: &fastVal,
+			HostNetwork:        &hostNetwork,
+			HostPID:            &hostPID,
+			HostIPC:            &hostIPC,
+			SecurityContext: &corev1.PodSecurityContext{
+				RunAsNonRoot: &podRunAsNonRoot,
+				RunAsUser:    &podRunAsUser,
+			},
 		},
 	}
 

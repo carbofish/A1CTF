@@ -88,8 +88,15 @@ func (v *SecurePathValidator) ValidatePathSafety(basePath, targetPath string) (s
 	// 5. 确保路径以目录分隔符结尾（避免前缀匹配误判）
 	absBasePath = ensureTrailingSeparator(absBasePath)
 
-	// 6. 检查目标路径是否在基础目录内
-	if !strings.HasPrefix(absTargetPath+string(filepath.Separator), absBasePath) {
+	// 6. 检查目标路径是否在基础目录内（使用更严格的检查）
+	// 使用 filepath.Rel 来检查路径是否在基础目录内
+	rel, err := filepath.Rel(absBasePath, absTargetPath)
+	if err != nil {
+		return "", ErrPathNotInBase
+	}
+	
+	// 如果相对路径以 ".." 开头，说明目标路径在基础目录之外
+	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 		return "", ErrPathNotInBase
 	}
 
@@ -260,8 +267,9 @@ func (v *SecurePathValidator) additionalSecurityChecks(path string) error {
 
 // ensureTrailingSeparator 确保路径以分隔符结尾
 func ensureTrailingSeparator(path string) string {
-	if !strings.HasSuffix(path, string(filepath.Separator)) {
-		return path + string(filepath.Separator)
+	sep := string(filepath.Separator)
+	if !strings.HasSuffix(path, sep) {
+		return path + sep
 	}
 	return path
 }
