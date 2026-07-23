@@ -72,6 +72,9 @@ func RandomPassword(length int) string {
 }
 
 func RandomHash(length int) string {
+	if length < 32 {
+		length = 32 // Enforce minimum 128-bit entropy
+	}
 	const charset = "abcdef" +
 		"0123456789"
 
