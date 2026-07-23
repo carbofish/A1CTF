@@ -129,6 +129,19 @@ func RateLimiter(rateLimit int, rateInterval time.Duration) gin.HandlerFunc {
 	}
 }
 
+// SecurityHeaders adds security-related HTTP headers
+func SecurityHeaders() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("X-Content-Type-Options", "nosniff")
+		c.Header("X-Frame-Options", "DENY")
+		c.Header("X-XSS-Protection", "0")
+		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
+		c.Header("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+		c.Header("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
+		c.Next()
+	}
+}
+
 func main() {
 	// 加载配置文件
 	utils.LoadConfig()
@@ -230,9 +243,10 @@ func main() {
 
 	// 公共接口
 	public := r.Group("/api")
+	public.Use(SecurityHeaders())
 	{
-		public.POST("/auth/login", authMiddleware.LoginHandler)
-		public.POST("/auth/register", controllers.PayloadValidator(
+		public.POST("/auth/login", RateLimiter(10, 1*time.Second), authMiddleware.LoginHandler)
+		public.POST("/auth/register", RateLimiter(5, 1*time.Second), controllers.PayloadValidator(
 			webmodels.RegisterPayload{},
 		), controllers.Register)
 
