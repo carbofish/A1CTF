@@ -30,8 +30,6 @@ func getTimeLimitConfig() time.Duration {
 	return ret
 }
 
-var timeLimit = getTimeLimitConfig()
-
 func UserCreateGameContainer(c *gin.Context) {
 	game := c.MustGet("game").(models.Game)
 	team := c.MustGet("team").(models.Team)
@@ -113,7 +111,7 @@ func UserCreateGameContainer(c *gin.Context) {
 
 	// 用户操作靶机的 60 秒 CD
 	operationName := fmt.Sprintf("%s:containerOperation", user.UserID)
-	timeLimit = getTimeLimitConfig()
+	timeLimit := getTimeLimitConfig()
 	locked := redistool.LockForATime(operationName, timeLimit)
 
 	if !locked {
@@ -219,7 +217,7 @@ func UserCloseGameContainer(c *gin.Context) {
 
 	// 用户操作靶机的 60 秒 CD
 	operationName := fmt.Sprintf("%s:containerOperation", user.UserID)
-	timeLimit = getTimeLimitConfig()
+	timeLimit := getTimeLimitConfig()
 	locked := redistool.LockForATime(operationName, timeLimit)
 
 	if !locked {
@@ -288,7 +286,7 @@ func UserExtendGameContainer(c *gin.Context) {
 	challengeID := c.MustGet("challenge_id").(int64)
 
 	operationName := fmt.Sprintf("%s:containerOperation", user.UserID)
-	timeLimit = getTimeLimitConfig()
+	timeLimit := getTimeLimitConfig()
 	locked := redistool.LockForATime(operationName, timeLimit)
 
 	if !locked {

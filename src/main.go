@@ -24,10 +24,12 @@ import (
 	proofofwork "a1ctf/src/modules/proof_of_work"
 	"a1ctf/src/tasks"
 	"a1ctf/src/utils"
+	csrf "a1ctf/src/utils/csrf"
 	dbtool "a1ctf/src/utils/db_tool"
 	i18ntool "a1ctf/src/utils/i18n_tool"
 	k8stool "a1ctf/src/utils/k8s_tool"
 	ratelimiter "a1ctf/src/utils/rate_limiter"
+	securitytool "a1ctf/src/utils/security_tool"
 	redistool "a1ctf/src/utils/redis_tool"
 	"a1ctf/src/utils/ristretto_tool"
 	validatortool "a1ctf/src/utils/validator_tool"
@@ -220,6 +222,9 @@ func main() {
 	// 初始化 email jwt
 	emailjwt.InitRSAKeys()
 
+	// Secure key file permissions (chmod 600)
+	securitytool.SecureKeyFiles(privKeyFile, pubKeyFile)
+
 	bestGzipMiddleware := gzip.Gzip(gzip.BestCompression)
 	defaultGzipMiddleware := gzip.Gzip(gzip.DefaultCompression)
 
@@ -279,6 +284,7 @@ func main() {
 	// 鉴权接口
 	auth := r.Group("/api")
 	auth.Use(authMiddleware.MiddlewareFunc())
+	auth.Use(csrf.CSRFProtection())
 	{
 		fileGroup := auth.Group("/file")
 		{
