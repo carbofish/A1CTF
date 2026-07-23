@@ -22,7 +22,13 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		origin := r.Header.Get("Origin")
+		// Only allow requests from the configured base URL
+		allowedOrigin := viper.GetString("system.baseURL")
+		if allowedOrigin == "" {
+			return false
+		}
+		return origin == allowedOrigin
 	},
 }
 

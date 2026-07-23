@@ -47,9 +47,33 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
-	// 生成唯一的文件ID
+	// Generate unique file ID
 	fileID := uuid.New().String()
-	fileExt := filepath.Ext(file.Filename)
+	fileExt := strings.ToLower(filepath.Ext(file.Filename))
+
+	// Validate file extension is allowed
+	allowedExts := map[string]bool{
+		".jpg": true, ".jpeg": true, ".png": true, ".gif": true,
+		".webp": true, ".pdf": true, ".zip": true, ".tar": true,
+		".gz": true, ".txt": true, ".md": true, ".csv": true,
+	}
+	if !allowedExts[fileExt] {
+		c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
+			Code:    400,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "UnsupportedFileType"}),
+		})
+		return
+	}
+
+	// Validate magic bytes to prevent fake extension uploads
+	magicValidator := securitytool.NewMagicBytesValidator()
+	if err := magicValidator.ValidateFile(file, fileExt); err != nil {
+		c.JSON(http.StatusBadRequest, webmodels.ErrorMessage{
+			Code:    400,
+			Message: i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidFileContent"}),
+		})
+		return
+	}
 
 	// 创建上传目录
 	uploadDir := "./data/uploads/files"
