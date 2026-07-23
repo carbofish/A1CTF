@@ -15,6 +15,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
+	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/remotecommand"
 	"k8s.io/kubectl/pkg/scheme"
@@ -22,7 +23,13 @@ import (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		origin := r.Header.Get("Origin")
+		// Only allow requests from the configured base URL
+		allowedOrigin := viper.GetString("system.baseURL")
+		if allowedOrigin == "" {
+			return false
+		}
+		return origin == allowedOrigin
 	},
 }
 
@@ -55,6 +62,15 @@ func AdminHandleContainerExec(c *gin.Context) {
 	containerName := c.Param("container_name")
 
 	if podName == "" || containerName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidContainer"}),
+		})
+		return
+	}
+
+	// Validate pod name format (cl-{ingame_id}-{team_hash}) to prevent path traversal
+	if !isValidPodName(podName) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
 			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "InvalidContainer"}),
@@ -307,4 +323,34 @@ func sendErrorMessage(ws *websocket.Conn, mu *sync.Mutex, message string) {
 	mu.Lock()
 	_ = ws.WriteMessage(websocket.TextMessage, msg)
 	mu.Unlock()
+}
+
+// isValidPodName validates that pod name follows the expected cl-{ingame_id}-{team_hash} format
+func isValidPodName(podName string) bool {
+	if len(podName) == 0 || len(podName) > 63 {
+		return false
+	}
+	// Must start with "cl-"
+	if !strings.HasPrefix(podName, "cl-") {
+		return false
+	}
+	for _, c := range podName {
+		if !((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-') {
+			return false
+		}
+	}
+	return true
+}
+
+// extractInGameIDFromPodName extracts the ingame_id from a pod name (cl-{ingame_id}-{team_hash})
+func extractInGameIDFromPodName(podName string) (int64, error) {
+	parts := strings.SplitN(podName, "-", 3)
+	if len(parts) != 3 {
+		return 0, fmt.Errorf("invalid pod name format")
+	}
+	ingameID, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid ingame_id in pod name: %v", err)
+	}
+	return ingameID, nil
 }

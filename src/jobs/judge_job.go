@@ -7,6 +7,8 @@ import (
 	a1locks "a1ctf/src/utils/locks"
 	noticetool "a1ctf/src/utils/notice_tool"
 	"a1ctf/src/utils/zaphelper"
+	"crypto/hmac"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"time"
@@ -23,11 +25,10 @@ func processQueueingJudge(judge *models.Judge) error {
 
 		switch judge.Challenge.FlagType {
 		case models.FlagTypeDynamic:
-			// 动态和TeamFlag库里的比较
-			flagCorrect = judge.JudgeContent == judge.TeamFlag.FlagContent
+			// Use constant-time comparison to prevent timing attacks
+			flagCorrect = secureCompare(judge.JudgeContent, judge.TeamFlag.FlagContent)
 		case models.FlagTypeStatic:
-			// 静态直接比较
-			flagCorrect = judge.JudgeContent == *judge.GameChallenge.JudgeConfig.FlagTemplate
+			flagCorrect = secureCompare(judge.JudgeContent, *judge.GameChallenge.JudgeConfig.FlagTemplate)
 		}
 
 		if flagCorrect {
@@ -109,12 +110,24 @@ func processQueueingJudge(judge *models.Judge) error {
 			return nil
 		}
 	case models.JudgeTypeScript:
+		// SCRIPT judge: external script execution not yet implemented
 		judge.JudgeStatus = models.JudgeError
-		return fmt.Errorf("dynamic judge not implemented now")
+		return fmt.Errorf("SCRIPT judge type not yet implemented")
 	default:
 		judge.JudgeStatus = models.JudgeError
 		return fmt.Errorf("unknown judge type: %s", judge.JudgeType)
 	}
+}
+
+// secureCompare uses HMAC-SHA256 in constant-time to prevent timing attacks on flag comparison
+// Uses fixed key to ensure same comparison always produces same result
+func secureCompare(a, b string) bool {
+	key := []byte("a1ctf-secure-compare")
+	macA := hmac.New(sha256.New, key)
+	macA.Write([]byte(a))
+	macB := hmac.New(sha256.New, key)
+	macB.Write([]byte(b))
+	return hmac.Equal(macA.Sum(nil), macB.Sum(nil))
 }
 
 func FlagJudgeJob() {

@@ -18,7 +18,11 @@ system:
   # make sure that you include your reverse proxy server's ip in this list
   # don't use 0.0.0.0/0, it's dangerous
   trusted-proxies:
-    - 0.0.0.0/0
+    # WARNING: Do not use 0.0.0.0/0 in production.
+    # Only add your reverse proxy IP addresses here.
+    - 127.0.0.1/32
+  # CSRF protection secret (separate from JWT). Generate with: openssl rand -base64 32
+  csrf-secret: "change-me-in-production-please-use-openssl-rand-base64-32"
   # enable pprof for performance profiling, default is false
   pprof-enable: false
 

@@ -3,6 +3,7 @@ package tasks
 import (
 	"a1ctf/src/db/models"
 	dbtool "a1ctf/src/utils/db_tool"
+	"a1ctf/src/utils/ristretto_tool"
 	"a1ctf/src/utils/zaphelper"
 	"context"
 	"fmt"
@@ -72,7 +73,80 @@ func HandleFlagAntiCheatTask(ctx context.Context, t *asynq.Task) error {
 		}
 	}
 
-	// TODO 检查是否在未下载附件或者未启动靶机的情况下提交正确 flag
+	// Check if the team submitted the correct flag without downloading attachments
+	if judge.JudgeStatus == models.JudgeAC || judge.TeamFlag.FlagContent == judge.JudgeContent {
+		// Check if team has attachments for this challenge
+		challengeAttachments, err := ristretto_tool.CachedChallengeAttachments(judge.ChallengeID)
+		if err == nil && len(challengeAttachments) > 0 {
+			// Check if any attachment was downloaded by this team
+			hasDownloadedAttachment := false
+			for _, attachment := range challengeAttachments {
+				if attachment.AttachType == models.AttachmentTypeStaticFile || attachment.AttachType == models.AttachmentTypeDynamicFile {
+					// Check download record
+					var downloadRecord models.AttachmentDownload
+					if err := dbtool.DB().Where("team_id = ? AND challenge_id = ? AND attach_id = ?", judge.TeamID, judge.ChallengeID, attachment.AttachID).First(&downloadRecord).Error; err == nil {
+						hasDownloadedAttachment = true
+						break
+					}
+				}
+			}
+			if !hasDownloadedAttachment {
+				cheat := models.Cheat{
+					CheatID:     uuid.NewString(),
+					CheatType:   models.CheatSubmitWithoutDownloadAttachments,
+					GameID:      judge.GameID,
+					IngameID:    judge.IngameID,
+					ChallengeID: judge.ChallengeID,
+					TeamID:      judge.TeamID,
+					FlagID:      &judge.TeamFlag.FlagID,
+					JudgeID:     judge.JudgeID,
+					SubmiterID:  judge.SubmiterID,
+					CheatTime:   judge.JudgeTime,
+					SubmiterIP:  judge.SubmiterIP,
+					ExtraData: models.CheatExtraData{
+						RelevantTeam:     judge.TeamID,
+						RelevantTeamName: judge.Team.TeamName,
+					},
+				}
+				if err := dbtool.DB().Create(&cheat).Error; err != nil {
+					zaphelper.Logger.Error("Failed to save cheat info", zap.Error(err))
+				}
+			}
+		}
+
+		// Check if team submitted correct flag without starting container
+		var containers []models.Container
+		if err := dbtool.DB().Where("game_id = ? AND team_id = ? AND challenge_id = ? AND container_status != ? AND container_status != ?",
+			judge.GameID, judge.TeamID, judge.ChallengeID, models.ContainerStopped, models.ContainerError).Find(&containers).Error; err == nil {
+			if len(containers) == 0 {
+				// No active container found - check if they ever started one
+				var anyContainer models.Container
+				if err := dbtool.DB().Where("game_id = ? AND team_id = ? AND challenge_id = ?", judge.GameID, judge.TeamID, judge.ChallengeID).First(&anyContainer).Error; err != nil {
+					// Team never started a container but submitted correct flag
+					cheat := models.Cheat{
+						CheatID:     uuid.NewString(),
+						CheatType:   models.CheatSubmitWithoutStartContainer,
+						GameID:      judge.GameID,
+						IngameID:    judge.IngameID,
+						ChallengeID: judge.ChallengeID,
+						TeamID:      judge.TeamID,
+						FlagID:      &judge.TeamFlag.FlagID,
+						JudgeID:     judge.JudgeID,
+						SubmiterID:  judge.SubmiterID,
+						CheatTime:   judge.JudgeTime,
+						SubmiterIP:  judge.SubmiterIP,
+						ExtraData: models.CheatExtraData{
+							RelevantTeam:     judge.TeamID,
+							RelevantTeamName: judge.Team.TeamName,
+						},
+					}
+					if err := dbtool.DB().Create(&cheat).Error; err != nil {
+						zaphelper.Logger.Error("Failed to save cheat info", zap.Error(err))
+					}
+				}
+			}
+		}
+	}
 
 	return nil
 }
