@@ -109,8 +109,9 @@ func processQueueingJudge(judge *models.Judge) error {
 			return nil
 		}
 	case models.JudgeTypeScript:
+		// SCRIPT judge: external script execution not yet implemented
 		judge.JudgeStatus = models.JudgeError
-		return fmt.Errorf("dynamic judge not implemented now")
+		return fmt.Errorf("SCRIPT judge type not yet implemented")
 	default:
 		judge.JudgeStatus = models.JudgeError
 		return fmt.Errorf("unknown judge type: %s", judge.JudgeType)

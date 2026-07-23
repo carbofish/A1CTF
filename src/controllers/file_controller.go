@@ -218,6 +218,10 @@ func DownloadFile(c *gin.Context) {
 		return
 	}
 
+	// Escape filename to prevent Content-Disposition header injection
+	safeFilename := strings.ReplaceAll(uploadRecord.FileName, `"`, `\"`)
+	safeFilename = strings.ReplaceAll(safeFilename, `\`, `\\`)
+	
 	// 使用 c.DataFromReader 方法，它会正确设置 Content-Length
 	c.DataFromReader(
 		http.StatusOK,
@@ -225,7 +229,7 @@ func DownloadFile(c *gin.Context) {
 		uploadRecord.FileType,
 		file,
 		map[string]string{
-			"Content-Disposition": fmt.Sprintf("attachment; filename=%s", uploadRecord.FileName),
+			"Content-Disposition": fmt.Sprintf(`attachment; filename="%s"`, safeFilename),
 			"Cache-Control":       "public, max-age=36000",
 		},
 	)
