@@ -144,11 +144,11 @@ func AdminCreateChallenge(c *gin.Context) {
 	payload.ChallengeID = nil
 
 	if err := dbtool.DB().Create(&payload).Error; err != nil {
+		log.Errorf("Failed to create challenge: %+v, error: %v", payload, err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    500,
 			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToCreateChallenge"}),
 		})
-		log.Panicf("%+v %v\n", payload, err)
 		return
 	}
 
