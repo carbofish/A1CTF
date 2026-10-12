@@ -147,6 +147,7 @@ func UserGetGameDetailWithTeamInfo(c *gin.Context) {
 		"wp_expire_time":            game.WpExpireTime,
 		"wp_start_time":             game.WpStartTime,
 		"wp_formats":                sanitizeWriteupFormats(game.WpFormats),
+		"wp_max_size":               normalizeWriteupMaxSize(game.WpMaxSize),
 		"stages":                    game.Stages,
 		"visible":                   game.Visible,
 		"scoreboard_enabled":        game.ScoreboardEnabled,

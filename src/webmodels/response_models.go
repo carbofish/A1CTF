@@ -44,6 +44,7 @@ type UserFullGameInfo struct {
 	WPExpireTime         time.Time                  `json:"wp_expire_time"`
 	WPStartTime          *time.Time                 `json:"wp_start_time"`
 	WPFormats            []string                   `json:"wp_formats"`
+	WPMaxSize            int32                      `json:"wp_max_size"`
 	Stages               *models.GameStages         `json:"stages"`
 	Visible              bool                       `json:"visible"`
 	TeamStatus           models.ParticipationStatus `json:"team_status"`

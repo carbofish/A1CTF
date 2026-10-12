@@ -81,9 +81,11 @@
         "replace": "重新上传",
         "uploading": "上传中...",
         "allowed_formats": "允许格式：{{formats}}",
-        "allowed_formats_with_size": "允许格式：{{formats}} · 最大 50MB",
+        "allowed_formats_with_size": "允许格式：{{formats}} · 最大 {{size}}MB",
         "start_not_ready": "WriteUp 收集将于 {{time}} 开始",
-        "helper": "单个文件最大 50MB。",
+        "helper": "单个文件最大 {{size}}MB。",
+        "file_too_large": "文件过大（最大 {{size}}MB）",
+        "deadline_passed": "WriteUp 提交已截止",
         "submit_success": "WriteUp 提交成功。"
     }
 }

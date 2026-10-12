@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -47,11 +48,54 @@ func keysInt64(m map[int64]struct{}) []int64 {
 	return res
 }
 
+const (
+	// 自定义后缀的长度和数量限制
+	maxWriteupFormatLength = 16
+	maxWriteupFormatCount  = 32
+)
+
+var writeupFormatPattern = regexp.MustCompile(`^[a-z0-9]+$`)
+
+// 清理自定义的 WriteUp 后缀，去掉点号、空格并统一小写
 func normalizeWriteupFormats(formats pq.StringArray) pq.StringArray {
-	if len(formats) == 0 {
+	result := make(pq.StringArray, 0, len(formats))
+	seen := make(map[string]struct{}, len(formats))
+
+	for _, format := range formats {
+		ext := strings.ToLower(strings.TrimSpace(format))
+		ext = strings.TrimPrefix(ext, ".")
+		if ext == "" || len(ext) > maxWriteupFormatLength {
+			continue
+		}
+		if !writeupFormatPattern.MatchString(ext) {
+			continue
+		}
+		if _, exists := seen[ext]; exists {
+			continue
+		}
+		seen[ext] = struct{}{}
+		result = append(result, ext)
+
+		if len(result) >= maxWriteupFormatCount {
+			break
+		}
+	}
+
+	if len(result) == 0 {
 		return pq.StringArray{"pdf"}
 	}
-	return formats
+	return result
+}
+
+// 限制 WriteUp 上传大小，单位 MB
+func normalizeWriteupMaxSize(sizeMB int32) int32 {
+	if sizeMB <= 0 {
+		return defaultWriteupMaxSizeMB
+	}
+	if sizeMB > maxWriteupMaxSizeMB {
+		return maxWriteupMaxSizeMB
+	}
+	return sizeMB
 }
 
 func writeupFormatsToSlice(formats pq.StringArray) []string {
@@ -114,6 +158,7 @@ func AdminCreateGame(c *gin.Context) {
 	}
 
 	payload.WpFormats = normalizeWriteupFormats(payload.WpFormats)
+	payload.WpMaxSize = normalizeWriteupMaxSize(payload.WpMaxSize)
 
 	game := models.Game{
 		Name:                 payload.Name,
@@ -125,6 +170,7 @@ func AdminCreateGame(c *gin.Context) {
 		WpExpireTime:         payload.WpExpireTime,
 		WpStartTime:          payload.WpStartTime,
 		WpFormats:            payload.WpFormats,
+		WpMaxSize:            payload.WpMaxSize,
 		Stages:               payload.Stages,
 		RequireWp:            payload.RequireWp,
 		ContainerNumberLimit: payload.ContainerNumberLimit,
@@ -200,6 +246,7 @@ func AdminGetGame(c *gin.Context) {
 		"wp_expire_time":           game.WpExpireTime,
 		"wp_start_time":            game.WpStartTime,
 		"wp_formats":               writeupFormatsToSlice(game.WpFormats),
+		"wp_max_size":              normalizeWriteupMaxSize(game.WpMaxSize),
 		"stages":                   game.Stages,
 		"visible":                  game.Visible,
 		"scoreboard_enabled":       game.ScoreboardEnabled,
@@ -491,6 +538,7 @@ func AdminUpdateGame(c *gin.Context) {
 	game.WpExpireTime = payload.WpExpireTime
 	game.WpStartTime = payload.WpStartTime
 	game.WpFormats = normalizeWriteupFormats(payload.WpFormats)
+	game.WpMaxSize = normalizeWriteupMaxSize(payload.WpMaxSize)
 	game.Stages = payload.Stages
 	game.Visible = payload.Visible
 	game.ScoreboardEnabled = payload.ScoreboardEnabled

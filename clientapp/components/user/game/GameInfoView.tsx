@@ -7,6 +7,9 @@ import GameTeamStatusCard, { LoginFirstCard } from "components/modules/game/Game
 import { useTheme } from "next-themes";
 import { useGame, useGameDescription } from "hooks/UseGame";
 import { useTranslation } from "react-i18next";
+import { A1GameStatus } from "components/modules/game/GameStatusEnum";
+import { ParticipationStatus } from "utils/A1API";
+import { WriteupSubmissionCard } from "components/user/game/WriteupSubmissionCard";
 
 export default function GameInfoView(
     {
@@ -18,11 +21,17 @@ export default function GameInfoView(
     const { gameInfo, gameStatus, teamStatus, isLoading } = useGame(gameID)
     const { gameDescription, isLoading: isGameDescriptionLoading } = useGameDescription(gameID)
 
-    const { checkLoginStatus } = useGlobalVariableContext()
+    const { checkLoginStatus, isAdmin } = useGlobalVariableContext()
 
     const { theme } = useTheme()
 
     const { t } = useTranslation("game_view")
+
+    // 比赛结束后题目页不可进入，WriteUp 截止时间可能晚于比赛结束，在信息页继续提供提交入口
+    const showWriteupCard = gameStatus == A1GameStatus.Ended
+        && !isAdmin()
+        && !!gameInfo?.require_wp
+        && (teamStatus == ParticipationStatus.Approved || teamStatus == ParticipationStatus.Participated)
 
     if (isLoading) return <></>
 
@@ -61,6 +70,18 @@ export default function GameInfoView(
                                     <span className="font-bold text-lg">{t("no_game_info")}</span>
                                 </div>
                             )
+                        )}
+                        {showWriteupCard && (
+                            <div className="pb-10 max-w-md">
+                                <WriteupSubmissionCard
+                                    gameID={gameID}
+                                    initialRequire={gameInfo?.require_wp}
+                                    initialDeadline={gameInfo?.wp_expire_time}
+                                    initialStart={gameInfo?.wp_start_time}
+                                    initialFormats={gameInfo?.wp_formats}
+                                    initialMaxSize={gameInfo?.wp_max_size}
+                                />
+                            </div>
                         )}
                     </div>
                     <div className="lg:w-[40%] hidden lg:block h-full flex-none">

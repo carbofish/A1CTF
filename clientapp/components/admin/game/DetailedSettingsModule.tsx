@@ -37,6 +37,10 @@ interface DetailedSettingsModuleProps {
 
 const writeupFormatOptions = ["pdf", "zip", "doc", "docx", "md", "txt"]
 
+// 后缀只允许字母和数字，与后端 normalizeWriteupFormats 保持一致
+const normalizeWriteupFormat = (value: string) =>
+    value.trim().toLowerCase().replace(/^\.+/, "").replace(/[^a-z0-9]/g, "")
+
 export function DetailedSettingsModule({
     form,
     handleDateSelect: _handleDateSelect,
@@ -49,6 +53,16 @@ export function DetailedSettingsModule({
 
     // 监听 poster 字段变化，用于实时预览
     const watchedPoster = useWatch({ control: form.control, name: 'poster' });
+
+    // 自定义 WriteUp 后缀输入框
+    const [customFormat, setCustomFormat] = React.useState("")
+
+    const addCustomFormat = (current: string[], onChange: (value: string[]) => void) => {
+        const fmt = normalizeWriteupFormat(customFormat)
+        if (!fmt) return
+        if (!current.includes(fmt)) onChange([...current, fmt])
+        setCustomFormat("")
+    }
 
 
     // 海报上传处理函数
@@ -189,7 +203,8 @@ export function DetailedSettingsModule({
                                     <FormMessage />
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {writeupFormatOptions.map((fmt) => {
+                                    {/* 预设后缀 + 已保存的自定义后缀 */}
+                                    {Array.from(new Set([...writeupFormatOptions, ...(field.value ?? [])])).map((fmt) => {
                                         const selected = field.value?.includes(fmt)
                                         return (
                                             <Button
@@ -212,8 +227,49 @@ export function DetailedSettingsModule({
                                         )
                                     })}
                                 </div>
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={customFormat}
+                                        placeholder={t("detail.wp_formats.custom_placeholder")}
+                                        aria-label={t("detail.wp_formats.custom_placeholder")}
+                                        maxLength={16}
+                                        onChange={(e) => setCustomFormat(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") return
+                                            e.preventDefault()
+                                            addCustomFormat(field.value ?? [], field.onChange)
+                                        }}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={!normalizeWriteupFormat(customFormat)}
+                                        onClick={() => addCustomFormat(field.value ?? [], field.onChange)}
+                                    >
+                                        {t("detail.wp_formats.custom_add")}
+                                    </Button>
+                                </div>
                                 <FormDescription>{t("detail.wp_formats.description")}</FormDescription>
                                 <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* WP 上传大小限制 */}
+                    <FormField
+                        control={form.control}
+                        name="wp_max_size"
+                        render={({ field }) => (
+                            <FormItem>
+                                <div className="flex items-center h-[20px]">
+                                    <FormLabel>{t("detail.wp_max_size.title")}</FormLabel>
+                                    <div className="flex-1" />
+                                    <FormMessage className="text-[14px]" />
+                                </div>
+                                <FormControl>
+                                    <Input type="number" min={1} max={1024} {...field} />
+                                </FormControl>
+                                <FormDescription>{t("detail.wp_max_size.description")}</FormDescription>
                             </FormItem>
                         )}
                     />

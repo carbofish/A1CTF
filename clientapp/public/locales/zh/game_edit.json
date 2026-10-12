@@ -120,7 +120,13 @@
         },
         "wp_formats": {
             "title": "WriteUp格式",
-            "description": "请选择允许提交的文件格式"
+            "description": "请选择允许提交的文件格式，也可以添加自定义后缀",
+            "custom_placeholder": "自定义后缀，如 tar、pptx",
+            "custom_add": "添加"
+        },
+        "wp_max_size": {
+            "title": "WriteUp大小限制 (MB)",
+            "description": "单个 WriteUp 文件的最大体积，范围 1～1024 MB"
         },
         "limit": {
             "member": {

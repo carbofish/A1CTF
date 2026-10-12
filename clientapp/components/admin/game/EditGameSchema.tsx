@@ -70,6 +70,7 @@ export const EditGameFormSchema = z.object({
     wp_start_time: z.date().optional(),
     wp_expire_time: z.date().optional(),
     wp_formats: z.array(z.string()).min(1),
+    wp_max_size: z.coerce.number().min(1).max(1024),
     first_blood_reward: z.coerce.number(),
     second_blood_reward: z.coerce.number(),
     third_blood_reward: z.coerce.number(),

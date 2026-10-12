@@ -3862,6 +3862,9 @@ paths:
                         items:
                           type: string
                         description: 允许的WriteUp文件格式列表
+                      wp_max_size:
+                        type: integer
+                        description: WriteUp上传大小限制，单位MB
                 required:
                   - code
                   - data
@@ -4320,6 +4323,9 @@ components:
           items:
             type: string
           description: 允许的WriteUp文件格式列表
+        wp_max_size:
+          type: integer
+          description: WriteUp上传大小限制，单位MB
         visible:
           type: boolean
         scoreboard_enabled:
@@ -4694,6 +4700,9 @@ components:
           items:
             type: string
           description: 允许的WriteUp文件格式列表
+        wp_max_size:
+          type: integer
+          description: WriteUp上传大小限制，单位MB
         visible:
           type: boolean
         scoreboard_enabled:

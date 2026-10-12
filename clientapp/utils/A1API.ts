@@ -313,6 +313,8 @@ export interface AdminFullGameInfo {
   wp_start_time?: string;
   /** 允许的WriteUp文件格式列表 */
   wp_formats?: string[];
+  /** WriteUp上传大小限制，单位MB */
+  wp_max_size?: number;
   visible: boolean;
   scoreboard_enabled?: boolean;
   stages: GameStage[];
@@ -507,6 +509,8 @@ export interface UserFullGameInfo {
   wp_start_time?: string;
   /** 允许的WriteUp文件格式列表 */
   wp_formats?: string[];
+  /** WriteUp上传大小限制，单位MB */
+  wp_max_size?: number;
   visible: boolean;
   scoreboard_enabled?: boolean;
   game_icon_light?: string | null;
@@ -2590,6 +2594,8 @@ export class Api<
             wp_start_time?: string | null;
             /** 允许的WriteUp文件格式列表 */
             wp_formats?: string[];
+            /** WriteUp上传大小限制，单位MB */
+            wp_max_size?: number;
           };
         },
         Error

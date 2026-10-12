@@ -524,6 +524,18 @@ other = "加载 WriteUp 数据失败。"
 description = "无需提交 WriteUp"
 other = "本场比赛无需提交 WriteUp。"
 
+[WriteupCollectionNotStarted]
+description = "WriteUp 收集未开始"
+other = "WriteUp 提交尚未开放。"
+
+[WriteupFormatNotAllowed]
+description = "不允许的 WriteUp 格式"
+other = "不允许提交该格式的文件。"
+
+[WriteupFileTooLarge]
+description = "WriteUp 文件过大，最大 {{.MaxSize}}MB"
+other = "WriteUp 文件过大（最大 {{.MaxSize}}MB）。"
+
 [WriteupDeadlinePassed]
 description = "提交已截止"
 other = "WriteUp 提交已截止。"

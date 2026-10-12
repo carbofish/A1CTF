@@ -531,6 +531,10 @@ other = "Writeup submissions are not open yet."
 description = "Writeup format not allowed"
 other = "This file format is not allowed."
 
+[WriteupFileTooLarge]
+description = "Writeup file too large, max {{.MaxSize}}MB"
+other = "Writeup file is too large (max {{.MaxSize}}MB)."
+
 [WriteupDeadlinePassed]
 description = "Writeup deadline passed"
 other = "Writeup submission has closed."

@@ -81,9 +81,11 @@
         "replace": "Replace WriteUp",
         "uploading": "Uploading...",
         "allowed_formats": "Allowed formats: {{formats}}",
-        "allowed_formats_with_size": "Allowed formats: {{formats}} · Max size 50MB",
+        "allowed_formats_with_size": "Allowed formats: {{formats}} · Max size {{size}}MB",
         "start_not_ready": "WriteUp collection opens at {{time}}",
-        "helper": "Maximum size 50MB.",
+        "helper": "Maximum size {{size}}MB.",
+        "file_too_large": "File is too large (max {{size}}MB)",
+        "deadline_passed": "WriteUp submission has closed",
         "submit_success": "WriteUp submitted successfully."
     }
 }
