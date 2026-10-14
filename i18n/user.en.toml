@@ -216,6 +216,10 @@ other = "Container does't exists or failed to launch, please contact the adminis
 description = "User not found"
 other = "User not found"
 
+[RegistrationDisabled]
+description = "Registration is disabled"
+other = "Registration is disabled"
+
 [UsernameOrEmailExists]
 description = "Username or email has registered"
 other = "Username or email has registered"
