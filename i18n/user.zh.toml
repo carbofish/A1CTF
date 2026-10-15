@@ -216,6 +216,10 @@ other = "容器不存在或启动失败, 请联系管理员"
 description = "用户未找到"
 other = "用户未找到"
 
+[RegistrationDisabled]
+description = "注册已关闭"
+other = "注册已关闭"
+
 [UsernameOrEmailExists]
 description = "用户名或邮箱已注册"
 other = "用户名或邮箱已注册"
