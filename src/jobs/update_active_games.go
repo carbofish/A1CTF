@@ -201,10 +201,10 @@ func updateActiveGameScores(game_ids []int64) {
 
 func UpdateActivateGameScore() {
 	var active_games []models.Game
-	// query := dbtool.DB().Where("start_time <= ? AND end_time >= ?", time.Now().UTC(), time.Now().UTC())
+	now := time.Now().UTC()
 
-	if err := dbtool.DB().Find(&active_games).Error; err != nil {
-		println("Failed to load active games")
+	if err := dbtool.DB().Where("start_time <= ? AND end_time >= ?", now, now).Find(&active_games).Error; err != nil {
+		zaphelper.Logger.Error("Failed to load active games", zap.Error(err))
 		return
 	}
 
@@ -213,8 +213,6 @@ func UpdateActivateGameScore() {
 		game_ids = append(game_ids, game.GameID)
 	}
 
-	// DebugBloodRewards(game_ids)
-
 	// 更新比赛分数
 	updateActiveGameScores(game_ids)
 }
@@ -222,11 +220,10 @@ func UpdateActivateGameScore() {
 // 更新比赛每个队伍的分数, 往 scoreboard 表里插入当前某个比赛每个队伍的分数(仅在分数变动时候)
 func UpdateActiveGameScoreBoard() {
 	var active_games []models.Game
-	query := dbtool.DB()
-	// .Where("start_time <= ? AND end_time >= ?", time.Now().UTC(), time.Now().UTC())
+	now := time.Now().UTC()
 
-	if err := query.Find(&active_games).Error; err != nil {
-		println("Failed to load active games")
+	if err := dbtool.DB().Where("start_time <= ? AND end_time >= ?", now, now).Find(&active_games).Error; err != nil {
+		zaphelper.Logger.Error("Failed to load active games", zap.Error(err))
 		return
 	}
 

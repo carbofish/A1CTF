@@ -486,6 +486,10 @@ func initParams() *jwt.GinJWTMiddleware {
 		CookieName:    "a1token",
 		TokenHeadName: "Bearer",
 
+		CookieHTTPOnly: true,                  // Prevent XSS from reading the cookie
+		CookieSecure:   true,                  // Only send over HTTPS
+		CookieSameSite: http.SameSiteStrictMode, // Prevent CSRF
+
 		IdentityHandler:       identityHandler(),
 		Authenticator:         Login(),
 		Authorizator:          authorizator(),

@@ -97,9 +97,11 @@ func LeetFlag(flag string) string {
 		if replacement, exists := leetMap[addenChar]; exists {
 			num, err := rand.Int(rand.Reader, big.NewInt(int64(len(replacement))))
 			if err != nil {
-				panic(err)
+				// crypto/rand failed, use the first character as fallback
+				addenChar = string(replacement[0])
+			} else {
+				addenChar = string(replacement[num.Int64()])
 			}
-			addenChar = string(replacement[num.Int64()])
 		}
 
 		newFlag += addenChar
