@@ -38,5 +38,11 @@
             "category": "No challenges in the current category"
         },
         "clear": "Clear Search"
-    }
+    },
+    "hint_release_time": "Release at",
+    "hint_release_time_clear": "Clear release time (follow the visibility switch immediately)",
+    "hint_create_time": "Published",
+    "hint_create_time_tip": "Publish time shown to players, updated automatically when content or visibility changes",
+    "hint_release_time_unset": "Not set",
+    "hint_release_time_tip": "Becomes visible to players automatically at this time (visibility switch must be on). Click to pick a time"
 }

@@ -39,6 +39,8 @@ export const GameChallengeSchema = z.object({
             content: z.string().optional(),
             create_time: z.string(),
             visible: z.boolean(),
+            // 定时放出时间（ISO 字符串），null 表示不定时；必须声明，否则 zod 会在提交时丢弃该字段
+            release_time: z.string().nullable().optional(),
         })
     ),
     visible: z.boolean(),

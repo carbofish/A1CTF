@@ -389,16 +389,19 @@ func AdminUpdateGameChallenge(c *gin.Context) {
 					existingVisibleCount := 0
 					newVisibleCount := 0
 
+					// 只统计「可见且已到放出时间」的 hint，定时 hint 不在保存时提前发通知
+					now := time.Now()
+
 					// 计算现有可见Hint数量
 					for _, hint := range *existingHints {
-						if hint.Visible {
+						if hint.Visible && hint.IsReleased(now) {
 							existingVisibleCount++
 						}
 					}
 
 					// 计算新的可见Hint数量
 					for _, hint := range newHints {
-						if hint.Visible {
+						if hint.Visible && hint.IsReleased(now) {
 							newVisibleCount++
 						}
 					}

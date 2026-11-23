@@ -13,7 +13,9 @@ import { Switch } from 'components/ui/switch';
 import { useFieldArray, useWatch } from 'react-hook-form';
 import CodeEditor from '@uiw/react-textarea-code-editor';
 import dayjs from 'dayjs';
-import { ScanBarcode, FileCode, ClockArrowUp, PlusCircle, Trash2, AppWindowMac, PencilRulerIcon } from 'lucide-react';
+import { ScanBarcode, FileCode, ClockArrowUp, PlusCircle, Trash2, AppWindowMac, PencilRulerIcon, X, CalendarClock } from 'lucide-react';
+import { DateTimePicker24h } from 'components/ui/data-time-picker';
+import { useTranslation } from 'react-i18next';
 import { Button } from 'components/ui/button';
 import EditorDialog from 'components/modules/EditorDialog';
 import AlertConformer from 'components/modules/AlertConformer';
@@ -31,6 +33,8 @@ interface JudgeConfigFormProps {
  * 从 EditGameView.tsx 中抽离出的子模块, 使主文件更简洁
  */
 export function JudgeConfigForm({ control, form }: JudgeConfigFormProps) {
+    const { t } = useTranslation("challenge_manage")
+
     // 根据评测类型动态渲染 flag / script 输入框
     const attachType = useWatch({
         control,
@@ -281,7 +285,8 @@ export function JudgeConfigForm({ control, form }: JudgeConfigFormProps) {
                         appendHint({
                             content: "",
                             create_time: new Date().toISOString(),
-                            visible: false
+                            visible: false,
+                            release_time: null
                         })
 
                     }}
@@ -321,13 +326,48 @@ export function JudgeConfigForm({ control, form }: JudgeConfigFormProps) {
                                     render={({ field }) => (
                                         <FormItem className="flex">
                                             <FormControl>
-                                                <div className="bg-foreground/10 flex gap-2 items-center px-[9px] py-[5px] rounded-full">
+                                                <div className="bg-foreground/10 flex gap-2 items-center px-[9px] py-[5px] rounded-full" title={t("hint_create_time_tip")}>
                                                     <ClockArrowUp size={20} />
-                                                    <span className="text-sm">
-                                                        {field.value ? dayjs(field.value).format('YYYY-MM-DD HH:mm:ss') : ''}
+                                                    <span className="text-sm whitespace-nowrap">
+                                                        {t("hint_create_time")}: {field.value ? dayjs(field.value).format('YYYY-MM-DD HH:mm:ss') : ''}
                                                     </span>
                                                 </div>
                                             </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                                {/* 定时放出：设置后即使开关为可见，也要到该时间才对选手可见；清除则恢复原有行为 */}
+                                <FormField
+                                    control={control}
+                                    name={`hints.${hintIndex}.release_time`}
+                                    render={({ field }) => (
+                                        // ml-4 与左侧发布时间拉开间隔；样式与发布时间标签一致，点击弹出时间选择
+                                        <FormItem className="flex items-center gap-1 space-y-0 ml-4">
+                                            <FormControl>
+                                                <DateTimePicker24h
+                                                    date={field.value ? dayjs(field.value).toDate() : undefined}
+                                                    onDateSelect={(date) => field.onChange(date.toISOString())}
+                                                    trigger={
+                                                        <button type="button" title={t("hint_release_time_tip")}
+                                                            className={`flex gap-2 items-center px-[9px] py-[5px] rounded-full cursor-pointer transition-colors ${field.value ? "bg-blue-500/20 hover:bg-blue-500/30" : "bg-foreground/10 hover:bg-foreground/15"}`}
+                                                        >
+                                                            <CalendarClock size={20} />
+                                                            <span className="text-sm whitespace-nowrap">
+                                                                {t("hint_release_time")}: {field.value ? dayjs(field.value).format('YYYY-MM-DD HH:mm:ss') : t("hint_release_time_unset")}
+                                                            </span>
+                                                        </button>
+                                                    }
+                                                />
+                                            </FormControl>
+                                            {field.value ? (
+                                                <Button variant="ghost" size="icon" type="button"
+                                                    className='rounded-full bg-foreground/10 hover:hover:bg-foreground/15 cursor-pointer'
+                                                    title={t("hint_release_time_clear")}
+                                                    onClick={() => field.onChange(null)}
+                                                >
+                                                    <X />
+                                                </Button>
+                                            ) : null}
                                         </FormItem>
                                     )}
                                 />

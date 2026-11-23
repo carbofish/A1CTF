@@ -115,13 +115,19 @@ func UserGetGameChallenge(c *gin.Context) {
 		return
 	}
 
+	// 定时放出：缓存里只按 Visible 过滤，放出时间必须在每次请求时按当前时间在服务端判断，
+	// 未到时间的 hint 不下发内容，只返回数量和最近放出时间
+	releasedHints, pendingHintCount, nextHintReleaseTime := visibleHints.SplitByRelease(time.Now())
+
 	result := webmodels.UserDetailGameChallenge{
 		ChallengeID:         *gameChallenge.Challenge.ChallengeID,
 		ChallengeName:       gameChallenge.Challenge.Name,
 		Description:         gameChallenge.Challenge.Description,
 		TotalScore:          gameChallenge.TotalScore,
 		CurScore:            gameChallenge.CurScore,
-		Hints:               visibleHints,
+		Hints:               releasedHints,
+		PendingHintCount:    pendingHintCount,
+		NextHintReleaseTime: nextHintReleaseTime,
 		BelongStage:         gameChallenge.BelongStage,
 		SolveCount:          gameChallenge.SolveCount,
 		Category:            gameChallenge.Challenge.Category,

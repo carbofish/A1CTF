@@ -81,6 +81,8 @@ type UserDetailGameChallenge struct {
 	TotalScore          float64                       `json:"total_score"`
 	CurScore            float64                       `json:"cur_score"`
 	Hints               models.Hints                  `json:"hints"`
+	PendingHintCount    int                           `json:"pending_hint_count"`     // 已设置但尚未到放出时间的 hint 数量
+	NextHintReleaseTime *time.Time                    `json:"next_hint_release_time"` // 最近一条待放出 hint 的放出时间
 	BelongStage         *string                       `json:"belong_stage"`
 	SolveCount          int32                         `json:"solve_count"`
 	Category            models.ChallengeCategory      `json:"category"`

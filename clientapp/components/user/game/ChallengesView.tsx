@@ -150,6 +150,24 @@ export function ChallengesView({
         }
     }, [curChallenge]);
 
+    // hint 定时放出：到达最近一条待放出 hint 的时间后自动重新拉取题目详情，
+    // hint 是否可见由后端按服务器时间判断，这里只负责到点刷新
+    useEffect(() => {
+        const releaseTime = curChallenge?.next_hint_release_time
+        const challengeID = curChallenge?.challenge_id
+        if (!releaseTime || !challengeID) return
+        // 多等 1 秒兜底时钟误差；若客户端时钟偏快拿到的仍是旧数据，curChallenge 更新后会再次触发本 effect
+        // setTimeout 最大延迟约 24.8 天，超出时截断，届时会重新计算
+        const delay = Math.min(Math.max(dayjs(releaseTime).diff(dayjs()), 0) + 1000, 2147483647)
+        const timer = setTimeout(() => {
+            api.user.userGetGameChallenge(gameID, challengeID, createSkipGlobalErrorConfig()).then((response) => {
+                // 只在用户仍停留在该题时更新，避免覆盖已切换的题目
+                setCurChallenge((prev) => prev?.challenge_id == challengeID ? response.data.data : prev)
+            }).catch(() => { })
+        }, delay)
+        return () => clearTimeout(timer)
+    }, [curChallenge])
+
     const finishLoading = () => {
         setLoadingVisibility(false)
     }

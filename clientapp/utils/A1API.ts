@@ -268,6 +268,11 @@ export interface AdminDetailGameChallenge {
     /** @format date-time */
     create_time: string;
     visible: boolean;
+    /**
+     * 定时放出时间，为空表示不定时
+     * @format date-time
+     */
+    release_time?: string | null;
   }[];
   belong_stage?: string;
   solve_count?: number;
@@ -420,7 +425,19 @@ export interface UserDetailGameChallenge {
     /** @format date-time */
     create_time: string;
     visible: boolean;
+    /**
+     * 定时放出时间，为空表示不定时
+     * @format date-time
+     */
+    release_time?: string | null;
   }[];
+  /** 已设置但尚未到放出时间的 hint 数量 */
+  pending_hint_count?: number;
+  /**
+   * 最近一条待放出 hint 的放出时间
+   * @format date-time
+   */
+  next_hint_release_time?: string | null;
   belong_stage?: string;
   solve_count?: number;
   category?: ChallengeCategory;

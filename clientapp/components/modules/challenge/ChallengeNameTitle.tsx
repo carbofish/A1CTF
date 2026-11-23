@@ -19,7 +19,8 @@ export default function ChallengeNameTitle({
         <div className={`flex items-center gap-2 px-5 h-[56px] border-2 rounded-xl bg-foreground/[0.04] backdrop-blur-sm`}>
             <Info />
             <span className="font-bold text-lg">{t("challenge_info")} - {curChallenge.challenge_name}</span>
-            {curChallenge.hints?.length ? (
+            {/* 有已放出或待放出的 hint 时都显示入口，待放出的提示信息在 hint 窗口里展示 */}
+            {curChallenge.hints?.length || curChallenge.pending_hint_count ? (
                 <Badge className="select-none p-0 ml-2 rounded-[20px_20px_20px_20px] pr-[5px] pl-[4px] bg-yellow-500 hover:bg-yellow-600"
                     onClick={() => {
                         setShowHintsWindowVisible(true);
@@ -27,7 +28,7 @@ export default function ChallengeNameTitle({
                 >
                     <div className="flex items-center gap-[6px] p-[4px]">
                         <Citrus size={20} />
-                        <span className="font-bold text-[14px]">{curChallenge.hints?.length} {t("hints")}</span>
+                        <span className="font-bold text-[14px]">{curChallenge.hints?.length ?? 0} {t("hints")}{curChallenge.pending_hint_count ? ` (+${curChallenge.pending_hint_count})` : ""}</span>
                     </div>
                 </Badge>
             ) : (<></>)}
