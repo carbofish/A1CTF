@@ -40,6 +40,7 @@ import { useNavigate } from "react-router";
 import { Slider } from 'components/ui/slider';
 import { DateTimePicker24h } from "components/ui/data-time-picker";
 import { useTheme } from "next-themes";
+import { WriteupFormatChips } from "./game/WriteupFormatChips";
 
 export type ChallengeSearchResult = {
     ChallengeID: number,
@@ -144,8 +145,6 @@ export function CreateGameView() {
         "PENTEST": <ShieldCheck size={21} />,
         "OSINT": <Github size={21} />
     };
-
-    const writeupFormatOptions = ["pdf", "zip", "doc", "docx", "md", "txt"]
 
     // 自定义 WriteUp 后缀，只允许字母和数字，与后端 normalizeWriteupFormats 保持一致
     const [customFormat, setCustomFormat] = useState("")
@@ -554,28 +553,7 @@ export function CreateGameView() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>WriteUp格式</FormLabel>
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                {Array.from(new Set([...writeupFormatOptions, ...(field.value ?? [])])).map((fmt) => {
-                                                    const selected = field.value?.includes(fmt)
-                                                    return (
-                                                        <Button
-                                                            key={fmt}
-                                                            type="button"
-                                                            size="sm"
-                                                            variant={selected ? "default" : "outline"}
-                                                            className="rounded-full text-xs"
-                                                            onClick={() => {
-                                                                const current = field.value ?? []
-                                                                if (selected && current.length === 1) return
-                                                                const next = selected ? current.filter((val) => val !== fmt) : [...current, fmt]
-                                                                field.onChange(next)
-                                                            }}
-                                                        >
-                                                            {fmt.toUpperCase()}
-                                                        </Button>
-                                                    )
-                                                })}
-                                            </div>
+                                            <div className="mt-2"><WriteupFormatChips value={field.value} onChange={field.onChange} /></div>
                                             <div className="flex gap-2">
                                                 <Input
                                                     value={customFormat}

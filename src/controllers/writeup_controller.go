@@ -32,6 +32,10 @@ const (
 	// WriteUp 上传大小限制，单位 MB
 	defaultWriteupMaxSizeMB int32 = 50
 	maxWriteupMaxSizeMB     int32 = 1024
+
+	// 导出文件名中队名部分的最大长度（字符数）。队名没有长度限制，汉字转拼音后会膨胀数倍，
+	// 不截断可能超出文件系统 255 字节的文件名上限，或在 Windows 解压时超出路径长度
+	maxWriteupTeamNameLen = 40
 )
 
 var writeupNameSanitizer = regexp.MustCompile(`[^a-zA-Z0-9_-]+`)
@@ -564,7 +568,8 @@ func buildWriteupDisplayName(writeup *models.TeamWriteup) string {
 		teamName = fmt.Sprintf("team_%d", writeup.TeamID)
 	}
 
-	baseName := fmt.Sprintf("%d_%s_%s", writeup.TeamID, teamName, writeup.CreatedAt.UTC().Format("20060102150405"))
+	// 提交时间使用服务器本地时区，精确到分钟即可（如 202511301728），容器部署需设置 TZ 环境变量
+	baseName := fmt.Sprintf("%d_%s_%s", writeup.TeamID, teamName, writeup.CreatedAt.Local().Format("200601021504"))
 	ext := filepath.Ext(writeup.FileName)
 	if ext == "" {
 		ext = ".bin"
@@ -632,7 +637,21 @@ func sanitizeTeamName(name string) string {
 	for strings.Contains(name, "__") {
 		name = strings.ReplaceAll(name, "__", "_")
 	}
-	return strings.Trim(name, "_")
+	name = strings.Trim(name, "_")
+	return truncateWriteupTeamName(name, maxWriteupTeamNameLen)
+}
+
+// 截断过长的队名：优先在最后一个下划线处截断，保证不把一个拼音音节切成两半；
+// 截断后仍由文件名开头的队伍 ID 保证唯一。sanitize 之后只剩 ASCII，按字节截断是安全的
+func truncateWriteupTeamName(name string, maxLen int) string {
+	if len(name) <= maxLen {
+		return name
+	}
+	cut := name[:maxLen]
+	if idx := strings.LastIndexByte(cut, '_'); idx > 0 {
+		cut = cut[:idx]
+	}
+	return strings.Trim(cut, "_")
 }
 
 // 解析 WriteUp 上传大小限制，返回值单位为字节

@@ -122,7 +122,8 @@
             "title": "Allowed WriteUp Formats",
             "description": "Select the file formats that teams can submit, or add a custom extension",
             "custom_placeholder": "Custom extension, e.g. tar, pptx",
-            "custom_add": "Add"
+            "custom_add": "Add",
+            "remove": "Remove this format"
         },
         "wp_max_size": {
             "title": "WriteUp Size Limit (MB)",

@@ -22,6 +22,7 @@ import { DateTimePicker24h } from 'components/ui/data-time-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'components/ui/select';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'components/ui/button';
+import { WriteupFormatChips } from './WriteupFormatChips';
 
 interface DetailedSettingsModuleProps {
     form: UseFormReturn<z.infer<typeof EditGameFormSchema>>;
@@ -35,7 +36,6 @@ interface DetailedSettingsModuleProps {
     clientConfig: any;
 }
 
-const writeupFormatOptions = ["pdf", "zip", "doc", "docx", "md", "txt"]
 
 // 后缀只允许字母和数字，与后端 normalizeWriteupFormats 保持一致
 const normalizeWriteupFormat = (value: string) =>
@@ -202,31 +202,7 @@ export function DetailedSettingsModule({
                                     <div className="flex-1" />
                                     <FormMessage />
                                 </div>
-                                <div className="flex flex-wrap gap-2">
-                                    {/* 预设后缀 + 已保存的自定义后缀 */}
-                                    {Array.from(new Set([...writeupFormatOptions, ...(field.value ?? [])])).map((fmt) => {
-                                        const selected = field.value?.includes(fmt)
-                                        return (
-                                            <Button
-                                                key={fmt}
-                                                type="button"
-                                                size="sm"
-                                                variant={selected ? "default" : "outline"}
-                                                className="rounded-full text-xs"
-                                                onClick={() => {
-                                                    const current = field.value ?? []
-                                                    if (selected && current.length === 1) {
-                                                        return
-                                                    }
-                                                    const next = selected ? current.filter((val) => val !== fmt) : [...current, fmt]
-                                                    field.onChange(next)
-                                                }}
-                                            >
-                                                {fmt.toUpperCase()}
-                                            </Button>
-                                        )
-                                    })}
-                                </div>
+                                <WriteupFormatChips value={field.value} onChange={field.onChange} />
                                 <div className="flex gap-2">
                                     <Input
                                         value={customFormat}
