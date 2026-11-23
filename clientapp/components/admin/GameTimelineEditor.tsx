@@ -430,54 +430,60 @@ export function GameTimelineEditor({
                         {/* 主时间轴 */}
                         <div
                             ref={timelineRef}
-                            className="relative h-12 bg-muted rounded-lg border-2 border-dashed border-muted-foreground/20"
+                            className="relative flex flex-col gap-1 p-1 min-h-12 bg-muted rounded-lg border-2 border-dashed border-muted-foreground/20"
                             onDrop={handleTimelineDrop}
                             onDragOver={handleTimelineDragOver}
                         >
-                            {/* 时间段显示 */}
+                            {/* 时间段显示：每个阶段单独占一行（泳道），横向位置按时间比例，避免时间重叠的阶段挤在同一条上 */}
                             {timePoints.map((timePoint) => {
                                 const startPos = timeToPosition(timePoint.startTime);
                                 const endPos = timeToPosition(timePoint.endTime);
                                 const width = endPos - startPos;
 
                                 return (
-                                    <div
-                                        key={timePoint.id}
-                                        className="absolute top-1 bottom-1 bg-primary/20 border border-primary/40 rounded-md flex items-center justify-center text-xs font-medium px-2"
-                                        style={{
-                                            left: `${startPos}%`,
-                                            width: `${width}%`,
-                                        }}
-                                        data-tooltip-id="my-tooltip"
-                                        data-tooltip-place="top"
-                                        data-tooltip-content={`${timePoint.name}(${challenges.filter(c => c.belongStage === timePoint.id).length}) ${format(timePoint.startTime, "MM/dd HH:mm")} - ${format(timePoint.endTime, "MM/dd HH:mm")}`}
-                                    >
-                                        <span className="truncate px-1">{timePoint.name}({challenges.filter(c => c.belongStage === timePoint.id).length})</span>
-                                        <div className="flex gap-1 ml-1">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                type='button'
-                                                className="h-4 w-4 p-0 hover:bg-transparent text-primary/60 hover:text-primary"
-                                                onClick={() => handleStartEditTimePoint(timePoint.id)}
-                                            >
-                                                <Edit className="h-3 w-3" />
-                                            </Button>
-                                            <AlertConformer
-                                                title={t("timeline.delete.title")}
-                                                description={t("timeline.delete.description")}
-                                                type="danger"
-                                                onConfirm={() => handleDeleteTimePoint(timePoint.id)}
-                                            >
+                                    <div key={timePoint.id} className="relative h-8">
+                                        <div
+                                            className="absolute top-0 bottom-0 bg-primary/20 border border-primary/40 rounded-md flex items-center justify-center text-xs font-medium px-2"
+                                            style={{
+                                                left: `${startPos}%`,
+                                                width: `${width}%`,
+                                            }}
+                                            // 拖到某个阶段条上直接归属该阶段；不冒泡到外层按横坐标查找的逻辑
+                                            onDrop={(e) => {
+                                                e.stopPropagation();
+                                                handleStageDrop(e, timePoint.id);
+                                            }}
+                                            data-tooltip-id="my-tooltip"
+                                            data-tooltip-place="top"
+                                            data-tooltip-content={`${timePoint.name}(${challenges.filter(c => c.belongStage === timePoint.id).length}) ${format(timePoint.startTime, "MM/dd HH:mm")} - ${format(timePoint.endTime, "MM/dd HH:mm")}`}
+                                        >
+                                            <span className="truncate px-1">{timePoint.name}({challenges.filter(c => c.belongStage === timePoint.id).length})</span>
+                                            <div className="flex gap-1 ml-1">
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
                                                     type='button'
                                                     className="h-4 w-4 p-0 hover:bg-transparent text-primary/60 hover:text-primary"
+                                                    onClick={() => handleStartEditTimePoint(timePoint.id)}
                                                 >
-                                                    <Trash2 className="h-3 w-3" />
+                                                    <Edit className="h-3 w-3" />
                                                 </Button>
-                                            </AlertConformer>
+                                                <AlertConformer
+                                                    title={t("timeline.delete.title")}
+                                                    description={t("timeline.delete.description")}
+                                                    type="danger"
+                                                    onConfirm={() => handleDeleteTimePoint(timePoint.id)}
+                                                >
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        type='button'
+                                                        className="h-4 w-4 p-0 hover:bg-transparent text-primary/60 hover:text-primary"
+                                                    >
+                                                        <Trash2 className="h-3 w-3" />
+                                                    </Button>
+                                                </AlertConformer>
+                                            </div>
                                         </div>
                                     </div>
                                 );
