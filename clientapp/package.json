@@ -10,7 +10,6 @@
     "knip": "knip"
   },
   "dependencies": {
-    "@cap.js/solver": "^0.1.3",
     "@hookform/resolvers": "^5.0.1",
     "@monaco-editor/react": "^4.7.0",
     "@pitininja/cap-react-widget": "^1.2.0",
