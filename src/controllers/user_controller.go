@@ -67,6 +67,14 @@ func GetProfile(c *gin.Context) {
 }
 
 func Register(c *gin.Context) {
+	if !clientconfig.ClientConfig.RegistrationEnabled {
+		c.JSON(http.StatusForbidden, gin.H{
+			"code":    403,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "RegistrationDisabled"}),
+		})
+		return
+	}
+
 	payload := *c.MustGet("payload").(*webmodels.RegisterPayload)
 
 	if clientconfig.ClientConfig.CaptchaEnabled {
