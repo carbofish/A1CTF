@@ -12,7 +12,8 @@ import {
 } from "components/ui/popover";
 import { ScrollArea, ScrollBar } from "components/ui/scroll-area";
 
-export function DateTimePicker24h({ date, setDate = undefined, onDateSelect = undefined }: { date: Date | undefined, setDate?: React.Dispatch<React.SetStateAction<Date>>, onDateSelect?: (date: Date) => void }) {
+// trigger 可选：传入时用自定义元素作为弹出触发器（需能接收 ref 和点击事件），不传则使用默认按钮
+export function DateTimePicker24h({ date, setDate = undefined, onDateSelect = undefined, trigger = undefined }: { date: Date | undefined, setDate?: React.Dispatch<React.SetStateAction<Date>>, onDateSelect?: (date: Date) => void, trigger?: React.ReactNode }) {
     const [isOpen, setIsOpen] = React.useState(false);
 
     const hours = Array.from({ length: 24 }, (_, i) => i);
@@ -50,7 +51,7 @@ export function DateTimePicker24h({ date, setDate = undefined, onDateSelect = un
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
-                <Button
+                {trigger ?? <Button
                     variant="outline"
                     className={cn(
                         "w-full justify-start text-left font-normal",
@@ -63,7 +64,7 @@ export function DateTimePicker24h({ date, setDate = undefined, onDateSelect = un
                     ) : (
                         <span>MM/DD/YYYY hh:mm</span>
                     )}
-                </Button>
+                </Button>}
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
                 <div className="sm:flex">

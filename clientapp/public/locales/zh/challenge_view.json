@@ -49,5 +49,7 @@
     "submit_flag_placeholder": "请输入正确的Flag",
     "submit_flag_close": "关闭",
     "submit_flag_check": "提交",
-    "submit_flag_judge": "校验中"
+    "submit_flag_judge": "校验中",
+    "pending_hints": "还有 {{count}} 条提示将于 {{time}} 放出",
+    "no_released_hints": "提示尚未放出"
 }

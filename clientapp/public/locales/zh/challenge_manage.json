@@ -38,5 +38,11 @@
             "category": "当前分类下没有题目"
         },
         "clear": "清除搜索"
-    }
+    },
+    "hint_release_time": "定时放出",
+    "hint_release_time_clear": "清除放出时间（立即按开关状态生效）",
+    "hint_create_time": "发布时间",
+    "hint_create_time_tip": "选手看到的发布时间，修改内容或切换开关时自动更新",
+    "hint_release_time_unset": "未设置",
+    "hint_release_time_tip": "到该时间后自动对选手可见（需同时打开可见开关），点击选择时间"
 }

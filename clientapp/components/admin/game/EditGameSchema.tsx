@@ -39,6 +39,8 @@ export const GameChallengeSchema = z.object({
             content: z.string().optional(),
             create_time: z.string(),
             visible: z.boolean(),
+            // 定时放出时间（ISO 字符串），null 表示不定时；必须声明，否则 zod 会在提交时丢弃该字段
+            release_time: z.string().nullable().optional(),
         })
     ),
     visible: z.boolean(),
@@ -70,6 +72,7 @@ export const EditGameFormSchema = z.object({
     wp_start_time: z.date().optional(),
     wp_expire_time: z.date().optional(),
     wp_formats: z.array(z.string()).min(1),
+    wp_max_size: z.coerce.number().min(1).max(1024),
     first_blood_reward: z.coerce.number(),
     second_blood_reward: z.coerce.number(),
     third_blood_reward: z.coerce.number(),

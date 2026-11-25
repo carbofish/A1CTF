@@ -251,6 +251,9 @@ func ChallengeStatusCheckMiddleWare(accessableAfterStageEnded bool) gin.HandlerF
 
 		now := time.Now().UTC()
 
+		// 练习模式：比赛结束后所有阶段都已过期，此时阶段结束不再限制题目
+		inPracticeMode := game.PracticeMode && game.EndTime.Before(now)
+
 		// 先用题目自身的 Visible 作为基础开关
 		baseVisible := gameChallenge.Visible
 
@@ -273,7 +276,7 @@ func ChallengeStatusCheckMiddleWare(accessableAfterStageEnded bool) gin.HandlerF
 					end := stage.EndTime.UTC()
 
 					if !now.Before(end) { // now >= end 视为已结束
-						if accessableAfterStageEnded {
+						if accessableAfterStageEnded || inPracticeMode {
 							challengeVisible = baseVisible && true
 						} else {
 							challengeVisible = false

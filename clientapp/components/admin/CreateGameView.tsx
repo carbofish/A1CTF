@@ -40,6 +40,7 @@ import { useNavigate } from "react-router";
 import { Slider } from 'components/ui/slider';
 import { DateTimePicker24h } from "components/ui/data-time-picker";
 import { useTheme } from "next-themes";
+import { WriteupFormatChips } from "./game/WriteupFormatChips";
 
 export type ChallengeSearchResult = {
     ChallengeID: number,
@@ -145,7 +146,16 @@ export function CreateGameView() {
         "OSINT": <Github size={21} />
     };
 
-    const writeupFormatOptions = ["pdf", "zip", "doc", "docx", "md", "txt"]
+    // 自定义 WriteUp 后缀，只允许字母和数字，与后端 normalizeWriteupFormats 保持一致
+    const [customFormat, setCustomFormat] = useState("")
+    const normalizeWriteupFormat = (value: string) =>
+        value.trim().toLowerCase().replace(/^\.+/, "").replace(/[^a-z0-9]/g, "")
+    const addCustomFormat = (current: string[], onChange: (value: string[]) => void) => {
+        const fmt = normalizeWriteupFormat(customFormat)
+        if (!fmt) return
+        if (!current.includes(fmt)) onChange([...current, fmt])
+        setCustomFormat("")
+    }
 
     const formSchema = z.object({
         name: z.string().min(2, { message: "名字最短要两个字符" }),
@@ -162,6 +172,7 @@ export function CreateGameView() {
         wp_start_time: z.date().optional(),
         wp_expire_time: z.date().optional(),
         wp_formats: z.array(z.string()).min(1),
+        wp_max_size: z.coerce.number().min(1).max(1024),
         stages: z.array(
             z.object({
                 stage_name: z.string().nonempty(),
@@ -207,6 +218,7 @@ export function CreateGameView() {
             wp_start_time: undefined,
             wp_expire_time: new Date(),
             wp_formats: ["pdf"],
+            wp_max_size: 50,
             visible: false,
             stages: [],
             challenges: []
@@ -234,6 +246,7 @@ export function CreateGameView() {
             wp_start_time: values.wp_start_time ? format_date(values.wp_start_time) : undefined,
             wp_expire_time: format_date(values.wp_expire_time ?? new Date()),
             wp_formats: values.wp_formats && values.wp_formats.length ? values.wp_formats : ["pdf"],
+            wp_max_size: values.wp_max_size ?? 50,
             stages: [],
             visible: values.visible,
             challenges: [],
@@ -540,30 +553,48 @@ export function CreateGameView() {
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>WriteUp格式</FormLabel>
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                {writeupFormatOptions.map((fmt) => {
-                                                    const selected = field.value?.includes(fmt)
-                                                    return (
-                                                        <Button
-                                                            key={fmt}
-                                                            type="button"
-                                                            size="sm"
-                                                            variant={selected ? "default" : "outline"}
-                                                            className="rounded-full text-xs"
-                                                            onClick={() => {
-                                                                const current = field.value ?? []
-                                                                if (selected && current.length === 1) return
-                                                                const next = selected ? current.filter((val) => val !== fmt) : [...current, fmt]
-                                                                field.onChange(next)
-                                                            }}
-                                                        >
-                                                            {fmt.toUpperCase()}
-                                                        </Button>
-                                                    )
-                                                })}
+                                            <div className="mt-2"><WriteupFormatChips value={field.value} onChange={field.onChange} /></div>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    value={customFormat}
+                                                    placeholder="自定义后缀，如 tar、pptx"
+                                                    aria-label="自定义 WriteUp 后缀"
+                                                    maxLength={16}
+                                                    onChange={(e) => setCustomFormat(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key !== "Enter") return
+                                                        e.preventDefault()
+                                                        addCustomFormat(field.value ?? [], field.onChange)
+                                                    }}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    disabled={!normalizeWriteupFormat(customFormat)}
+                                                    onClick={() => addCustomFormat(field.value ?? [], field.onChange)}
+                                                >
+                                                    添加
+                                                </Button>
                                             </div>
-                                            <FormDescription>选择允许提交的文件格式</FormDescription>
+                                            <FormDescription>选择允许提交的文件格式，也可以添加自定义后缀</FormDescription>
                                             <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="wp_max_size"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <div className="flex items-center h-[20px]">
+                                                <FormLabel>WriteUp大小限制 (MB)</FormLabel>
+                                                <div className="flex-1" />
+                                                <FormMessage className="text-[14px]" />
+                                            </div>
+                                            <FormControl>
+                                                <Input type="number" min={1} max={1024} {...field} />
+                                            </FormControl>
+                                            <FormDescription>单个 WriteUp 文件的最大体积，范围 1～1024 MB</FormDescription>
                                         </FormItem>
                                     )}
                                 />

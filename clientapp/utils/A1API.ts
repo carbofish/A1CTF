@@ -268,6 +268,11 @@ export interface AdminDetailGameChallenge {
     /** @format date-time */
     create_time: string;
     visible: boolean;
+    /**
+     * 定时放出时间，为空表示不定时
+     * @format date-time
+     */
+    release_time?: string | null;
   }[];
   belong_stage?: string;
   solve_count?: number;
@@ -313,6 +318,8 @@ export interface AdminFullGameInfo {
   wp_start_time?: string;
   /** 允许的WriteUp文件格式列表 */
   wp_formats?: string[];
+  /** WriteUp上传大小限制，单位MB */
+  wp_max_size?: number;
   visible: boolean;
   scoreboard_enabled?: boolean;
   stages: GameStage[];
@@ -418,7 +425,19 @@ export interface UserDetailGameChallenge {
     /** @format date-time */
     create_time: string;
     visible: boolean;
+    /**
+     * 定时放出时间，为空表示不定时
+     * @format date-time
+     */
+    release_time?: string | null;
   }[];
+  /** 已设置但尚未到放出时间的 hint 数量 */
+  pending_hint_count?: number;
+  /**
+   * 最近一条待放出 hint 的放出时间
+   * @format date-time
+   */
+  next_hint_release_time?: string | null;
   belong_stage?: string;
   solve_count?: number;
   category?: ChallengeCategory;
@@ -507,6 +526,8 @@ export interface UserFullGameInfo {
   wp_start_time?: string;
   /** 允许的WriteUp文件格式列表 */
   wp_formats?: string[];
+  /** WriteUp上传大小限制，单位MB */
+  wp_max_size?: number;
   visible: boolean;
   scoreboard_enabled?: boolean;
   game_icon_light?: string | null;
@@ -2590,6 +2611,8 @@ export class Api<
             wp_start_time?: string | null;
             /** 允许的WriteUp文件格式列表 */
             wp_formats?: string[];
+            /** WriteUp上传大小限制，单位MB */
+            wp_max_size?: number;
           };
         },
         Error
@@ -2904,6 +2927,8 @@ export class Api<
     searchChallenges: (
       data: {
         keyword: string;
+        /** 搜索范围，name 仅名称，name_desc 名称和描述 */
+        scope?: "name" | "name_desc";
       },
       params: RequestParams = {},
     ) =>
@@ -2916,6 +2941,8 @@ export class Api<
             category: ChallengeCategory;
             /** @format date-time */
             create_time: string;
+            /** 描述摘要（去除 Markdown 符号，最多 120 字） */
+            description: string;
           }[];
         },
         void | ErrorMessage

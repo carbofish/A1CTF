@@ -621,11 +621,15 @@ paths:
                         create_time:
                           type: string
                           format: date-time
+                        description:
+                          type: string
+                          description: 描述摘要（去除 Markdown 符号，最多 120 字）
                       required:
                         - challenge_id
                         - name
                         - category
                         - create_time
+                        - description
                 required:
                   - code
                   - data
@@ -645,6 +649,10 @@ paths:
               properties:
                 keyword:
                   type: string
+                scope:
+                  type: string
+                  enum: [name, name_desc]
+                  description: 搜索范围，name 仅名称，name_desc 名称和描述
               required:
                 - keyword
   /api/admin/game/list:
@@ -3862,6 +3870,9 @@ paths:
                         items:
                           type: string
                         description: 允许的WriteUp文件格式列表
+                      wp_max_size:
+                        type: integer
+                        description: WriteUp上传大小限制，单位MB
                 required:
                   - code
                   - data
@@ -4234,6 +4245,11 @@ components:
                 format: date-time
               visible:
                 type: boolean
+              release_time:
+                type: string
+                format: date-time
+                nullable: true
+                description: 定时放出时间，为空表示不定时
             required:
               - content
               - create_time
@@ -4320,6 +4336,9 @@ components:
           items:
             type: string
           description: 允许的WriteUp文件格式列表
+        wp_max_size:
+          type: integer
+          description: WriteUp上传大小限制，单位MB
         visible:
           type: boolean
         scoreboard_enabled:
@@ -4526,10 +4545,23 @@ components:
                 format: date-time
               visible:
                 type: boolean
+              release_time:
+                type: string
+                format: date-time
+                nullable: true
+                description: 定时放出时间，为空表示不定时
             required:
               - content
               - create_time
               - visible
+        pending_hint_count:
+          type: integer
+          description: 已设置但尚未到放出时间的 hint 数量
+        next_hint_release_time:
+          type: string
+          format: date-time
+          nullable: true
+          description: 最近一条待放出 hint 的放出时间
         belong_stage:
           type: string
         solve_count:
@@ -4694,6 +4726,9 @@ components:
           items:
             type: string
           description: 允许的WriteUp文件格式列表
+        wp_max_size:
+          type: integer
+          description: WriteUp上传大小限制，单位MB
         visible:
           type: boolean
         scoreboard_enabled:

@@ -88,7 +88,7 @@ export const WriteupManager: React.FC<WriteupManagerProps> = ({ gameID }) => {
                     <p>{t("writeups_empty")}</p>
                 </div>
             ) : (
-                <div className="grid gap-6 lg:grid-cols-[250px_1fr]">
+                <div className="grid gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
                     <div className="w-full space-y-3 lg:max-h-[85vh] lg:overflow-auto lg:pr-1">
                         {writeups.map((writeup) => (
                             <button
@@ -101,11 +101,14 @@ export const WriteupManager: React.FC<WriteupManagerProps> = ({ gameID }) => {
                                         : "border-border/60 hover:border-border"
                                 }`}
                             >
+                                {/* 列表宽度固定，以原始队名为主标题；文件名没有空格无法换行，单行截断并悬停显示全名 */}
                                 <div className="flex items-center justify-between gap-3">
-                                    <div>
-                                        <p className="text-sm font-semibold">{writeup.display_name}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            #{writeup.team_id} · {writeup.team_name}
+                                    <div className="min-w-0 flex-1">
+                                        <p className="truncate text-sm font-semibold" title={writeup.team_name}>
+                                            #{writeup.team_id} {writeup.team_name}
+                                        </p>
+                                        <p className="truncate text-xs text-muted-foreground" title={writeup.display_name}>
+                                            {writeup.display_name}
                                         </p>
                                     </div>
                                 </div>
@@ -116,10 +119,11 @@ export const WriteupManager: React.FC<WriteupManagerProps> = ({ gameID }) => {
                         {selectedInfo ? (
                             <div className="flex w-full flex-1 flex-col">
                                 <div className="flex flex-wrap items-center justify-between gap-4">
-                                    <div>
-                                        <p className="text-lg font-semibold">{selectedInfo.display_name}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            #{selectedInfo.team_id} · {selectedInfo.team_name} · {selectedInfo.sizeInMb} MB
+                                    <div className="min-w-0 flex-1">
+                                        {/* 文件名可能很长且没有空格，允许任意位置换行 */}
+                                        <p className="break-all text-lg font-semibold">{selectedInfo.display_name}</p>
+                                        <p className="break-all text-sm text-muted-foreground">
+                                            #{selectedInfo.team_id} {selectedInfo.team_name} {selectedInfo.sizeInMb} MB
                                         </p>
                                         <p className="text-xs text-muted-foreground">
                                             {t("writeups_submitted_at", { time: selectedInfo.submittedAt })}

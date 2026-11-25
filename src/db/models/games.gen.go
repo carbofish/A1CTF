@@ -67,6 +67,7 @@ type Game struct {
 	WpExpireTime           time.Time      `gorm:"column:wp_expire_time;not null" json:"wp_expire_time"`
 	WpStartTime            *time.Time     `gorm:"column:wp_start_time" json:"wp_start_time"`
 	WpFormats              pq.StringArray `gorm:"column:wp_formats;type:text[]" json:"wp_formats"`
+	WpMaxSize              int32          `gorm:"column:wp_max_size;not null;default:50" json:"wp_max_size"`
 	Stages                 *GameStages    `gorm:"column:stages;not null" json:"stages"`
 	Visible                bool           `gorm:"column:visible;not null" json:"visible"`
 	ScoreboardEnabled      bool           `gorm:"column:scoreboard_enabled;not null" json:"scoreboard_enabled"`

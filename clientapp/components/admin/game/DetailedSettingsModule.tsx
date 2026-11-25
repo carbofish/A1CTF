@@ -22,6 +22,7 @@ import { DateTimePicker24h } from 'components/ui/data-time-picker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from 'components/ui/select';
 import { useTranslation } from 'react-i18next';
 import { Button } from 'components/ui/button';
+import { WriteupFormatChips } from './WriteupFormatChips';
 
 interface DetailedSettingsModuleProps {
     form: UseFormReturn<z.infer<typeof EditGameFormSchema>>;
@@ -35,7 +36,10 @@ interface DetailedSettingsModuleProps {
     clientConfig: any;
 }
 
-const writeupFormatOptions = ["pdf", "zip", "doc", "docx", "md", "txt"]
+
+// 后缀只允许字母和数字，与后端 normalizeWriteupFormats 保持一致
+const normalizeWriteupFormat = (value: string) =>
+    value.trim().toLowerCase().replace(/^\.+/, "").replace(/[^a-z0-9]/g, "")
 
 export function DetailedSettingsModule({
     form,
@@ -49,6 +53,16 @@ export function DetailedSettingsModule({
 
     // 监听 poster 字段变化，用于实时预览
     const watchedPoster = useWatch({ control: form.control, name: 'poster' });
+
+    // 自定义 WriteUp 后缀输入框
+    const [customFormat, setCustomFormat] = React.useState("")
+
+    const addCustomFormat = (current: string[], onChange: (value: string[]) => void) => {
+        const fmt = normalizeWriteupFormat(customFormat)
+        if (!fmt) return
+        if (!current.includes(fmt)) onChange([...current, fmt])
+        setCustomFormat("")
+    }
 
 
     // 海报上传处理函数
@@ -188,32 +202,50 @@ export function DetailedSettingsModule({
                                     <div className="flex-1" />
                                     <FormMessage />
                                 </div>
-                                <div className="flex flex-wrap gap-2">
-                                    {writeupFormatOptions.map((fmt) => {
-                                        const selected = field.value?.includes(fmt)
-                                        return (
-                                            <Button
-                                                key={fmt}
-                                                type="button"
-                                                size="sm"
-                                                variant={selected ? "default" : "outline"}
-                                                className="rounded-full text-xs"
-                                                onClick={() => {
-                                                    const current = field.value ?? []
-                                                    if (selected && current.length === 1) {
-                                                        return
-                                                    }
-                                                    const next = selected ? current.filter((val) => val !== fmt) : [...current, fmt]
-                                                    field.onChange(next)
-                                                }}
-                                            >
-                                                {fmt.toUpperCase()}
-                                            </Button>
-                                        )
-                                    })}
+                                <WriteupFormatChips value={field.value} onChange={field.onChange} />
+                                <div className="flex gap-2">
+                                    <Input
+                                        value={customFormat}
+                                        placeholder={t("detail.wp_formats.custom_placeholder")}
+                                        aria-label={t("detail.wp_formats.custom_placeholder")}
+                                        maxLength={16}
+                                        onChange={(e) => setCustomFormat(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key !== "Enter") return
+                                            e.preventDefault()
+                                            addCustomFormat(field.value ?? [], field.onChange)
+                                        }}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={!normalizeWriteupFormat(customFormat)}
+                                        onClick={() => addCustomFormat(field.value ?? [], field.onChange)}
+                                    >
+                                        {t("detail.wp_formats.custom_add")}
+                                    </Button>
                                 </div>
                                 <FormDescription>{t("detail.wp_formats.description")}</FormDescription>
                                 <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* WP 上传大小限制 */}
+                    <FormField
+                        control={form.control}
+                        name="wp_max_size"
+                        render={({ field }) => (
+                            <FormItem>
+                                <div className="flex items-center h-[20px]">
+                                    <FormLabel>{t("detail.wp_max_size.title")}</FormLabel>
+                                    <div className="flex-1" />
+                                    <FormMessage className="text-[14px]" />
+                                </div>
+                                <FormControl>
+                                    <Input type="number" min={1} max={1024} {...field} />
+                                </FormControl>
+                                <FormDescription>{t("detail.wp_max_size.description")}</FormDescription>
                             </FormItem>
                         )}
                     />

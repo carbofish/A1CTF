@@ -14,9 +14,36 @@ type Hint struct {
 	Content    string    `json:"content"`
 	CreateTime time.Time `json:"create_time"`
 	Visible    bool      `json:"visible"`
+	// ReleaseTime 定时放出时间（绝对时间，可选）。为 nil 表示不定时，保持原有行为；
+	// 非 nil 时，即使 Visible 为 true，也要到该时间之后才对选手可见。
+	ReleaseTime *time.Time `json:"release_time"`
+}
+
+// IsReleased 判断 hint 在 now 时刻是否已到放出时间，未设置放出时间的 hint 视为已放出
+func (h Hint) IsReleased(now time.Time) bool {
+	return h.ReleaseTime == nil || !now.Before(*h.ReleaseTime)
 }
 
 type Hints []Hint
+
+// SplitByRelease 按 now 时刻把 hint 分为已放出和待放出两部分，返回已放出的 hint、
+// 待放出 hint 的数量以及最近一次放出时间（没有待放出 hint 时为 nil）。
+// 调用方应先过滤掉 Visible 为 false 的 hint，避免泄露隐藏 hint 的数量。
+func (e Hints) SplitByRelease(now time.Time) (released Hints, pendingCount int, nextRelease *time.Time) {
+	released = make(Hints, 0, len(e))
+	for _, hint := range e {
+		if hint.IsReleased(now) {
+			released = append(released, hint)
+			continue
+		}
+		pendingCount++
+		if nextRelease == nil || hint.ReleaseTime.Before(*nextRelease) {
+			t := *hint.ReleaseTime
+			nextRelease = &t
+		}
+	}
+	return released, pendingCount, nextRelease
+}
 
 func (e Hints) Value() (driver.Value, error) {
 	return sonic.Marshal(e)

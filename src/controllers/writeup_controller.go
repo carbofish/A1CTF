@@ -14,6 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/mozillazg/go-pinyin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -27,9 +28,19 @@ import (
 
 const (
 	writeupDownloadBase = "./data/uploads"
+
+	// WriteUp 上传大小限制，单位 MB
+	defaultWriteupMaxSizeMB int32 = 50
+	maxWriteupMaxSizeMB     int32 = 1024
+
+	// 导出文件名中队名部分的最大长度（字符数）。队名没有长度限制，汉字转拼音后会膨胀数倍，
+	// 不截断可能超出文件系统 255 字节的文件名上限，或在 Windows 解压时超出路径长度
+	maxWriteupTeamNameLen = 40
 )
 
 var writeupNameSanitizer = regexp.MustCompile(`[^a-zA-Z0-9_-]+`)
+
+var writeupPinyinArgs = pinyin.NewArgs()
 
 func UserGetGameWriteup(c *gin.Context) {
 	game := c.MustGet("game").(models.Game)
@@ -48,6 +59,7 @@ func UserGetGameWriteup(c *gin.Context) {
 					"wp_expire_time": game.WpExpireTime,
 					"wp_start_time":  game.WpStartTime,
 					"wp_formats":     resolveWriteupFormats(game),
+					"wp_max_size":    resolveWriteupMaxSize(game) / 1024 / 1024,
 				},
 			})
 			return
@@ -70,6 +82,7 @@ func UserGetGameWriteup(c *gin.Context) {
 			"wp_expire_time": game.WpExpireTime,
 			"wp_start_time":  game.WpStartTime,
 			"wp_formats":     resolveWriteupFormats(game),
+			"wp_max_size":    resolveWriteupMaxSize(game) / 1024 / 1024,
 		},
 	})
 }
@@ -134,6 +147,21 @@ func UserSubmitGameWriteup(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
 			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "WriteupFormatNotAllowed"}),
+		})
+		return
+	}
+
+	// 上传后管理员可能调小了限制，提交时再校验一次
+	maxWriteupFileSize := resolveWriteupMaxSize(game)
+	if upload.FileSize > maxWriteupFileSize {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code": 400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{
+				MessageID: "WriteupFileTooLarge",
+				TemplateData: map[string]string{
+					"MaxSize": fmt.Sprintf("%d", maxWriteupFileSize/1024/1024),
+				},
+			}),
 		})
 		return
 	}
@@ -208,11 +236,16 @@ func UserUploadGameWriteupFile(c *gin.Context) {
 		return
 	}
 
-	const maxWriteupFileSize = 50 * 1024 * 1024
+	maxWriteupFileSize := resolveWriteupMaxSize(game)
 	if fileHeader.Size > maxWriteupFileSize {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
-			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FileTooLarge"}),
+			"code": 400,
+			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{
+				MessageID: "WriteupFileTooLarge",
+				TemplateData: map[string]string{
+					"MaxSize": fmt.Sprintf("%d", maxWriteupFileSize/1024/1024),
+				},
+			}),
 		})
 		return
 	}
@@ -528,13 +561,15 @@ func buildAdminWriteupInfo(writeup *models.TeamWriteup) webmodels.AdminTeamWrite
 func buildWriteupDisplayName(writeup *models.TeamWriteup) string {
 	var teamName string
 	if writeup.Team != nil {
-		teamName = writeup.Team.TeamName
+		teamName = sanitizeTeamName(writeup.Team.TeamName)
 	}
+	// 队伍名为空或者全是无法转换的字符时回退到队伍 ID
 	if teamName == "" {
 		teamName = fmt.Sprintf("team_%d", writeup.TeamID)
 	}
 
-	baseName := fmt.Sprintf("%d_%s_%s", writeup.TeamID, sanitizeTeamName(teamName), writeup.CreatedAt.UTC().Format("20060102150405"))
+	// 提交时间使用服务器本地时区，精确到分钟即可（如 202511301728），容器部署需设置 TZ 环境变量
+	baseName := fmt.Sprintf("%d_%s_%s", writeup.TeamID, teamName, writeup.CreatedAt.Local().Format("200601021504"))
 	ext := filepath.Ext(writeup.FileName)
 	if ext == "" {
 		ext = ".bin"
@@ -566,10 +601,69 @@ func writeupFormatAllowed(formats []string, ext string) bool {
 	return false
 }
 
+// 汉字转拼音，非汉字字符原样保留，避免队伍名被直接过滤掉
+func teamNameToPinyin(name string) string {
+	var builder strings.Builder
+	lastWasHan := false
+
+	for _, r := range name {
+		py := pinyin.SinglePinyin(r, writeupPinyinArgs)
+		if len(py) > 0 && py[0] != "" {
+			// 汉字之间以及汉字与其他字符之间补分隔符，保证可读性
+			if builder.Len() > 0 {
+				builder.WriteByte('_')
+			}
+			builder.WriteString(py[0])
+			lastWasHan = true
+			continue
+		}
+
+		if lastWasHan && builder.Len() > 0 {
+			builder.WriteByte('_')
+		}
+		builder.WriteRune(r)
+		lastWasHan = false
+	}
+
+	return builder.String()
+}
+
 func sanitizeTeamName(name string) string {
-	name = strings.ToLower(strings.TrimSpace(name))
+	name = teamNameToPinyin(strings.TrimSpace(name))
+	name = strings.ToLower(name)
 	name = strings.ReplaceAll(name, " ", "_")
-	return writeupNameSanitizer.ReplaceAllString(name, "_")
+	name = writeupNameSanitizer.ReplaceAllString(name, "_")
+	// 合并多余的分隔符
+	for strings.Contains(name, "__") {
+		name = strings.ReplaceAll(name, "__", "_")
+	}
+	name = strings.Trim(name, "_")
+	return truncateWriteupTeamName(name, maxWriteupTeamNameLen)
+}
+
+// 截断过长的队名：优先在最后一个下划线处截断，保证不把一个拼音音节切成两半；
+// 截断后仍由文件名开头的队伍 ID 保证唯一。sanitize 之后只剩 ASCII，按字节截断是安全的
+func truncateWriteupTeamName(name string, maxLen int) string {
+	if len(name) <= maxLen {
+		return name
+	}
+	cut := name[:maxLen]
+	if idx := strings.LastIndexByte(cut, '_'); idx > 0 {
+		cut = cut[:idx]
+	}
+	return strings.Trim(cut, "_")
+}
+
+// 解析 WriteUp 上传大小限制，返回值单位为字节
+func resolveWriteupMaxSize(game models.Game) int64 {
+	sizeMB := game.WpMaxSize
+	if sizeMB <= 0 {
+		sizeMB = defaultWriteupMaxSizeMB
+	}
+	if sizeMB > maxWriteupMaxSizeMB {
+		sizeMB = maxWriteupMaxSizeMB
+	}
+	return int64(sizeMB) * 1024 * 1024
 }
 
 func secureUploadPath(path string) (string, error) {
