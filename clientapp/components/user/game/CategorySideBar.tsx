@@ -268,6 +268,7 @@ export function CategorySidebar({
         <>
             <AddChallengeFromLibraryDialog
                 gameID={gameID}
+                challenges={challenges}
                 setChallenges={setChallenges}
                 isOpen={addChallengeOpen}
                 setIsOpen={setAddChallengeOpen}

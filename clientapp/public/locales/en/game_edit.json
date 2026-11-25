@@ -372,5 +372,38 @@
             "item": "Show Items"
         },
         "empty": "No container data"
+    },
+    "add_challenge_dialog": {
+        "title": "Add Challenges from Library",
+        "description": "Search the challenge library and add challenges to this game",
+        "placeholder_name": "Search by challenge name",
+        "placeholder_name_desc": "Search by challenge name or description",
+        "scope": {
+            "name": "Name",
+            "name_desc": "Name + Description"
+        },
+        "all_categories": "All categories",
+        "column": {
+            "name": "Name",
+            "create_time": "Created",
+            "category": "Category",
+            "actions": "Actions"
+        },
+        "select_page": "Select all on this page",
+        "select_row": "Select this challenge",
+        "added": "Added",
+        "add": "Add",
+        "searching": "Searching...",
+        "no_results": "No matching challenges",
+        "selected_count": "{{count}} selected ({{total}} results)",
+        "clear_selection": "Clear selection",
+        "adding": "Adding...",
+        "batch_add": "Add selected ({{count}})",
+        "page_size": "Per page",
+        "add_success": "Challenge added",
+        "select_first": "Please select challenges to add first",
+        "batch_success": "Added {{success}} challenge(s)",
+        "batch_partial": "Added {{success}} challenge(s), {{fail}} failed",
+        "batch_failed": "Batch add failed"
     }
 }

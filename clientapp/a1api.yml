@@ -621,11 +621,15 @@ paths:
                         create_time:
                           type: string
                           format: date-time
+                        description:
+                          type: string
+                          description: 描述摘要（去除 Markdown 符号，最多 120 字）
                       required:
                         - challenge_id
                         - name
                         - category
                         - create_time
+                        - description
                 required:
                   - code
                   - data
@@ -645,6 +649,10 @@ paths:
               properties:
                 keyword:
                   type: string
+                scope:
+                  type: string
+                  enum: [name, name_desc]
+                  description: 搜索范围，name 仅名称，name_desc 名称和描述
               required:
                 - keyword
   /api/admin/game/list:

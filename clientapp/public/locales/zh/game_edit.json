@@ -372,5 +372,38 @@
             "item": "显示项目"
         },
         "empty": "暂无容器数据"
+    },
+    "add_challenge_dialog": {
+        "title": "从题库添加题目",
+        "description": "从题目库中搜索题目并添加到本场比赛",
+        "placeholder_name": "按题目名称搜索",
+        "placeholder_name_desc": "按题目名称或描述搜索",
+        "scope": {
+            "name": "名称",
+            "name_desc": "名称 + 描述"
+        },
+        "all_categories": "全部类型",
+        "column": {
+            "name": "名称",
+            "create_time": "创建时间",
+            "category": "类型",
+            "actions": "操作"
+        },
+        "select_page": "全选本页",
+        "select_row": "选择该题目",
+        "added": "已添加",
+        "add": "添加",
+        "searching": "搜索中...",
+        "no_results": "没有匹配的题目",
+        "selected_count": "已选 {{count}} 个（共 {{total}} 个结果）",
+        "clear_selection": "清空选择",
+        "adding": "添加中...",
+        "batch_add": "批量添加 ({{count}})",
+        "page_size": "每页",
+        "add_success": "题目添加成功",
+        "select_first": "请先选择要添加的题目",
+        "batch_success": "成功添加 {{success}} 个题目",
+        "batch_partial": "成功添加 {{success}} 个题目，失败 {{fail}} 个",
+        "batch_failed": "批量添加失败"
     }
 }

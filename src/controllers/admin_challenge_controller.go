@@ -3,8 +3,10 @@ package controllers
 import (
 	"log"
 	"net/http"
+	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -32,6 +34,29 @@ type DeleteChallengePayload struct {
 
 type ChallengeSearchPayload struct {
 	Keyword string `json:"keyword"`
+	// 搜索范围：name 仅匹配名称；name_desc 同时匹配名称和描述（默认 name）
+	Scope string `json:"scope"`
+}
+
+// 描述摘要的最大字符数
+const challengeDescSnippetLen = 120
+
+var (
+	markdownLinkRegex   = regexp.MustCompile(`!?\[([^\]]*)\]\([^)]*\)`)
+	markdownSymbolRegex = regexp.MustCompile("[#*_`>~|]+")
+	whitespaceRegex     = regexp.MustCompile(`\s+`)
+)
+
+// buildDescriptionSnippet 去掉 Markdown 符号和换行，截取描述的前若干字符作为摘要
+func buildDescriptionSnippet(desc string) string {
+	text := markdownLinkRegex.ReplaceAllString(desc, "$1")
+	text = markdownSymbolRegex.ReplaceAllString(text, "")
+	text = strings.TrimSpace(whitespaceRegex.ReplaceAllString(text, " "))
+	runes := []rune(text)
+	if len(runes) > challengeDescSnippetLen {
+		return string(runes[:challengeDescSnippetLen]) + "…"
+	}
+	return text
 }
 
 func AdminListChallenges(c *gin.Context) {
@@ -342,7 +367,14 @@ func AdminSearchChallenges(c *gin.Context) {
 	}
 
 	var challenges []models.Challenge
-	if err := dbtool.DB().Where("name LIKE ?", "%"+payload.Keyword+"%").Find(&challenges).Error; err != nil {
+	pattern := "%" + payload.Keyword + "%"
+	query := dbtool.DB()
+	if payload.Scope == "name_desc" {
+		query = query.Where("name ILIKE ? OR description ILIKE ?", pattern, pattern)
+	} else {
+		query = query.Where("name ILIKE ?", pattern)
+	}
+	if err := query.Find(&challenges).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    500,
 			"message": i18ntool.Translate(c, &i18n.LocalizeConfig{MessageID: "FailedToLoadChallenges"}),
@@ -357,6 +389,7 @@ func AdminSearchChallenges(c *gin.Context) {
 			"name":         challenge.Name,
 			"category":     challenge.Category,
 			"create_time":  challenge.CreateTime,
+			"description":  buildDescriptionSnippet(challenge.Description),
 		})
 	}
 

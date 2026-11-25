@@ -2927,6 +2927,8 @@ export class Api<
     searchChallenges: (
       data: {
         keyword: string;
+        /** 搜索范围，name 仅名称，name_desc 名称和描述 */
+        scope?: "name" | "name_desc";
       },
       params: RequestParams = {},
     ) =>
@@ -2939,6 +2941,8 @@ export class Api<
             category: ChallengeCategory;
             /** @format date-time */
             create_time: string;
+            /** 描述摘要（去除 Markdown 符号，最多 120 字） */
+            description: string;
           }[];
         },
         void | ErrorMessage
